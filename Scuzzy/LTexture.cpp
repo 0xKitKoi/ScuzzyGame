@@ -31,6 +31,7 @@ bool LTexture::loadFromFile(std::string path)
 	SDL_Texture* newTexture = NULL;
 
 	//Load image at specified path
+	//SDL_Surface* loadedSurface = IMG_Load(path.c_str());
 	SDL_Surface* loadedSurface = IMG_Load(path.c_str());
 	if (loadedSurface == NULL)
 	{

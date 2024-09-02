@@ -2,37 +2,30 @@
 #include <LTexture.hpp>
 #include <vector>
 #include <math.h>
+#include <stdio.h>
 
 bool checkCollision(SDL_Rect a, SDL_Rect b);
 const int SCREEN_WIDTH = 1920;
 const int SCREEN_HEIGHT = 1080;
-//extern LTexture gSpriteSheetTexture;
+const int LEVEL_WIDTH = 4000;
+const int LEVEL_HEIGHT = 4000;
 
-//enum class State {
-//	Idle,
-//	Walking,
-//	Running,
-//	// Add more states as needed
-//};
-//
-//enum class Direction {
-//	Up,
-//	Down,
-//	Left,
-//	Right,
-//	// Add more directions if needed
-//};
+const int GRID_CELL_SIZE = 100;
+const int GRID_WIDTH = LEVEL_WIDTH / GRID_CELL_SIZE;
+const int GRID_HEIGHT = LEVEL_HEIGHT / GRID_CELL_SIZE;
+extern std::vector<SDL_Rect> grid[GRID_WIDTH][GRID_HEIGHT];
+extern LTexture gTextTexture;
 
-int FRAME_COUNT = 4; // Assume each animation has 4 frames
 
-// Each SDL_Rect points to a specific frame in the sprite sheet, the int is the frame count.
-std::vector<SDL_Rect> UpWalking;
-std::vector<SDL_Rect> idleDown;
+int FRAME_COUNT = 4; // each animation has 4 frames
+
+// Each "State" holds rects that point to different images on the sprite sheet.
+std::vector<SDL_Rect> UpWalking; // the first frame of each state is the "idle" frame.
+std::vector<SDL_Rect> idleDown; // TODO: fix these horrible names.
 std::vector<SDL_Rect> DownWalking;
 std::vector<SDL_Rect> LeftWalking;
 std::vector<SDL_Rect> RightWalking;
 std::vector<SDL_Rect> Emotes;
-
 
 
 Player::Player(Vector2f initPos) {
@@ -44,21 +37,20 @@ Player::Player(Vector2f initPos) {
 	m_VelY = 0;
 	currentState = State::Idle;
 	currentDirection = Direction::Down;
-	currentFrame = 0;
+	currentFrame = 0; // animtion frame count.
 
-	SDL_Rect gSpriteClips[6*6];
-
+	SDL_Rect gSpriteClips[6*6]; // sprite sheet. dont you dare touch. 
 	int pixelsize = 128; // size of each frame in sprite sheet. offset.
 
 	//Load sprite sheet texture
-	if (!SpriteSheet.loadFromFile("noss cartman 128.png"))
+	if (!SpriteSheet.loadFromFile("playerspritesheet.png")) //noss cartman 128.png
 	{
 		printf("Failed to load sprite sheet texture!\n");
-		
 	}
 	else
 	{
 		// SPRITE SHEET MAPPING
+		// this showed me true propain.
 
 		// Looking up not moving [0]
 		gSpriteClips[0].x = 0;
@@ -300,73 +292,164 @@ Player::Player(Vector2f initPos) {
 	}
 }
 
-void Player::Update(Uint32 deltaTime) {
-	// Handle state and direction based on input...
-	// (e.g., update `currentState` and `currentDirection`)
 
+void Player::Update(const std::vector<SDL_Rect>& walls, float deltaTime) {
 	// Advance animation frames
-	lastFrameTime += deltaTime;
+	lastFrameTime += deltaTime * 1000.0f;
 	if (lastFrameTime >= frameDuration) {
 		currentFrame = (currentFrame + 1) % FRAME_COUNT;
 		lastFrameTime = 0;
 	}
-}
 
-void Player::move(SDL_Rect& wall) {
-	m_PosX += m_VelX;
-	m_Collider.x = m_PosX;
-
-	//If the Player collided or went too far to the left or right
-	if ((m_PosX < 0) || (m_PosX + SpriteWidth > SCREEN_WIDTH) || checkCollision(m_Collider, wall))
-	{
-		//Move back
-		m_PosX -= m_VelX;
-		m_Collider.x = m_PosX;
+	// Clamp Velocity.
+	if (m_VelX > MaxVelocity) {
+		m_VelX = MaxVelocity;
+	}
+	if (m_VelX < -MaxVelocity) {
+		m_VelX = -MaxVelocity;
+	}
+	if (m_VelY > MaxVelocity) {
+		m_VelY = MaxVelocity;
+	}
+	if (m_VelY < -MaxVelocity) {
+		m_VelY = -MaxVelocity;
 	}
 
-	m_PosY += m_VelY;
-	m_Collider.y = m_PosY;
 
-	//If the Player collided or went too far up or down
-	if ((m_PosY < 0) || (m_PosY + SpriteHeight > SCREEN_HEIGHT) || checkCollision(m_Collider, wall))
-	{
-		//Move back
-		m_PosY -= m_VelY;
-		m_Collider.y = m_PosY;
+	// Store the initial position
+	int originalX = m_PosX;
+	int originalY = m_PosY;
+
+	// Move along X axis
+	m_PosX += m_VelX * deltaTime;
+	m_Collider = { m_PosX + 28, m_PosY + 20, 91, 84 }; // Scuffed fatass's collision box
+
+	// Check for collisions on X axis
+	for (const auto& wall : walls) {
+		if (SDL_HasIntersection(&m_Collider, &wall)) {
+			m_PosX = originalX; // Revert position
+			m_Collider.x = m_PosX; // Update collider position
+			break;
+		}
 	}
 
+	// Move along Y axis
+	m_PosY += m_VelY * deltaTime;
+	m_Collider = { m_PosX + 28, m_PosY + 20, 91, 84 }; 
+
+	// Check for collisions on Y axis
+	for (const auto& wall : walls) {
+		if (SDL_HasIntersection(&m_Collider, &wall)) {
+			m_PosY = originalY; // Revert position
+			m_Collider.y = m_PosY; // Update collider position
+			break;
+		}
+	}
+
+	// Boundary checks (keep player within level bounds)
+	if (m_PosX < 0 || m_PosX + SpriteWidth > LEVEL_WIDTH) {
+		m_PosX = originalX; // Revert position if out of bounds
+	}
+
+	if (m_PosY < 0 || m_PosY + SpriteHeight > LEVEL_HEIGHT) {
+		m_PosY = originalY; // Revert position if out of bounds
+	}
+
+	m_Collider = { m_PosX + 28, m_PosY + 20, 91, 84 };
+
+	// Debug.
+	/*SDL_Color textColor = { 0, 0, 0 };
+	char buffer[200];
+	snprintf(buffer, sizeof(buffer), "DELTA: %f\n Velocity X: %d, \nVelocity Y: %d\nPOS: (%d,%d)", deltaTime, m_VelX, m_VelY, m_PosX, m_PosY);
+	std::string str = buffer;
+
+	if (!gTextTexture.loadFromRenderedText(str, textColor)) {
+		printf("Failed to render text texture!\n");
+	}*/
 }
+
+
 
 void Player::handleEvent(SDL_Event& e) {
-	//If a key was pressed
-	if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
-	{
-		//Adjust the velocity
-		switch (e.key.keysym.sym)
-		{
-		case SDLK_UP: m_VelY -= MaxVelocity; currentState = State::Walking; currentDirection = Direction::Up; break;
-		case SDLK_DOWN: m_VelY += MaxVelocity; currentState = State::Walking; currentDirection = Direction::Down; break;
-		case SDLK_LEFT: m_VelX -= MaxVelocity; currentState = State::Walking; currentDirection = Direction::Left;  break;
-		case SDLK_RIGHT: m_VelX += MaxVelocity; currentState = State::Walking; currentDirection = Direction::Right; break;
+	// If a key was pressed
+	if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {
+		// Adjust the velocity and update direction/state
+		switch (e.key.keysym.sym) {
+		case SDLK_UP:
+			m_VelY -= MaxVelocity;
+			keyUpPressed = true;
+			currentState = State::Walking;
+			currentDirection = Direction::Up;
+			break;
+		case SDLK_DOWN:
+			m_VelY += MaxVelocity;
+			keyDownPressed = true;
+			currentState = State::Walking;
+			currentDirection = Direction::Down;
+			break;
+		case SDLK_LEFT:
+			m_VelX -= MaxVelocity;
+			keyLeftPressed = true;
+			currentState = State::Walking;
+			currentDirection = Direction::Left;
+			break;
+		case SDLK_RIGHT:
+			m_VelX += MaxVelocity;
+			keyRightPressed = true;
+			currentState = State::Walking;
+			currentDirection = Direction::Right;
+			break;
 		}
 	}
 
-	//If a key was released
-	else if (e.type == SDL_KEYUP && e.key.repeat == 0)
-	{
-		//Adjust the velocity
-		switch (e.key.keysym.sym)
-		{
-		case SDLK_UP: m_VelY += MaxVelocity; currentState = State::Idle; break;
-		case SDLK_DOWN: m_VelY -= MaxVelocity; currentState = State::Idle; break;
-		case SDLK_LEFT: m_VelX += MaxVelocity; currentState = State::Idle; break;
-		case SDLK_RIGHT: m_VelX -= MaxVelocity; currentState = State::Idle; break;
+	// If a key was released
+	else if (e.type == SDL_KEYUP && e.key.repeat == 0) {
+		// Adjust the velocity and update key states
+		switch (e.key.keysym.sym) {
+		case SDLK_UP:
+			m_VelY += MaxVelocity;
+			keyUpPressed = false;
+			break;
+		case SDLK_DOWN:
+			m_VelY -= MaxVelocity;
+			keyDownPressed = false;
+			break;
+		case SDLK_LEFT:
+			m_VelX += MaxVelocity;
+			keyLeftPressed = false;
+			break;
+		case SDLK_RIGHT:
+			m_VelX -= MaxVelocity;
+			keyRightPressed = false;
+			break;
 		}
+	}
+
+	// Determine the current state based on which keys are still pressed
+	if (keyUpPressed || keyDownPressed || keyLeftPressed || keyRightPressed) {
+		currentState = State::Walking;
+
+		// Update direction based on the most recent active key
+		if (keyUpPressed) {
+			currentDirection = Direction::Up;
+		}
+		else if (keyDownPressed) {
+			currentDirection = Direction::Down;
+		}
+		else if (keyLeftPressed) {
+			currentDirection = Direction::Left;
+		}
+		else if (keyRightPressed) {
+			currentDirection = Direction::Right;
+		}
+	}
+	else {
+		currentState = State::Idle;
 	}
 }
 
-void Player::render() {
-	//gSpriteSheetTexture.render(m_PosX, m_PosY);
+
+void Player::render(int camX, int camY) {
 	SDL_Rect srcRect;
 	if (currentState == State::Idle && currentDirection == Direction::Down) {
 		srcRect = DownWalking[0];
@@ -418,18 +501,22 @@ void Player::render() {
 		}
 		
 	}
-	// Add more conditions for other states and directions...
-
-	// Define the destination rectangle on the screen
-	//SDL_Rect destRect = { /* Define position and size */ };
 
 
 	// hey dickhead tell the Ltexture to render with the rect you have!!!
-	SpriteSheet.render(m_PosX, m_PosY, &srcRect);
+	//SpriteSheet.render(m_PosX, m_PosY, &srcRect);
+	SpriteSheet.render(m_PosX - camX, m_PosY - camY, &srcRect);
 
+}
 
-	// Render the current frame
-	//SDL_RenderCopy(renderer, SpriteSheet, &srcRect, &destRect);
-	//SDL_RenderCopy(renderer, , &srcRect, &srcRect); // HUH
-	//SpriteSheet.render();
+int Player::GetPosX() {
+	return m_PosX;
+}
+
+int Player::GetPosY() {
+	return m_PosY;
+}
+
+SDL_Rect Player::GetCollider() {
+	return m_Collider;
 }

@@ -2,6 +2,8 @@
 #include <SDL.h>
 #include <math.hpp>
 #include "LTexture.hpp"
+#include <vector>
+
 
 enum class State {
 	Idle,
@@ -30,14 +32,19 @@ public:
 	static const int SpriteHeight = 128;
 	static const int SpriteWidth = 128;
 
-	static const int MaxVelocity = 10;
+	static const int MaxVelocity = 300;
+	//static const int MaxAcceleration = 300;
 
 	Player(Vector2f initPos); // init
-	void Update(Uint32 deltaTime);
+	void Update(const std::vector<SDL_Rect>& walls, float deltaTime);
 
 	void handleEvent(SDL_Event& e);
-	void move(SDL_Rect& wall);
-	void render();
+	//void move(const std::vector<SDL_Rect>& walls, float deltaTime);
+	//void move(std::vector<SDL_Rect> grid[40][40]);
+	void render(int camX, int camY);
+	int GetPosX();
+	int GetPosY();
+	SDL_Rect GetCollider();
 
 private:
 	int m_PosX, m_PosY;
@@ -45,4 +52,9 @@ private:
 	SDL_Rect m_Collider;
 	LTexture SpriteSheet;
 	LTexture CurrentSprite;
+
+	bool keyUpPressed = false;
+	bool keyDownPressed = false;
+	bool keyLeftPressed = false;
+	bool keyRightPressed = false;
 };
