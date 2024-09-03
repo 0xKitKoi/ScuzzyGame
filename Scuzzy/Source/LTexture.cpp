@@ -1,11 +1,11 @@
-#include <LTexture.hpp>
+#include <Source/LTexture.hpp>
 
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
 
-SDL_Renderer* gRenderer;
+extern SDL_Renderer* gRenderer;
 //TTF_Font* gFont;
 
 LTexture::LTexture()

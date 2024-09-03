@@ -1,7 +1,7 @@
-#include <player.hpp>
-#include <LTexture.hpp>
+#include "Source/player.hpp"
+#include "Source/LTexture.hpp"
+#include "Source/math.hpp"
 #include <vector>
-#include <math.h>
 #include <stdio.h>
 
 bool checkCollision(SDL_Rect a, SDL_Rect b);
@@ -43,7 +43,7 @@ Player::Player(Vector2f initPos) {
 	int pixelsize = 128; // size of each frame in sprite sheet. offset.
 
 	//Load sprite sheet texture
-	if (!SpriteSheet.loadFromFile("playerspritesheet.png")) //noss cartman 128.png
+	if (!SpriteSheet.loadFromFile("data/playerspritesheet.png")) //noss cartman 128.png
 	{
 		printf("Failed to load sprite sheet texture!\n");
 	}
@@ -358,14 +358,14 @@ void Player::Update(const std::vector<SDL_Rect>& walls, float deltaTime) {
 	m_Collider = { m_PosX + 28, m_PosY + 20, 91, 84 };
 
 	// Debug.
-	/*SDL_Color textColor = { 0, 0, 0 };
+	SDL_Color textColor = { 0, 0, 0 };
 	char buffer[200];
 	snprintf(buffer, sizeof(buffer), "DELTA: %f\n Velocity X: %d, \nVelocity Y: %d\nPOS: (%d,%d)", deltaTime, m_VelX, m_VelY, m_PosX, m_PosY);
 	std::string str = buffer;
 
 	if (!gTextTexture.loadFromRenderedText(str, textColor)) {
 		printf("Failed to render text texture!\n");
-	}*/
+	}
 }
 
 

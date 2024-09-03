@@ -8,22 +8,21 @@ and may not be redistributed without written permission.*/
 #include <stdio.h>
 #include <string>
 #include <sstream>
-
-
-#include "LTexture.hpp"
-#include "player.hpp"
-#include "Math.hpp"
-#include "Timer.hpp"
 #include <vector>
-//#include <Timer.cpp>
+
+#include "Source/LTexture.hpp"
+#include "Source/player.hpp"
+#include "Source/Math.hpp"
+#include "Source/Timer.hpp"
+#include "Source/Entity.hpp"
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 1920;
 const int SCREEN_HEIGHT = 1080;
-const int LEVEL_WIDTH = 4000;
-const int LEVEL_HEIGHT = 4000;
 const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
+const int LEVEL_WIDTH = 4000;
+const int LEVEL_HEIGHT = 4000;
 
 //Starts up SDL and creates window
 bool init();
@@ -36,6 +35,8 @@ SDL_Surface* loadSurface(std::string path);
 
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
+//The window renderer
+SDL_Renderer* gRenderer = NULL;
 
 //The surface contained by the window
 SDL_Surface* gScreenSurface = NULL;
@@ -207,7 +208,7 @@ bool loadMedia()
 	bool success = true;
 
 	//Open the font
-	gFont = TTF_OpenFont("lazy.ttf", 28);
+	gFont = TTF_OpenFont("data/lazy.ttf", 28);
 	if (gFont == NULL)
 	{
 		printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
@@ -223,7 +224,7 @@ bool loadMedia()
 			success = false;
 		}
 	}
-	if (!Map.loadFromFile("concept art.bmp"))
+	if (!Map.loadFromFile("data/concept art.bmp"))
 	{
 		printf("Failed to load sprite sheet texture!\n");
 		success = false;
@@ -465,14 +466,32 @@ int main(int argc, char* args[])
 			playerinitpos.y = 700;
 			Player player(playerinitpos);
 			
+			std::vector<Entity> Entities; // All entities.
+
 			
+			// Load first entity:
+			Vector2f entityPos(800, 800);
+			SDL_Rect entityRect = { 0,0,32,32 }; // for sprite
+			LTexture entityTex; // init with a texture
+			if (!entityTex.loadFromFile("data/fuckyoubox.png")) {
+				printf("Faileds to load entoty!");
+			}
+			
+			std::vector<SDL_Rect> clips; // sprite sheet mapings
+			SDL_Rect tmp = { 0,0,32,32 };
+			clips.push_back(tmp);
+			tmp = { 32,0,32,32 };
+			clips.push_back(tmp);
+
+			Entity entity(entityPos, entityRect, &entityTex, 2, clips); // finally creating the entity
+			Entities.push_back(entity); // vector of all entities to render .
+
+
+
+
 
 			// WALL
-			SDL_Rect wall;
-			wall.x = 300;
-			wall.y = 600;
-			wall.w = 40;
-			wall.h = 400;
+			SDL_Rect wall = { 300, 600, 40, 400 };
 			//assignToGrid(wall);
 
 			//std::vector<SDL_Rect> collisionBoxes;
@@ -492,9 +511,24 @@ int main(int argc, char* args[])
 
 
 			Uint32 InitialTime = SDL_GetTicks();
-			//Uint32 deltatime = 0;
 			int frame = 0;
-			//While application is running
+
+
+
+			/*
+			 __    __     ______     __     __   __   
+			/\ "-./  \   /\  __ \   /\ \   /\ "-.\ \  
+			\ \ \-./\ \  \ \  __ \  \ \ \  \ \ \-.  \ 
+			 \ \_\ \ \_\  \ \_\ \_\  \ \_\  \ \_\\"\_\
+			  \/_/  \/_/   \/_/\/_/   \/_/   \/_/ \/_/
+                                          
+			 __         ______     ______     ______  
+			/\ \       /\  __ \   /\  __ \   /\  == \ 
+			\ \ \____  \ \ \/\ \  \ \ \/\ \  \ \  _-/ 
+			 \ \_____\  \ \_____\  \ \_____\  \ \_\   
+			  \/_____/   \/_____/   \/_____/   \/_/   
+			
+			*/
 			while (!quit)
 			{
 				//Start cap timer
@@ -508,7 +542,7 @@ int main(int argc, char* args[])
 					{
 						quit = true;
 					}
-					
+
 					player.handleEvent(e);
 
 				}
@@ -520,7 +554,7 @@ int main(int argc, char* args[])
 					avgFPS = 0;
 				}
 
-				////Set text to be rendered
+				//// Debug text
 				//timeText.str("");
 				//timeText << "Average Frames Per Second (With Cap) " << avgFPS;
 				//if (!gTextTexture.loadFromRenderedText(timeText.str().c_str(), textColor))
@@ -536,9 +570,9 @@ int main(int argc, char* args[])
 				//Clear screen
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
-				Map.render(0,0, &camera);
+				Map.render(0, 0, &camera);
 
-				gTextTexture.render(0,0); // render any text.
+				gTextTexture.render(0, 0); // render any text.
 				//gTextTexture.render((SCREEN_WIDTH - gTextTexture.getWidth()) / 2, (SCREEN_HEIGHT - gTextTexture.getHeight()) / 2);
 
 				// Get the collision boxes in surrounding cells
@@ -578,10 +612,9 @@ int main(int argc, char* args[])
 				renderCollisionBoxes(gRenderer, collisionBoxes, camera);
 
 
-				player.render(camera.x,camera.y);
+				player.render(camera.x, camera.y);
 
-				//Update screen
-				SDL_RenderPresent(gRenderer);
+
 				++countedFrames;
 				//Go to next animation frame for player
 				++frame;
@@ -591,6 +624,15 @@ int main(int argc, char* args[])
 				{
 					frame = 0;
 				}
+
+				for (int i = 0; i < Entities.size(); i++) {
+					Entities.at(i).update(deltaTime, camera);
+				}
+
+				
+				//Update screen
+				SDL_RenderPresent(gRenderer);
+
 
 				//If frame finished early
 				int frameTicks = capTimer.getTicks();

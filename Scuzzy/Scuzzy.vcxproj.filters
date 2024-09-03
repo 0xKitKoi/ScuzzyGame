@@ -15,53 +15,56 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="LTexture.cpp">
+    <ClCompile Include="Source\LTexture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Player.cpp">
+    <ClCompile Include="Source\Player.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Entity.cpp">
+    <ClCompile Include="Source\Entity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="Source\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Timer.cpp">
+    <ClCompile Include="Source\Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="LTexture.hpp">
+    <ClInclude Include="Source\LTexture.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="player.hpp">
+    <ClInclude Include="Source\player.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Entity.hpp">
+    <ClInclude Include="Source\Entity.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Math.hpp">
+    <ClInclude Include="Source\Math.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Timer.hpp">
+    <ClInclude Include="Source\Timer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="noss cartman 32.png">
+    <Image Include="data\noss cartman 32.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="noss cartman 200.png">
+    <Image Include="data\noss cartman 200.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="noss cartman 128.png">
+    <Image Include="data\noss cartman 128.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="concept art.bmp">
+    <Image Include="data\concept art.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="playerspritesheet.png">
+    <Image Include="data\playerspritesheet.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="data\fuckyoubox.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
