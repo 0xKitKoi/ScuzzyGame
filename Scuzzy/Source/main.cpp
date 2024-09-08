@@ -15,6 +15,7 @@ and may not be redistributed without written permission.*/
 #include "Source/Math.hpp"
 #include "Source/Timer.hpp"
 #include "Source/Entity.hpp"
+#include "Source/Enemy.hpp"
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 1920;
@@ -78,6 +79,10 @@ std::vector<SDL_Rect> collisionBoxes;
 
 // Black text color for use with gTextTexture;
 SDL_Color textColor = { 0, 0, 0 };
+
+float lerp(float x, float y, float t) {
+	return x * (1.f - t) + y * t;
+}
 
 
 bool init()
@@ -460,31 +465,51 @@ int main(int argc, char* args[])
 			int countedFrames = 0;
 			fpsTimer.start();
 
+			bool InFight = false;
+
 			 
 			Vector2f playerinitpos;
 			playerinitpos.x = 700;
 			playerinitpos.y = 700;
 			Player player(playerinitpos);
 			
+			
 			std::vector<Entity> Entities; // All entities.
+
+			/*
+			    Parent parent;
+
+				// Create a Child and pass the parent to it
+				std::shared_ptr<Child> child = std::make_shared<Child>(parent);
+
+				// Set the child in the parent
+				parent.setChild(std::move(child));
+
+				// Call the child's function through the parent
+				parent.callChildFunction();
+			*/
 
 			
 			// Load first entity:
 			Vector2f entityPos(800, 800);
-			SDL_Rect entityRect = { 0,0,32,32 }; // for sprite
+			SDL_Rect entityRect = { 0,0,128,128 }; // for sprite
 			LTexture entityTex; // init with a texture
-			if (!entityTex.loadFromFile("data/fuckyoubox.png")) {
+			if (!entityTex.loadFromFile("data/box_fuck_u_ari_1.png")) { // data/fuckyoubox.png
 				printf("Faileds to load entoty!");
 			}
 			
 			std::vector<SDL_Rect> clips; // sprite sheet mapings
-			SDL_Rect tmp = { 0,0,32,32 };
+			SDL_Rect tmp = { 0,0,128,128 };
 			clips.push_back(tmp);
-			tmp = { 32,0,32,32 };
+			tmp = { 128,0,128,128 };
 			clips.push_back(tmp);
 
 			Entity entity(entityPos, entityRect, &entityTex, 2, clips); // finally creating the entity
-			Entities.push_back(entity); // vector of all entities to render .
+			// create the enemy and bind it to the entity
+			std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity);
+			entity.setEnemy(child);
+
+			Entities.push_back(entity); // vector of all entities to render.
 
 
 
@@ -542,7 +567,7 @@ int main(int argc, char* args[])
 					{
 						quit = true;
 					}
-
+					// Come back to this in fight
 					player.handleEvent(e);
 
 				}
@@ -567,66 +592,85 @@ int main(int argc, char* args[])
 				deltaTime = (currentTime - previousTime) / 1000.0f; // Convert to seconds
 				previousTime = currentTime;
 
-				//Clear screen
-				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-				SDL_RenderClear(gRenderer);
-				Map.render(0, 0, &camera);
 
-				gTextTexture.render(0, 0); // render any text.
-				//gTextTexture.render((SCREEN_WIDTH - gTextTexture.getWidth()) / 2, (SCREEN_HEIGHT - gTextTexture.getHeight()) / 2);
-
-				// Get the collision boxes in surrounding cells
-				std::vector<SDL_Rect> surroundingBoxes = getSurroundingCollisionBoxes(player, grid);
-
-				// Pass the filtered collision boxes to the player
-				player.Update(surroundingBoxes, deltaTime);
-				//player.move(collisionBoxes);
-
-				//Center the camera over the dot
-				camera.x = (player.GetPosX() + player.SpriteWidth / 2) - SCREEN_WIDTH / 2;
-				camera.y = (player.GetPosY() + player.SpriteHeight / 2) - SCREEN_HEIGHT / 2;
-
-				//Keep the camera in bounds
-				if (camera.x < 0)
+				if (!InFight)
+					// OverWorld Rendering 
 				{
-					camera.x = 0;
+
+					//Clear screen
+					SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+					SDL_RenderClear(gRenderer);
+					Map.render(0, 0, &camera);
+
+					gTextTexture.render(0, 0); // render any text.
+					//gTextTexture.render((SCREEN_WIDTH - gTextTexture.getWidth()) / 2, (SCREEN_HEIGHT - gTextTexture.getHeight()) / 2);
+
+					// Get the collision boxes in surrounding cells
+					std::vector<SDL_Rect> surroundingBoxes = getSurroundingCollisionBoxes(player, grid);
+
+					// Pass the filtered collision boxes to the player
+					player.Update(surroundingBoxes, deltaTime);
+					SDL_RenderDrawRect(gRenderer, &player.GetColliderAddress());
+					//player.move(collisionBoxes);
+
+					//Center the camera over the dot
+					camera.x = (player.GetPosX() + player.SpriteWidth / 2) - SCREEN_WIDTH / 2;
+					camera.y = (player.GetPosY() + player.SpriteHeight / 2) - SCREEN_HEIGHT / 2;
+
+					//Keep the camera in bounds
+					if (camera.x < 0)
+					{
+						camera.x = 0;
+					}
+					if (camera.y < 0)
+					{
+						camera.y = 0;
+					}
+					if (camera.x > LEVEL_WIDTH - camera.w)
+					{
+						camera.x = LEVEL_WIDTH - camera.w;
+					}
+					if (camera.y > LEVEL_HEIGHT - camera.h)
+					{
+						camera.y = LEVEL_HEIGHT - camera.h;
+					}
+
+					//player.Update(deltaTime);
+
+					//Render wall
+					//SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
+					//SDL_RenderDrawRect(gRenderer, &wall);
+					renderCollisionBoxes(gRenderer, collisionBoxes, camera);
+
+					
+					player.render(camera.x, camera.y);
+					
+					
+					
+					//collisionBoxes.push_back(player.GetCollider());
+
+
+					for (int i = 0; i < Entities.size(); i++) {
+						Entities.at(i).Update(deltaTime, camera, player.GetCollider());
+					}
+
+					++countedFrames;
+					//Go to next animation frame for player
+					++frame;
+
+					//Cycle animation frames
+					if (frame / 20 >= WALKING_ANIMATION_FRAMES)
+					{
+						frame = 0;
+					}
+
+					// END OF OVERWORLD RENDERING 
 				}
-				if (camera.y < 0)
-				{
-					camera.y = 0;
-				}
-				if (camera.x > LEVEL_WIDTH - camera.w)
-				{
-					camera.x = LEVEL_WIDTH - camera.w;
-				}
-				if (camera.y > LEVEL_HEIGHT - camera.h)
-				{
-					camera.y = LEVEL_HEIGHT - camera.h;
-				}
-
-				//player.Update(deltaTime);
-
-				//Render wall
-				//SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
-				//SDL_RenderDrawRect(gRenderer, &wall);
-				renderCollisionBoxes(gRenderer, collisionBoxes, camera);
-
-
-				player.render(camera.x, camera.y);
-
-
-				++countedFrames;
-				//Go to next animation frame for player
-				++frame;
-
-				//Cycle animation frames
-				if (frame / 20 >= WALKING_ANIMATION_FRAMES)
-				{
-					frame = 0;
-				}
-
-				for (int i = 0; i < Entities.size(); i++) {
-					Entities.at(i).update(deltaTime, camera);
+				else { // IN FIGHT 
+					//Clear screen
+					SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+					SDL_RenderClear(gRenderer);
+					
 				}
 
 				

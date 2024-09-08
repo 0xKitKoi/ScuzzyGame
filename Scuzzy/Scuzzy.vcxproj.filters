@@ -30,6 +30,9 @@
     <ClCompile Include="Source\Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Enemy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\LTexture.hpp">
@@ -45,6 +48,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Timer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Enemy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -65,6 +71,12 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="data\fuckyoubox.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="data\box_fuck_u_ari_1.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="data\box_fuck_u_ari_fiight.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

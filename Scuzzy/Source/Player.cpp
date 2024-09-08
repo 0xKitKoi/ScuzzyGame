@@ -4,7 +4,7 @@
 #include <vector>
 #include <stdio.h>
 
-bool checkCollision(SDL_Rect a, SDL_Rect b);
+//bool checkCollision(SDL_Rect a, SDL_Rect b);
 const int SCREEN_WIDTH = 1920;
 const int SCREEN_HEIGHT = 1080;
 const int LEVEL_WIDTH = 4000;
@@ -360,7 +360,7 @@ void Player::Update(const std::vector<SDL_Rect>& walls, float deltaTime) {
 	// Debug.
 	SDL_Color textColor = { 0, 0, 0 };
 	char buffer[200];
-	snprintf(buffer, sizeof(buffer), "DELTA: %f\n Velocity X: %d, \nVelocity Y: %d\nPOS: (%d,%d)", deltaTime, m_VelX, m_VelY, m_PosX, m_PosY);
+	snprintf(buffer, sizeof(buffer), "DELTA: %f\n Velocity X: %d, \nVelocity Y: %d\nPOS: (%d,%d)\nCOLLIDER POS: (%d,%d)", deltaTime, m_VelX, m_VelY, m_PosX, m_PosY, m_Collider.x, m_Collider.y);
 	std::string str = buffer;
 
 	if (!gTextTexture.loadFromRenderedText(str, textColor)) {
@@ -518,5 +518,9 @@ int Player::GetPosY() {
 }
 
 SDL_Rect Player::GetCollider() {
+	return m_Collider;
+}
+
+SDL_Rect& Player::GetColliderAddress() {
 	return m_Collider;
 }

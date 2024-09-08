@@ -45,6 +45,7 @@ public:
 	int GetPosX();
 	int GetPosY();
 	SDL_Rect GetCollider();
+	SDL_Rect& GetColliderAddress();
 
 private:
 	int m_PosX, m_PosY;
