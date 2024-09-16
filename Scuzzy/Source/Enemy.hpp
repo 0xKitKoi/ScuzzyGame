@@ -11,11 +11,13 @@ class Entity;
 
 class Enemy {
 public:
-	Enemy(Entity& p);
+	//Enemy(Entity& p);
+	Enemy(std::shared_ptr<Entity> entity) : m_Entity(entity) {}
 	void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos);
 	void move(Vector2f targetPos);
 
-	Entity &m_Entity;
+	//Entity &m_Entity;
+	std::shared_ptr<Entity> m_Entity;
 };
 
 #endif // ENEMY_H

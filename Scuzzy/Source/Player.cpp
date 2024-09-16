@@ -27,7 +27,10 @@ std::vector<SDL_Rect> LeftWalking;
 std::vector<SDL_Rect> RightWalking;
 std::vector<SDL_Rect> Emotes;
 
-
+/// <summary>
+/// Initializes Player.
+/// </summary>
+/// <param name="initPos">Starting position. Should be loaded from save file.</param>
 Player::Player(Vector2f initPos) {
 	m_PosX = initPos.x;
 	m_PosY = initPos.y;
@@ -292,7 +295,11 @@ Player::Player(Vector2f initPos) {
 	}
 }
 
-
+/// <summary>
+/// Handles Player movement, animations, collision detection.
+/// </summary>
+/// <param name="walls">Vector of Rects full of map's boundaries and obstructions.</param>
+/// <param name="deltaTime">Scales movement and animations based on time between frames.</param>
 void Player::Update(const std::vector<SDL_Rect>& walls, float deltaTime) {
 	// Advance animation frames
 	lastFrameTime += deltaTime * 1000.0f;
@@ -322,7 +329,7 @@ void Player::Update(const std::vector<SDL_Rect>& walls, float deltaTime) {
 
 	// Move along X axis
 	m_PosX += m_VelX * deltaTime;
-	m_Collider = { m_PosX + 28, m_PosY + 20, 91, 84 }; // Scuffed fatass's collision box
+	m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 }; // Scuffed fatass's collision box
 
 	// Check for collisions on X axis
 	for (const auto& wall : walls) {
@@ -335,7 +342,7 @@ void Player::Update(const std::vector<SDL_Rect>& walls, float deltaTime) {
 
 	// Move along Y axis
 	m_PosY += m_VelY * deltaTime;
-	m_Collider = { m_PosX + 28, m_PosY + 20, 91, 84 }; 
+	m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };
 
 	// Check for collisions on Y axis
 	for (const auto& wall : walls) {
@@ -355,7 +362,7 @@ void Player::Update(const std::vector<SDL_Rect>& walls, float deltaTime) {
 		m_PosY = originalY; // Revert position if out of bounds
 	}
 
-	m_Collider = { m_PosX + 28, m_PosY + 20, 91, 84 };
+	m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };
 
 	// Debug.
 	SDL_Color textColor = { 0, 0, 0 };
@@ -369,7 +376,10 @@ void Player::Update(const std::vector<SDL_Rect>& walls, float deltaTime) {
 }
 
 
-
+/// <summary>
+/// Handles user input. Currently only handles movement. 
+/// </summary>
+/// <param name="e">SDL checks for key presses. We check for the buttons.</param>
 void Player::handleEvent(SDL_Event& e) {
 	// If a key was pressed
 	if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {
@@ -448,7 +458,11 @@ void Player::handleEvent(SDL_Event& e) {
 	}
 }
 
-
+/// <summary>
+/// Render's the player. Also handles State of animation like direction. 
+/// </summary>
+/// <param name="camX">Camera Position.</param>
+/// <param name="camY">Camera Position.</param>
 void Player::render(int camX, int camY) {
 	SDL_Rect srcRect;
 	if (currentState == State::Idle && currentDirection == Direction::Down) {

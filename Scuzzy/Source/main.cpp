@@ -474,7 +474,8 @@ int main(int argc, char* args[])
 			Player player(playerinitpos);
 			
 			
-			std::vector<Entity> Entities; // All entities.
+			//std::vector<Entity> Entities; // All entities. AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+			std::vector<std::shared_ptr<Entity>> Entities;
 
 			/*
 			    Parent parent;
@@ -503,13 +504,18 @@ int main(int argc, char* args[])
 			clips.push_back(tmp);
 			tmp = { 128,0,128,128 };
 			clips.push_back(tmp);
+			SDL_Rect entity_cb = { entityPos.x + 25, entityPos.y + 25, entityRect.w-45, entityRect.h-55 };
 
-			Entity entity(entityPos, entityRect, &entityTex, 2, clips); // finally creating the entity
+			//Entity entity(entityPos, entity_cb, entityRect, &entityTex, 2, clips); // creates the entity
+			// Create the entity object using a shared pointer
+			auto entity = std::make_shared<Entity>(entityPos, entity_cb, entityRect, &entityTex, 2, clips);
 			// create the enemy and bind it to the entity
-			std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity);
-			entity.setEnemy(child);
+			std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity); // make an enemy object initialized with the entity object
+			entity->setEnemy(child); // bind the new enemy object to the entity
 
 			Entities.push_back(entity); // vector of all entities to render.
+
+			collisionBoxes.push_back(entity->m_Collider);
 
 
 
@@ -610,7 +616,15 @@ int main(int argc, char* args[])
 
 					// Pass the filtered collision boxes to the player
 					player.Update(surroundingBoxes, deltaTime);
-					SDL_RenderDrawRect(gRenderer, &player.GetColliderAddress());
+					//SDL_RenderDrawRect(gRenderer, &player.GetColliderAddress());
+					SDL_Rect renderBox = {
+						player.GetCollider().x - camera.x,
+						player.GetCollider().y - camera.y,
+						player.GetCollider().w,
+						player.GetCollider().h
+					};
+					// Draw the player's collision box
+					SDL_RenderDrawRect(gRenderer, &renderBox);
 					//player.move(collisionBoxes);
 
 					//Center the camera over the dot
@@ -643,28 +657,51 @@ int main(int argc, char* args[])
 					renderCollisionBoxes(gRenderer, collisionBoxes, camera);
 
 					
-					player.render(camera.x, camera.y);
+					//player.render(camera.x, camera.y); // moved so player renders above everything else. might have to come back to this.
 					
 					
 					
 					//collisionBoxes.push_back(player.GetCollider());
-
-
+					SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
+					// Update every entity.
 					for (int i = 0; i < Entities.size(); i++) {
-						Entities.at(i).Update(deltaTime, camera, player.GetCollider());
-					}
+						Entities.at(i)->Update(deltaTime, camera, player.GetCollider());
+						
+						//SDL_RenderDrawRect(gRenderer, &Entities.at(i).m_FOV);
+						SDL_Rect intersectedBox;
+						if (SDL_IntersectRect(&Entities.at(i)->m_FOV, &camera, &intersectedBox)) {
+							//printf("bruh");
+							// Adjust box position relative to camera
+							SDL_Rect renderBox = {
+								Entities.at(i)->m_FOV.x - camera.x,
+								Entities.at(i)->m_FOV.y - camera.y,
+								Entities.at(i)->m_FOV.w,
+								Entities.at(i)->m_FOV.h
+							};
 
+							// Draw the box
+							SDL_RenderDrawRect(gRenderer, &renderBox);
+							
+						}
+					}
+					SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+					
+
+					
+					//Cycle animation frames
 					++countedFrames;
 					//Go to next animation frame for player
 					++frame;
-
-					//Cycle animation frames
+					
 					if (frame / 20 >= WALKING_ANIMATION_FRAMES)
 					{
 						frame = 0;
 					}
 
+
 					// END OF OVERWORLD RENDERING 
+					player.render(camera.x, camera.y); // last thing to be rendered is the player so it's above everything else.
+
 				}
 				else { // IN FIGHT 
 					//Clear screen
@@ -677,7 +714,7 @@ int main(int argc, char* args[])
 				//Update screen
 				SDL_RenderPresent(gRenderer);
 
-
+				// shitty handmade vsync
 				//If frame finished early
 				int frameTicks = capTimer.getTicks();
 				if (frameTicks < SCREEN_TICKS_PER_FRAME)
@@ -685,9 +722,11 @@ int main(int argc, char* args[])
 					//Wait remaining time
 					SDL_Delay(SCREEN_TICKS_PER_FRAME - frameTicks);
 				}
-			}
-		}
-	}
+
+			} // ____END OF MAIN WHILE____
+
+		} // end of if not loaded media.
+	} // end of if not sdl2 init
 
 	//Free resources and close SDL
 	close();

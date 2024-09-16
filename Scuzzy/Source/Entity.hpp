@@ -19,7 +19,9 @@ class Entity
 public:
 	Entity();
 	~Entity();
-	Entity(Vector2f p_pos, SDL_Rect FrameRect, LTexture* p_tex, int framecount, std::vector<SDL_Rect> Clips);
+
+	Entity(Vector2f p_pos, SDL_Rect collisionBox, SDL_Rect FrameRect, LTexture* p_tex, int framecount, std::vector<SDL_Rect> Clips);
+
 	float getAngle()
 	{
 		return angle;
@@ -28,12 +30,15 @@ public:
 	{
 		return scale;
 	}
-	//void setPos(float x, float y);
+
 	void setScale(float w, float h);
 	void setAngle(float angle);
+
 	LTexture* getTex(); //SDL_Texture* getTex();
 	void Update(float deltaTime, SDL_Rect CameraRect, SDL_Rect PlayerPOS);
+	
 	SDL_Rect getCurrentFrame();
+	
 	void setEnemy(std::shared_ptr<Enemy> newChild);
 
 
@@ -44,16 +49,16 @@ public:
 	bool moving = false;
 
 	SDL_Rect m_SpriteRect;
-	//Vector2f m_Pos;
+	//Vector2f m_Pos; // did not play nice. ints for now.
 	int m_PosX, m_PosY;
-	SDL_Rect m_Collider;
-	SDL_Rect m_FOV;
+	SDL_Rect m_Collider; // Collision Box
+	SDL_Rect m_FOV; // entities field of vision.
 private:
 	float angle = 0;
 	Vector2f scale = Vector2f(1, 1);
 	SDL_Rect currentFrame;
 	//SDL_Texture* m_Texture;
-	LTexture* m_Texture;
+	LTexture* m_Texture; // Sprite sheet.
 	std::vector<SDL_Rect> m_Clips;
 	std::shared_ptr<Enemy> m_Enemy;
 
