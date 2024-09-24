@@ -1,7 +1,3 @@
-/*This source code copyrighted by Lazy Foo' Productions 2004-2024
-and may not be redistributed without written permission.*/
-
-//Using SDL, SDL_image, standard IO, and strings
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
@@ -75,7 +71,7 @@ const int GRID_WIDTH = LEVEL_WIDTH / GRID_CELL_SIZE;
 const int GRID_HEIGHT = LEVEL_HEIGHT / GRID_CELL_SIZE;
 std::vector<SDL_Rect> grid[GRID_WIDTH][GRID_HEIGHT];
 
-std::vector<SDL_Rect> collisionBoxes;
+std::vector<SDL_Rect*> collisionBoxes; // global because passing into funcs sounds horrible.
 
 // Black text color for use with gTextTexture;
 SDL_Color textColor = { 0, 0, 0 };
@@ -149,7 +145,6 @@ bool init()
 	return success;
 }
 
-// "C:\\Users\\kirby\\OneDrive\\Desktop\\project gradiant.png"
 
 void close()
 {
@@ -339,7 +334,7 @@ void initializeCollisionBoxes() {
 	leftWall.y = 600;
 	leftWall.w = 40;
 	leftWall.h = 400;
-	collisionBoxes.push_back(leftWall);
+	collisionBoxes.push_back(&leftWall);
 
 	// Top wall
 	SDL_Rect topWall;
@@ -347,7 +342,7 @@ void initializeCollisionBoxes() {
 	topWall.y = leftWall.y;
 	topWall.w = leftWall.w + 300;
 	topWall.h = 40;
-	collisionBoxes.push_back(topWall);
+	collisionBoxes.push_back(&topWall);
 
 	// Right wall
 	SDL_Rect rightWall;
@@ -355,7 +350,7 @@ void initializeCollisionBoxes() {
 	rightWall.y = leftWall.y;
 	rightWall.w = leftWall.w;
 	rightWall.h = leftWall.h;
-	collisionBoxes.push_back(rightWall);
+	collisionBoxes.push_back(&rightWall);
 
 	// Bottom wall
 	SDL_Rect bottomWall;
@@ -363,7 +358,7 @@ void initializeCollisionBoxes() {
 	bottomWall.y = leftWall.y + leftWall.h - 40;
 	bottomWall.w = topWall.w;
 	bottomWall.h = 40;
-	collisionBoxes.push_back(bottomWall);
+	collisionBoxes.push_back(&bottomWall);
 }
 
 
@@ -371,7 +366,7 @@ void initializeCollisionGrid() {
 	// The idea of this is to only pass the vector of rects containing collision boxes to the player ONLY if the player is around them.
 	// there's probably a better way to do this.
 	for (const auto& box : collisionBoxes) {
-		assignToGrid(box);
+		assignToGrid(*box);
 	}
 }
 
@@ -388,21 +383,22 @@ void renderCollisionBoxes(SDL_Renderer* gRenderer, const std::vector<SDL_Rect>& 
 }
 */
 
-void renderCollisionBoxes(SDL_Renderer* gRenderer, const std::vector<SDL_Rect>& collisionBoxes, const SDL_Rect& camera) {
+//void renderCollisionBoxes(SDL_Renderer* gRenderer, const std::vector<SDL_Rect>& collisionBoxes, const SDL_Rect& camera) {
+void renderCollisionBoxes(SDL_Renderer* gRenderer, const SDL_Rect& camera) {
 	// Set the render draw color for walls (black in this case)
 	SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
 
 	// Iterate through all collision boxes and draw only if they are within the camera's viewport
-	for (const auto& box : collisionBoxes) {
+	for ( auto& box : collisionBoxes) { // const?
 		// Calculate the intersection between the box and the camera
 		SDL_Rect intersectedBox;
-		if (SDL_IntersectRect(&box, &camera, &intersectedBox)) {
+		if (SDL_IntersectRect( box, &camera, &intersectedBox)) {
 			// Adjust box position relative to camera
 			SDL_Rect renderBox = {
-				box.x - camera.x,
-				box.y - camera.y,
-				box.w,
-				box.h
+				box->x - camera.x,
+				box->y - camera.y,
+				box->w,
+				box->h
 			};
 
 			// Draw the box
@@ -515,7 +511,7 @@ int main(int argc, char* args[])
 
 			Entities.push_back(entity); // vector of all entities to render.
 
-			collisionBoxes.push_back(entity->m_Collider);
+			//collisionBoxes.push_back(&entity->m_Collider);
 
 
 
@@ -654,8 +650,30 @@ int main(int argc, char* args[])
 					//Render wall
 					//SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
 					//SDL_RenderDrawRect(gRenderer, &wall);
-					renderCollisionBoxes(gRenderer, collisionBoxes, camera);
+					
+					
+					
+					//SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
+					renderCollisionBoxes(gRenderer, camera);
+					//SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+					
 
+					for (auto& box : Entities) { // const?
+						// Calculate the intersection between the box and the camera
+						SDL_Rect intersectedBox;
+						if (SDL_IntersectRect(&box->m_Collider, &camera, &intersectedBox)) {
+							// Adjust box position relative to camera
+							SDL_Rect renderBox = {
+								box->m_Collider.x - camera.x,
+								box->m_Collider.y - camera.y,
+								box->m_Collider.w,
+								box->m_Collider.h
+							};
+
+							// Draw the box
+							SDL_RenderDrawRect(gRenderer, &renderBox);
+						}
+					}
 					
 					//player.render(camera.x, camera.y); // moved so player renders above everything else. might have to come back to this.
 					

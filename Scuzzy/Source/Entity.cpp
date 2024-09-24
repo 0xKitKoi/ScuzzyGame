@@ -42,7 +42,7 @@ Entity::Entity(Vector2f p_pos, SDL_Rect CollisionBox, SDL_Rect FrameRect, LTextu
 	// Idea behind this is to make a bigger box around the entity.
 	// This will hopefully let the entity detect the player around it.
 	//m_FOV = { -m_Collider.x * 2, -m_Collider.y * 2, m_Collider.x * 2, m_Collider.y * 2 };
-	m_FOV = { (int)p_pos.x, (int)p_pos.y, (int) (FrameRect.w * 3), (int) (FrameRect.h * 3) };
+	m_FOV = { ((int)p_pos.x - (FrameRect.w * 3)), (int)p_pos.y - (FrameRect.h * 3), (int) (FrameRect.w * 3), (int) (FrameRect.h * 3) };
 
 }
 

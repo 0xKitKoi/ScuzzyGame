@@ -13,7 +13,7 @@ extern float lerp(float x, float y, float t);
 float duration = 2.0f;
 float elapsed_time = 0.0f;
 
-float speed = 200.0f;
+float speed = 350.0f;
 
 Vector2f moveEntity(Vector2f pos, float deltaTime, Vector2f target) {
     // Calculate the direction vector (dx, dy)
@@ -38,16 +38,15 @@ Vector2f moveEntity(Vector2f pos, float deltaTime, Vector2f target) {
     pos.y += dy * speed * deltaTime;
 
     // Optional: Print current position for debugging
-    std::cout << "Entity Position: (" << pos.x << ", " << pos.y << ")\n";
+    //std::cout << "Entity Position: (" << pos.x << ", " << pos.y << ")\n";
     return pos;
 }
 
 
 void Enemy::Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
 	// move to the player if player is in POV box. once touch player, set game state to fight mode.
-	if (SDL_HasIntersection(&m_Entity->m_Collider, &CameraRect)) {
-		if (SDL_HasIntersection(&m_Entity->m_FOV, &PlayerPos)) {
-			printf("Enemy can see the player!\n");
+	if (SDL_HasIntersection(&m_Entity->m_FOV, &PlayerPos)) {
+			//printf("Enemy can see the player!\n");
 			m_Entity->moving = true;
 			//m_Entity.m_PosX += lerp(m_Entity.m_PosX, PlayerPos.x, deltaT);
 			//m_Entity.m_PosY += lerp(m_Entity.m_PosY, PlayerPos.y, deltaT);
@@ -55,10 +54,9 @@ void Enemy::Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
             Vector2f out = moveEntity(in, deltaT, {(float)PlayerPos.x, (float)PlayerPos.y});
             m_Entity->m_PosX = out.x;
             m_Entity->m_PosY = out.y;
-		}
-		else {
-			m_Entity->moving = false;
-		}
+	}
+    else {
+		m_Entity->moving = false;
 	}
 }
 
