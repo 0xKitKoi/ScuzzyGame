@@ -147,6 +147,7 @@
   <ItemGroup>
     <ClInclude Include="Source\Enemy.hpp" />
     <ClInclude Include="Source\Entity.hpp" />
+    <ClInclude Include="Source\GameState.hpp" />
     <ClInclude Include="Source\LTexture.hpp" />
     <ClInclude Include="Source\Math.hpp" />
     <ClInclude Include="Source\player.hpp" />

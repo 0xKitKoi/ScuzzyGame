@@ -300,7 +300,8 @@ Player::Player(Vector2f initPos) {
 /// </summary>
 /// <param name="walls">Vector of Rects full of map's boundaries and obstructions.</param>
 /// <param name="deltaTime">Scales movement and animations based on time between frames.</param>
-void Player::Update(const std::vector<SDL_Rect>& walls, float deltaTime) {
+//void Player::Update(const std::vector<SDL_Rect>& walls, float deltaTime) {
+void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	// Advance animation frames
 	lastFrameTime += deltaTime * 1000.0f;
 	if (lastFrameTime >= frameDuration) {
@@ -332,8 +333,8 @@ void Player::Update(const std::vector<SDL_Rect>& walls, float deltaTime) {
 	m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 }; // Scuffed fatass's collision box
 
 	// Check for collisions on X axis
-	for (const auto& wall : walls) {
-		if (SDL_HasIntersection(&m_Collider, &wall)) {
+	for (const auto& wall : boxes) {
+		if (SDL_HasIntersection(&m_Collider, wall)) {
 			m_PosX = originalX; // Revert position
 			m_Collider.x = m_PosX; // Update collider position
 			break;
@@ -345,8 +346,8 @@ void Player::Update(const std::vector<SDL_Rect>& walls, float deltaTime) {
 	m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };
 
 	// Check for collisions on Y axis
-	for (const auto& wall : walls) {
-		if (SDL_HasIntersection(&m_Collider, &wall)) {
+	for (const auto& wall : boxes) {
+		if (SDL_HasIntersection(&m_Collider, wall)) {
 			m_PosY = originalY; // Revert position
 			m_Collider.y = m_PosY; // Update collider position
 			break;

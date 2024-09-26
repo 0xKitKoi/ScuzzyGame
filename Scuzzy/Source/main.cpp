@@ -12,6 +12,7 @@
 #include "Source/Timer.hpp"
 #include "Source/Entity.hpp"
 #include "Source/Enemy.hpp"
+#include "Source/GameState.hpp"
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 1920;
@@ -323,13 +324,18 @@ void assignToGrid(const SDL_Rect& box) {
 	}
 }
 
+SDL_Rect leftWall;
+SDL_Rect topWall;
+SDL_Rect rightWall;
+SDL_Rect bottomWall;
+
 void initializeCollisionBoxes() {
 	//	TODO: Level loading.
 	// 
 	// 
 	// this is just a box made of collision boxes for player debugging. 
 	// Left wall
-	SDL_Rect leftWall;
+	//SDL_Rect leftWall;
 	leftWall.x = 300;
 	leftWall.y = 600;
 	leftWall.w = 40;
@@ -337,7 +343,7 @@ void initializeCollisionBoxes() {
 	collisionBoxes.push_back(&leftWall);
 
 	// Top wall
-	SDL_Rect topWall;
+	//SDL_Rect topWall;
 	topWall.x = leftWall.x;
 	topWall.y = leftWall.y;
 	topWall.w = leftWall.w + 300;
@@ -345,7 +351,7 @@ void initializeCollisionBoxes() {
 	collisionBoxes.push_back(&topWall);
 
 	// Right wall
-	SDL_Rect rightWall;
+	//SDL_Rect rightWall;
 	rightWall.x = leftWall.x + 300;
 	rightWall.y = leftWall.y;
 	rightWall.w = leftWall.w;
@@ -353,7 +359,7 @@ void initializeCollisionBoxes() {
 	collisionBoxes.push_back(&rightWall);
 
 	// Bottom wall
-	SDL_Rect bottomWall;
+	//SDL_Rect bottomWall;
 	bottomWall.x = leftWall.x;
 	bottomWall.y = leftWall.y + leftWall.h - 40;
 	bottomWall.w = topWall.w;
@@ -386,7 +392,7 @@ void renderCollisionBoxes(SDL_Renderer* gRenderer, const std::vector<SDL_Rect>& 
 //void renderCollisionBoxes(SDL_Renderer* gRenderer, const std::vector<SDL_Rect>& collisionBoxes, const SDL_Rect& camera) {
 void renderCollisionBoxes(SDL_Renderer* gRenderer, const SDL_Rect& camera) {
 	// Set the render draw color for walls (black in this case)
-	SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
+	//SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
 
 	// Iterate through all collision boxes and draw only if they are within the camera's viewport
 	for ( auto& box : collisionBoxes) { // const?
@@ -426,6 +432,8 @@ std::vector<SDL_Rect> getSurroundingCollisionBoxes(Player& player, const std::ve
 
 
 
+GameState gameState = { false };
+
 int main(int argc, char* args[])
 {
 	//Start up SDL and create window
@@ -461,7 +469,7 @@ int main(int argc, char* args[])
 			int countedFrames = 0;
 			fpsTimer.start();
 
-			bool InFight = false;
+			//bool InFight = false;
 
 			 
 			Vector2f playerinitpos;
@@ -488,7 +496,7 @@ int main(int argc, char* args[])
 
 			
 			// Load first entity:
-			Vector2f entityPos(800, 800);
+			Vector2f entityPos(950, 950);
 			SDL_Rect entityRect = { 0,0,128,128 }; // for sprite
 			LTexture entityTex; // init with a texture
 			if (!entityTex.loadFromFile("data/box_fuck_u_ari_1.png")) { // data/fuckyoubox.png
@@ -504,14 +512,14 @@ int main(int argc, char* args[])
 
 			//Entity entity(entityPos, entity_cb, entityRect, &entityTex, 2, clips); // creates the entity
 			// Create the entity object using a shared pointer
-			auto entity = std::make_shared<Entity>(entityPos, entity_cb, entityRect, &entityTex, 2, clips);
+			auto entity = std::make_shared<Entity>(entityPos, entity_cb, entityRect, &entityTex, 2, clips, 0);
 			// create the enemy and bind it to the entity
 			std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity); // make an enemy object initialized with the entity object
 			entity->setEnemy(child); // bind the new enemy object to the entity
 
 			Entities.push_back(entity); // vector of all entities to render.
 
-			//collisionBoxes.push_back(&entity->m_Collider);
+			collisionBoxes.push_back(&entity->m_Collider);
 
 
 
@@ -524,7 +532,7 @@ int main(int argc, char* args[])
 			//std::vector<SDL_Rect> collisionBoxes;
 
 			initializeCollisionBoxes();
-			initializeCollisionGrid();
+			//initializeCollisionGrid();
 
 			//Main loop flag
 			bool quit = false;
@@ -595,23 +603,28 @@ int main(int argc, char* args[])
 				previousTime = currentTime;
 
 
-				if (!InFight)
+				//if (!InFight)
+				if (!gameState.inFight)
 					// OverWorld Rendering 
 				{
 
 					//Clear screen
 					SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 					SDL_RenderClear(gRenderer);
+					SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
 					Map.render(0, 0, &camera);
 
 					gTextTexture.render(0, 0); // render any text.
 					//gTextTexture.render((SCREEN_WIDTH - gTextTexture.getWidth()) / 2, (SCREEN_HEIGHT - gTextTexture.getHeight()) / 2);
 
 					// Get the collision boxes in surrounding cells
-					std::vector<SDL_Rect> surroundingBoxes = getSurroundingCollisionBoxes(player, grid);
+					//std::vector<SDL_Rect> surroundingBoxes = getSurroundingCollisionBoxes(player, grid);
 
 					// Pass the filtered collision boxes to the player
-					player.Update(surroundingBoxes, deltaTime);
+					//player.Update(surroundingBoxes, deltaTime);
+					
+					player.Update(collisionBoxes, deltaTime);
+
 					//SDL_RenderDrawRect(gRenderer, &player.GetColliderAddress());
 					SDL_Rect renderBox = {
 						player.GetCollider().x - camera.x,
@@ -620,7 +633,7 @@ int main(int argc, char* args[])
 						player.GetCollider().h
 					};
 					// Draw the player's collision box
-					SDL_RenderDrawRect(gRenderer, &renderBox);
+					//SDL_RenderDrawRect(gRenderer, &renderBox);
 					//player.move(collisionBoxes);
 
 					//Center the camera over the dot
@@ -654,55 +667,62 @@ int main(int argc, char* args[])
 					
 					
 					//SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
-					renderCollisionBoxes(gRenderer, camera);
+					//renderCollisionBoxes(gRenderer, camera);
 					//SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 					
-
+					
 					for (auto& box : Entities) { // const?
 						// Calculate the intersection between the box and the camera
 						SDL_Rect intersectedBox;
-						if (SDL_IntersectRect(&box->m_Collider, &camera, &intersectedBox)) {
+						if (SDL_IntersectRect(&box->m_FOV, &camera, &intersectedBox)) {
 							// Adjust box position relative to camera
 							SDL_Rect renderBox = {
-								box->m_Collider.x - camera.x,
-								box->m_Collider.y - camera.y,
-								box->m_Collider.w,
-								box->m_Collider.h
+								box->m_FOV.x - camera.x,
+								box->m_FOV.y - camera.y,
+								box->m_FOV.w,
+								box->m_FOV.h
 							};
 
 							// Draw the box
 							SDL_RenderDrawRect(gRenderer, &renderBox);
 						}
 					}
+
+					renderCollisionBoxes(gRenderer, camera);
 					
 					//player.render(camera.x, camera.y); // moved so player renders above everything else. might have to come back to this.
 					
 					
 					
 					//collisionBoxes.push_back(player.GetCollider());
-					SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
+					//SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
 					// Update every entity.
 					for (int i = 0; i < Entities.size(); i++) {
 						Entities.at(i)->Update(deltaTime, camera, player.GetCollider());
 						
 						//SDL_RenderDrawRect(gRenderer, &Entities.at(i).m_FOV);
+						
+						// render collision boxes
 						SDL_Rect intersectedBox;
-						if (SDL_IntersectRect(&Entities.at(i)->m_FOV, &camera, &intersectedBox)) {
+						if (SDL_IntersectRect(&Entities.at(i)->m_Collider, &camera, &intersectedBox)) {
 							//printf("bruh");
 							// Adjust box position relative to camera
 							SDL_Rect renderBox = {
-								Entities.at(i)->m_FOV.x - camera.x,
-								Entities.at(i)->m_FOV.y - camera.y,
-								Entities.at(i)->m_FOV.w,
-								Entities.at(i)->m_FOV.h
+								Entities.at(i)->m_Collider.x - camera.x,
+								Entities.at(i)->m_Collider.y - camera.y,
+								Entities.at(i)->m_Collider.w,
+								Entities.at(i)->m_Collider.h
 							};
 
 							// Draw the box
 							SDL_RenderDrawRect(gRenderer, &renderBox);
+
+
 							
 						}
+
 					}
-					SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+					//SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 					
 
 					
@@ -719,12 +739,19 @@ int main(int argc, char* args[])
 
 					// END OF OVERWORLD RENDERING 
 					player.render(camera.x, camera.y); // last thing to be rendered is the player so it's above everything else.
-
+					SDL_RenderDrawRect(gRenderer, &renderBox); // render players collision box above player.
 				}
 				else { // IN FIGHT 
 					//Clear screen
-					SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+					//SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+					SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
 					SDL_RenderClear(gRenderer);
+					std::string bruh;
+					bruh.append(std::to_string(gameState.enemyID));
+					gTextTexture.loadFromRenderedText(bruh, { 0xFF, 0xFF, 0xFF, 0xFF });
+					gTextTexture.render(0, 0);
+
+
 					
 				}
 

@@ -23,8 +23,8 @@ Entity::Entity() : m_Enemy(nullptr) {}
 /// <param name="p_tex">Sprite Sheet texture. LTexture Object Abstracting away SDL2's raw texture handling. Entity::Update calls LTexture's render().</param>
 /// <param name="framecount">Number of frames in the animation.</param>
 /// <param name="Clips">Vector of Rects. This is a mapping of the sprite sheet.</param>
-Entity::Entity(Vector2f p_pos, SDL_Rect CollisionBox, SDL_Rect FrameRect, LTexture* p_tex, int framecount, std::vector<SDL_Rect> Clips)
-	:m_Texture(p_tex), currentFrame(FrameRect), m_Enemy(nullptr)
+Entity::Entity(Vector2f p_pos, SDL_Rect CollisionBox, SDL_Rect FrameRect, LTexture* p_tex, int framecount, std::vector<SDL_Rect> Clips, int EntityID)
+	:m_Texture(p_tex), currentFrame(FrameRect), m_Enemy(nullptr), m_EntityID(EntityID)
 {
 	//currentFrame.x = 0;
 	//currentFrame.y = 0;
@@ -42,7 +42,7 @@ Entity::Entity(Vector2f p_pos, SDL_Rect CollisionBox, SDL_Rect FrameRect, LTextu
 	// Idea behind this is to make a bigger box around the entity.
 	// This will hopefully let the entity detect the player around it.
 	//m_FOV = { -m_Collider.x * 2, -m_Collider.y * 2, m_Collider.x * 2, m_Collider.y * 2 };
-	m_FOV = { ((int)p_pos.x - (FrameRect.w * 3)), (int)p_pos.y - (FrameRect.h * 3), (int) (FrameRect.w * 3), (int) (FrameRect.h * 3) };
+	m_FOV = { (int)((p_pos.x + CollisionBox.w / 2) - (128*3)/2), (int)(p_pos.y + CollisionBox.h / 2) - (128 * 3) / 2, (128 * 3), (128 * 3)};
 
 }
 
@@ -67,7 +67,12 @@ void Entity::Update(float deltaTime, SDL_Rect CameraRect, SDL_Rect PlayerPos)
 	SDL_Rect srcRect;
 
 	if (m_Enemy) {
-		m_Enemy->Update(deltaTime, CameraRect, PlayerPos);
+		SDL_Rect bruh = PlayerPos;
+		bruh.x = bruh.x + bruh.w / 2;
+		bruh.y = bruh.y + bruh.h / 2;
+		bruh.w = bruh.w / 2;
+		bruh.w = bruh.h / 2;
+		m_Enemy->Update(deltaTime, CameraRect, bruh);
 	}
 
 	if (moving) {
@@ -80,8 +85,8 @@ void Entity::Update(float deltaTime, SDL_Rect CameraRect, SDL_Rect PlayerPos)
 	}
 	srcRect = m_Clips[currentFrameCount]; // render the sprite at index of animation
 
-	m_Collider = { m_PosX, m_PosY, m_SpriteRect.w, m_SpriteRect.h }; 
-	m_FOV = { m_PosX , m_PosY , (int)(currentFrame.w * 3), (int)(currentFrame.h * 3) };
+	m_Collider = { m_PosX, m_PosY, 128, 128 }; 
+	m_FOV = { (m_PosX + (m_Collider.w / 2)) - ((128*3)/2) , (m_PosY + (m_Collider.h / 2)) - ((128 * 3) / 2), (int)(currentFrame.w * 3), (int)(currentFrame.h * 3)};
 
 	//SDL_RenderDrawRect(gRenderer, &m_Collider);
 	// SpriteSheet.render(m_PosX - camX, m_PosY - camY, &srcRect);

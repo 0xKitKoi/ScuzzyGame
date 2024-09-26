@@ -2,9 +2,11 @@
 #include "Source/Entity.hpp"
 #include "Source/Math.hpp"
 #include <stdio.h>
+#include "Source/GameState.hpp"
 
 
 extern float lerp(float x, float y, float t);
+
 
 //Enemy::Enemy(Entity& p ) : m_Entity(p) {}
 //Enemy::Enemy(std::shared_ptr<Entity> entity) : m_Entity(entity) {}
@@ -15,7 +17,7 @@ float elapsed_time = 0.0f;
 
 float speed = 350.0f;
 
-Vector2f moveEntity(Vector2f pos, float deltaTime, Vector2f target) {
+Vector2f Enemy::moveEntity(Vector2f pos, float deltaTime, Vector2f target) {
     // Calculate the direction vector (dx, dy)
     float dx = target.x - pos.x;
     float dy = target.y - pos.y;
@@ -26,6 +28,8 @@ Vector2f moveEntity(Vector2f pos, float deltaTime, Vector2f target) {
     // If the entity is close enough to the target, stop moving
     if (distance < 0.1f) {
         printf("Too close");
+        gameState.inFight = true;
+        gameState.enemyID = m_EnemyID;
         return pos;
     }
 

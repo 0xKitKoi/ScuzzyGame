@@ -36,7 +36,8 @@ public:
 	//static const int MaxAcceleration = 300;
 
 	Player(Vector2f initPos); // init
-	void Update(const std::vector<SDL_Rect>& walls, float deltaTime);
+	//void Update(const std::vector<SDL_Rect>& walls, float deltaTime);
+	void Update(std::vector<SDL_Rect*>& walls, float deltaTime);
 
 	void handleEvent(SDL_Event& e);
 	//void move(const std::vector<SDL_Rect>& walls, float deltaTime);

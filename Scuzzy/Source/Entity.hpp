@@ -20,7 +20,7 @@ public:
 	Entity();
 	~Entity();
 
-	Entity(Vector2f p_pos, SDL_Rect collisionBox, SDL_Rect FrameRect, LTexture* p_tex, int framecount, std::vector<SDL_Rect> Clips);
+	Entity(Vector2f p_pos, SDL_Rect collisionBox, SDL_Rect FrameRect, LTexture* p_tex, int framecount, std::vector<SDL_Rect> Clips, int EntityID);
 
 	float getAngle()
 	{
@@ -53,6 +53,9 @@ public:
 	int m_PosX, m_PosY;
 	SDL_Rect m_Collider; // Collision Box
 	SDL_Rect m_FOV; // entities field of vision.
+
+	int m_EntityID = 0;
+
 private:
 	float angle = 0;
 	Vector2f scale = Vector2f(1, 1);
