@@ -28,8 +28,8 @@ Vector2f Enemy::moveEntity(Vector2f pos, float deltaTime, Vector2f target) {
     // If the entity is close enough to the target, stop moving
     if (distance < 0.1f) {
         printf("Too close");
-        gameState.inFight = true;
-        gameState.enemyID = m_EnemyID;
+        //gameState.inFight = true;
+        //gameState.enemyID = m_EnemyID;
         return pos;
     }
 
@@ -55,9 +55,15 @@ void Enemy::Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
 			//m_Entity.m_PosX += lerp(m_Entity.m_PosX, PlayerPos.x, deltaT);
 			//m_Entity.m_PosY += lerp(m_Entity.m_PosY, PlayerPos.y, deltaT);
             Vector2f in = { (float)m_Entity->m_PosX, (float)m_Entity->m_PosY };
+            
             Vector2f out = moveEntity(in, deltaT, {(float)PlayerPos.x, (float)PlayerPos.y});
             m_Entity->m_PosX = out.x;
             m_Entity->m_PosY = out.y;
+
+            if (SDL_HasIntersection(&m_Entity->m_Collider, &PlayerPos)) {
+                gameState.inFight = true;
+                gameState.enemyID = m_EnemyID;
+            }
 	}
     else {
 		m_Entity->moving = false;

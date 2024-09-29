@@ -56,6 +56,8 @@ public:
 
 	int m_EntityID = 0;
 
+	std::shared_ptr<Enemy> m_Enemy;
+
 private:
 	float angle = 0;
 	Vector2f scale = Vector2f(1, 1);
@@ -63,7 +65,7 @@ private:
 	//SDL_Texture* m_Texture;
 	LTexture* m_Texture; // Sprite sheet.
 	std::vector<SDL_Rect> m_Clips;
-	std::shared_ptr<Enemy> m_Enemy;
+	
 
 
 };

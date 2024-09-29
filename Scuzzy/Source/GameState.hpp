@@ -2,8 +2,16 @@
 #define GAME_STATE_H
 
 struct GameState {
-    bool inFight;
-    int enemyID;
+    std::string room;
+
+    bool inFight = false;
+    int enemyID = 0;
+
+    bool textAvailable = false;
+    std::vector<std::string> Text;
+
+    std::vector<int> Inventory;
+
 };
 
 // Declare the global GameState instance as extern

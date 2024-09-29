@@ -13,7 +13,7 @@ class Entity;
 class Enemy {
 public:
 	//Enemy(Entity& p);
-	Enemy(std::shared_ptr<Entity> entity) : m_Entity(entity) {}
+	Enemy(std::shared_ptr<Entity> entity) : m_Entity(entity), m_EnemyID(entity->m_EntityID) {}
 	void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos);
 	void move(Vector2f targetPos);
 	Vector2f moveEntity(Vector2f pos, float deltaTime, Vector2f target);

@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <fstream>
 
 #include "Source/LTexture.hpp"
 #include "Source/player.hpp"
@@ -48,6 +49,9 @@ TTF_Font* gFont = NULL;
 //Rendered TEXT texture
 LTexture gTextTexture;
 
+
+Vector2f playerinitpos;
+
 //Box collision detector
 //bool checkCollision(SDL_Rect a, SDL_Rect b);
 
@@ -80,6 +84,16 @@ SDL_Color textColor = { 0, 0, 0 };
 float lerp(float x, float y, float t) {
 	return x * (1.f - t) + y * t;
 }
+
+
+GameState gameState;
+
+struct saveData {
+	Vector2f pos;
+	std::string room;
+	std::vector<int> items;
+} SaveData;
+
 
 
 bool init()
@@ -201,7 +215,59 @@ SDL_Surface* loadSurface(std::string path)
 	return optimizedSurface;
 }
 
+void GameStart() {
+	playerinitpos = SaveData.pos;
+	gameState.room = SaveData.room;
+	gameState.Inventory = SaveData.items;
+}
 
+
+void SaveGame(int x, int y) {
+	printf("Saving.\n");
+	std::ofstream saveFile("save");
+	if (saveFile.is_open()) {
+		SaveData.pos.x = x;
+		SaveData.pos.y = y;
+		SaveData.room = gameState.room;
+		SaveData.items = gameState.Inventory;
+		saveFile << SaveData.pos.x << " " << SaveData.pos.y << "\n";
+		saveFile << SaveData.room << "\n";
+		saveFile << SaveData.items.size();
+		if (SaveData.items.size() > 0) {
+			for (int i = 0; i < SaveData.items.size(); i++) {
+				saveFile << SaveData.items.at(i) << " ";
+			}
+			saveFile << "\n";
+			saveFile.close();
+		}
+	}
+	else {
+		printf("Couldn't save.");
+	}
+	return;
+}
+int LoadSave() {
+	std::ifstream saveFile("save");
+	if (saveFile.is_open()) {
+		saveFile >> SaveData.pos.x >> SaveData.pos.y;
+		saveFile.ignore(); // ignore \n;
+		saveFile >> SaveData.room;
+		saveFile.ignore(); // ignore \n;
+		int items;
+		saveFile >> items;
+		SaveData.items.resize(items);
+		for (int i = 0; i < items; i++) {
+			saveFile >> SaveData.items[i];
+		}
+		saveFile.close();
+	}
+	else {
+		printf("Could not read save data.");
+		return 0;
+	}
+
+	return 1;
+}
 
 bool loadMedia()
 {
@@ -225,12 +291,35 @@ bool loadMedia()
 			success = false;
 		}
 	}
-	if (!Map.loadFromFile("data/concept art.bmp"))
-	{
-		printf("Failed to load sprite sheet texture!\n");
-		success = false;
-	}
 
+	int ls = LoadSave();
+	if (ls) {
+		if (SaveData.room == "test") {
+			if (!Map.loadFromFile("data/concept art.bmp"))
+			{
+				printf("Failed to load sprite sheet texture!\n");
+				success = false;
+			}
+		}
+		if (SaveData.room == "Level1") {
+			if (!Map.loadFromFile("data/concept art.bmp"))
+			{
+				printf("Failed to load sprite sheet texture!\n");
+				success = false;
+			}
+		}
+	}
+	else {
+		// Couldn't load save data. Assume game is starting for first time.
+		if (!Map.loadFromFile("data/concept art.bmp"))
+		{
+			printf("Failed to load sprite sheet texture!\n");
+			success = false;
+		}
+		SaveData.pos.x = 700;
+		SaveData.pos.y = 700;
+		SaveData.room = "test";
+	}
 
 
 	return success;
@@ -432,7 +521,9 @@ std::vector<SDL_Rect> getSurroundingCollisionBoxes(Player& player, const std::ve
 
 
 
-GameState gameState = { false };
+
+
+
 
 int main(int argc, char* args[])
 {
@@ -469,16 +560,13 @@ int main(int argc, char* args[])
 			int countedFrames = 0;
 			fpsTimer.start();
 
-			//bool InFight = false;
 
 			 
-			Vector2f playerinitpos;
-			playerinitpos.x = 700;
-			playerinitpos.y = 700;
+			GameStart();
+			
+
 			Player player(playerinitpos);
 			
-			
-			//std::vector<Entity> Entities; // All entities. AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 			std::vector<std::shared_ptr<Entity>> Entities;
 
 			/*
@@ -512,7 +600,7 @@ int main(int argc, char* args[])
 
 			//Entity entity(entityPos, entity_cb, entityRect, &entityTex, 2, clips); // creates the entity
 			// Create the entity object using a shared pointer
-			auto entity = std::make_shared<Entity>(entityPos, entity_cb, entityRect, &entityTex, 2, clips, 0);
+			auto entity = std::make_shared<Entity>(entityPos, entity_cb, entityRect, &entityTex, 2, clips, 44);
 			// create the enemy and bind it to the entity
 			std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity); // make an enemy object initialized with the entity object
 			entity->setEnemy(child); // bind the new enemy object to the entity
@@ -576,6 +664,12 @@ int main(int argc, char* args[])
 					if (e.type == SDL_QUIT)
 					{
 						quit = true;
+					}
+					if (e.key.keysym.scancode == SDL_SCANCODE_F10) {
+						SaveGame(player.GetPosX(), player.GetPosY());
+					}
+					if (e.key.keysym.scancode == SDL_SCANCODE_F11) {
+						LoadSave();
 					}
 					// Come back to this in fight
 					player.handleEvent(e);
@@ -750,6 +844,14 @@ int main(int argc, char* args[])
 					bruh.append(std::to_string(gameState.enemyID));
 					gTextTexture.loadFromRenderedText(bruh, { 0xFF, 0xFF, 0xFF, 0xFF });
 					gTextTexture.render(0, 0);
+
+					LTexture EnemySprite;
+					EnemySprite.loadFromFile("data/box_fuck_u_ari_1.png");
+					SDL_Rect rect = { 0,0,128,128 };
+					EnemySprite.render((SCREEN_WIDTH/2)-128, (SCREEN_HEIGHT/2)-128*2, &rect);
+
+
+					
 
 
 					

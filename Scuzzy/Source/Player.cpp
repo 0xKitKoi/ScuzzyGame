@@ -1,6 +1,7 @@
 #include "Source/player.hpp"
 #include "Source/LTexture.hpp"
 #include "Source/math.hpp"
+#include "Source/GameState.hpp"
 #include <vector>
 #include <stdio.h>
 
@@ -382,80 +383,172 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 /// </summary>
 /// <param name="e">SDL checks for key presses. We check for the buttons.</param>
 void Player::handleEvent(SDL_Event& e) {
-	// If a key was pressed
-	if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {
-		// Adjust the velocity and update direction/state
-		switch (e.key.keysym.sym) {
-		case SDLK_UP:
-			m_VelY -= MaxVelocity;
-			keyUpPressed = true;
-			currentState = State::Walking;
-			currentDirection = Direction::Up;
-			break;
-		case SDLK_DOWN:
-			m_VelY += MaxVelocity;
-			keyDownPressed = true;
-			currentState = State::Walking;
-			currentDirection = Direction::Down;
-			break;
-		case SDLK_LEFT:
-			m_VelX -= MaxVelocity;
-			keyLeftPressed = true;
-			currentState = State::Walking;
-			currentDirection = Direction::Left;
-			break;
-		case SDLK_RIGHT:
-			m_VelX += MaxVelocity;
-			keyRightPressed = true;
-			currentState = State::Walking;
-			currentDirection = Direction::Right;
-			break;
+	if (!gameState.inFight) {
+		// If a key was pressed
+		if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {
+			// Adjust the velocity and update direction/state
+			switch (e.key.keysym.sym) {
+			case SDLK_UP:
+				m_VelY -= MaxVelocity;
+				keyUpPressed = true;
+				currentState = State::Walking;
+				currentDirection = Direction::Up;
+				break;
+			case SDLK_DOWN:
+				m_VelY += MaxVelocity;
+				keyDownPressed = true;
+				currentState = State::Walking;
+				currentDirection = Direction::Down;
+				break;
+			case SDLK_LEFT:
+				m_VelX -= MaxVelocity;
+				keyLeftPressed = true;
+				currentState = State::Walking;
+				currentDirection = Direction::Left;
+				break;
+			case SDLK_RIGHT:
+				m_VelX += MaxVelocity;
+				keyRightPressed = true;
+				currentState = State::Walking;
+				currentDirection = Direction::Right;
+				break;
+			}
 		}
-	}
 
-	// If a key was released
-	else if (e.type == SDL_KEYUP && e.key.repeat == 0) {
-		// Adjust the velocity and update key states
-		switch (e.key.keysym.sym) {
-		case SDLK_UP:
-			m_VelY += MaxVelocity;
-			keyUpPressed = false;
-			break;
-		case SDLK_DOWN:
-			m_VelY -= MaxVelocity;
-			keyDownPressed = false;
-			break;
-		case SDLK_LEFT:
-			m_VelX += MaxVelocity;
-			keyLeftPressed = false;
-			break;
-		case SDLK_RIGHT:
-			m_VelX -= MaxVelocity;
-			keyRightPressed = false;
-			break;
+		// If a key was released
+		else if (e.type == SDL_KEYUP && e.key.repeat == 0) {
+			// Adjust the velocity and update key states
+			switch (e.key.keysym.sym) {
+			case SDLK_UP:
+				m_VelY += MaxVelocity;
+				keyUpPressed = false;
+				break;
+			case SDLK_DOWN:
+				m_VelY -= MaxVelocity;
+				keyDownPressed = false;
+				break;
+			case SDLK_LEFT:
+				m_VelX += MaxVelocity;
+				keyLeftPressed = false;
+				break;
+			case SDLK_RIGHT:
+				m_VelX -= MaxVelocity;
+				keyRightPressed = false;
+				break;
+			}
 		}
-	}
 
-	// Determine the current state based on which keys are still pressed
-	if (keyUpPressed || keyDownPressed || keyLeftPressed || keyRightPressed) {
-		currentState = State::Walking;
+		// Determine the current state based on which keys are still pressed
+		if (keyUpPressed || keyDownPressed || keyLeftPressed || keyRightPressed) {
+			currentState = State::Walking;
 
-		// Update direction based on the most recent active key
-		if (keyUpPressed) {
-			currentDirection = Direction::Up;
+			// Update direction based on the most recent active key
+			if (keyUpPressed) {
+				currentDirection = Direction::Up;
+			}
+			else if (keyDownPressed) {
+				currentDirection = Direction::Down;
+			}
+			else if (keyLeftPressed) {
+				currentDirection = Direction::Left;
+			}
+			else if (keyRightPressed) {
+				currentDirection = Direction::Right;
+			}
 		}
-		else if (keyDownPressed) {
-			currentDirection = Direction::Down;
-		}
-		else if (keyLeftPressed) {
-			currentDirection = Direction::Left;
-		}
-		else if (keyRightPressed) {
-			currentDirection = Direction::Right;
+		else {
+			currentState = State::Idle;
 		}
 	}
 	else {
-		currentState = State::Idle;
+
+		// IN FIGHT MOVEMENT AND SPRITE STATE AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+		/*
+			Here's where we decide what this game is about.
+			I could add more state vectors containing SDL_Rects pointing to sprites on another sprite sheet. 
+			I want to do an undertale and earthbound inspired fight mechanic. 
+			I did enjoy undertale's dodging mechanics but I also feel like the classic text based combat is a good start for my first game.
+			The concept art shows my ideas of clashing these together. I dont know If I want that rn.
+		
+		*/
+
+		if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {
+			// Adjust the velocity and update direction/state
+			switch (e.key.keysym.sym) {
+			case SDLK_UP:
+
+				//m_VelY -= MaxVelocity;
+				keyUpPressed = true;
+				//currentState = State::Walking;
+				//currentDirection = Direction::Up;
+				break;
+			case SDLK_DOWN:
+				//m_VelY += MaxVelocity;
+				keyDownPressed = true;
+				//currentState = State::Walking;
+				//currentDirection = Direction::Down;
+				break;
+			case SDLK_LEFT:
+				//m_VelX -= MaxVelocity;
+				keyLeftPressed = true;
+				//currentState = State::Walking;
+				//currentDirection = Direction::Left;
+				break;
+			case SDLK_RIGHT:
+				//m_VelX += MaxVelocity;
+				keyRightPressed = true;
+				//currentState = State::Walking;
+				//currentDirection = Direction::Right;
+				break;
+			}
+		}
+
+		// If a key was released
+		else if (e.type == SDL_KEYUP && e.key.repeat == 0) {
+			// Adjust the velocity and update key states
+			switch (e.key.keysym.sym) {
+			case SDLK_UP:
+				//m_VelY += MaxVelocity;
+				keyUpPressed = false;
+				break;
+			case SDLK_DOWN:
+				//m_VelY -= MaxVelocity;
+				keyDownPressed = false;
+				break;
+			case SDLK_LEFT:
+				//m_VelX += MaxVelocity;
+				keyLeftPressed = false;
+				break;
+			case SDLK_RIGHT:
+				//m_VelX -= MaxVelocity;
+				keyRightPressed = false;
+				break;
+			}
+		}
+
+		// Determine the current state based on which keys are still pressed
+		if (keyUpPressed || keyDownPressed || keyLeftPressed || keyRightPressed) {
+			//currentState = State::Walking;
+
+			// Update direction based on the most recent active key
+			if (keyUpPressed) {
+				//currentDirection = Direction::Up;
+			}
+			else if (keyDownPressed) {
+				//currentDirection = Direction::Down;
+			}
+			else if (keyLeftPressed) {
+				//currentDirection = Direction::Left;
+			}
+			else if (keyRightPressed) {
+				//currentDirection = Direction::Right;
+			}
+		}
+		else {
+			//currentState = State::Idle;
+		}
+
 	}
 }
 
