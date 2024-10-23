@@ -1,5 +1,6 @@
 #include "Source/Entity.hpp"
 #include "Source/Enemy.hpp"
+#include "Source/NPC.hpp"
 #include "Source/LTexture.hpp"
 #include <SDL.h>
 #include <SDL_image.h>
@@ -24,7 +25,7 @@ Entity::Entity() : m_Enemy(nullptr) {}
 /// <param name="framecount">Number of frames in the animation.</param>
 /// <param name="Clips">Vector of Rects. This is a mapping of the sprite sheet.</param>
 Entity::Entity(Vector2f p_pos, SDL_Rect CollisionBox, SDL_Rect FrameRect, LTexture* p_tex, int framecount, std::vector<SDL_Rect> Clips, int EntityID)
-	:m_Texture(p_tex), currentFrame(FrameRect), m_Enemy(nullptr), m_EntityID(EntityID)
+	:m_Texture(p_tex), currentFrame(FrameRect), m_Enemy(nullptr), m_NPC(nullptr), m_EntityID(EntityID)
 {
 	//currentFrame.x = 0;
 	//currentFrame.y = 0;
@@ -74,6 +75,9 @@ void Entity::Update(float deltaTime, SDL_Rect CameraRect, SDL_Rect PlayerPos)
 		bruh.w = bruh.h / 2;
 		m_Enemy->Update(deltaTime, CameraRect, bruh);
 	}
+	if (m_NPC) {
+		m_NPC->Update(deltaTime, CameraRect, PlayerPos);
+	}
 
 	if (moving) {
 		// Calculates index of frame to use in animation.
@@ -116,4 +120,8 @@ SDL_Rect Entity::getCurrentFrame()
 void Entity::setEnemy(std::shared_ptr<Enemy> newChild) {
 	//m_Enemy = std::move(newChild);
 	m_Enemy = newChild;
+}
+
+void Entity::setNPC(std::shared_ptr<NPC> newchild) {
+	m_NPC = newchild;
 }

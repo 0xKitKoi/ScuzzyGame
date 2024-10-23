@@ -12,6 +12,7 @@
 //#include "Source/Enemy.hpp"
 
 class Enemy;
+class NPC;
 
 
 class Entity
@@ -40,6 +41,7 @@ public:
 	SDL_Rect getCurrentFrame();
 	
 	void setEnemy(std::shared_ptr<Enemy> newChild);
+	void setNPC(std::shared_ptr<NPC> newchild);
 
 
 	int currentFrameCount = 0;
@@ -57,6 +59,7 @@ public:
 	int m_EntityID = 0;
 
 	std::shared_ptr<Enemy> m_Enemy;
+	std::shared_ptr<NPC> m_NPC;
 
 private:
 	float angle = 0;

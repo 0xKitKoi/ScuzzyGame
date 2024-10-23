@@ -4,6 +4,8 @@
 #include "Source/GameState.hpp"
 #include <vector>
 #include <stdio.h>
+#include <Source/Entity.hpp>
+#include <Source/NPC.hpp>
 
 //bool checkCollision(SDL_Rect a, SDL_Rect b);
 const int SCREEN_WIDTH = 1920;
@@ -17,6 +19,12 @@ const int GRID_HEIGHT = LEVEL_HEIGHT / GRID_CELL_SIZE;
 extern std::vector<SDL_Rect> grid[GRID_WIDTH][GRID_HEIGHT];
 extern LTexture gTextTexture;
 
+//extern std::vector<std::shared_ptr<Entity>> Entities;
+
+
+extern void MS_renderMenu(SDL_Renderer* renderer, TTF_Font* font);
+
+extern SDL_Rect CheckBox;
 
 int FRAME_COUNT = 4; // each animation has 4 frames
 
@@ -32,11 +40,18 @@ std::vector<SDL_Rect> Emotes;
 /// Initializes Player.
 /// </summary>
 /// <param name="initPos">Starting position. Should be loaded from save file.</param>
-Player::Player(Vector2f initPos) {
+Player::Player(Vector2f initPos, std::vector<std::shared_ptr<Entity>>& entityVec) : AllEntities(entityVec) {
 	m_PosX = initPos.x;
 	m_PosY = initPos.y;
 	m_Collider.w = SpriteWidth;
 	m_Collider.h = SpriteHeight;
+
+	m_CheckBox.x = m_PosX;
+	m_CheckBox.y = m_PosY;
+	m_CheckBox.h = SpriteHeight;
+	m_CheckBox.w = SpriteWidth;
+
+
 	m_VelX = 0;
 	m_VelY = 0;
 	currentState = State::Idle;
@@ -310,6 +325,31 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 		lastFrameTime = 0;
 	}
 
+
+	// check box updating.
+	if (currentDirection == Direction::Up) {
+		//m_CheckBox.x = m_PosX;
+		//m_CheckBox.y = m_PosY - 30;
+		m_CheckBox = { m_PosX + 30, m_PosY , 60,60 };
+	}
+	else if (currentDirection == Direction::Down) {
+		//m_CheckBox.x = m_PosX;
+		//m_CheckBox.y = m_PosY + 30;
+		m_CheckBox = { m_PosX+45, m_PosY + 90, 50,50 };
+	}
+	else if (currentDirection == Direction::Left) {
+		//m_CheckBox.x = m_PosX - 30;
+		//m_CheckBox.y = m_PosY;
+		m_CheckBox = { m_PosX - 5, m_PosY + 50, 50,50 };
+	}
+	else if (currentDirection == Direction::Right) {
+		//m_CheckBox.x = m_PosX + 30;
+		//m_CheckBox.y = m_PosY;
+		m_CheckBox = { m_PosX + 90, m_PosY +50, 50,50 };
+	}
+
+	
+
 	// Clamp Velocity.
 	if (m_VelX > MaxVelocity) {
 		m_VelX = MaxVelocity;
@@ -332,6 +372,15 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	// Move along X axis
 	m_PosX += m_VelX * deltaTime;
 	m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 }; // Scuffed fatass's collision box
+
+
+
+	for (const auto& entity : AllEntities) {
+		if (SDL_HasIntersection(&m_Collider, &entity->m_Collider )) { // &entity->m_Collider
+			printf(std::to_string(entity->m_EntityID).c_str());
+
+		}
+	}
 
 	// Check for collisions on X axis
 	for (const auto& wall : boxes) {
@@ -369,7 +418,7 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	// Debug.
 	SDL_Color textColor = { 0, 0, 0 };
 	char buffer[200];
-	snprintf(buffer, sizeof(buffer), "DELTA: %f\n Velocity X: %d, \nVelocity Y: %d\nPOS: (%d,%d)\nCOLLIDER POS: (%d,%d)", deltaTime, m_VelX, m_VelY, m_PosX, m_PosY, m_Collider.x, m_Collider.y);
+	snprintf(buffer, sizeof(buffer), "DELTA: %f\n Velocity X: %d, \nVelocity Y: %d\nPOS: (%d,%d)\nCOLLIDER POS: (%d,%d)\nCHECKBOX: (%d,%d)", deltaTime, m_VelX, m_VelY, m_PosX, m_PosY, m_Collider.x, m_Collider.y, m_CheckBox.x, m_CheckBox.y);
 	std::string str = buffer;
 
 	if (!gTextTexture.loadFromRenderedText(str, textColor)) {
@@ -385,6 +434,31 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 void Player::handleEvent(SDL_Event& e) {
 	if (!gameState.inFight) {
 		// If a key was pressed
+		if (menuOpened) {
+			
+			bool someone = false;
+			if (gameState.selectionIndex == 1) {
+				// player has attempted to talk to someone!
+				for (const auto& entity : AllEntities) {
+					if (SDL_HasIntersection(&m_CheckBox, &entity->m_Collider)) { // &entity->m_Collider
+						printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
+						printf(std::to_string(entity->m_EntityID).c_str());
+						someone = true;
+						if (entity->m_NPC) {
+							entity->m_NPC->m_checked = true;
+						}
+					}
+				}
+				if (!someone) {
+					gameState.Text.clear();
+					gameState.Text[0] = "Who are you talking to..?";
+					gameState.textAvailable = true;
+				}
+				menuOpened = false;
+			}
+		}
+
+
 		if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {
 			// Adjust the velocity and update direction/state
 			switch (e.key.keysym.sym) {
@@ -412,6 +486,15 @@ void Player::handleEvent(SDL_Event& e) {
 				currentState = State::Walking;
 				currentDirection = Direction::Right;
 				break;
+
+				/* // this did not do well. moving this to the main
+				case SDLK_x:
+					// player pressed x, open the menu.
+					gameState.Text = {"Talk", "Items"};
+					gameState.inMenu = true;
+					menuOpened = true;
+					// TODO find a way to get the selected index of the options back here from the game manager or cut the middle man.
+				*/
 			}
 		}
 
@@ -470,6 +553,8 @@ void Player::handleEvent(SDL_Event& e) {
 			I want to do an undertale and earthbound inspired fight mechanic. 
 			I did enjoy undertale's dodging mechanics but I also feel like the classic text based combat is a good start for my first game.
 			The concept art shows my ideas of clashing these together. I dont know If I want that rn.
+
+			I've decided to focus on NPC dialogue first. 
 		
 		*/
 

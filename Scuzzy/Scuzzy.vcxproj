@@ -141,7 +141,11 @@
     <ClCompile Include="Source\Enemy.cpp" />
     <ClCompile Include="Source\LTexture.cpp" />
     <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\MenuSystem.cpp" />
+    <ClCompile Include="Source\NPC.cpp" />
     <ClCompile Include="Source\Player.cpp" />
+    <ClCompile Include="Source\TestNPC%27s.hpp" />
+    <ClCompile Include="Source\TextBox.cpp" />
     <ClCompile Include="Source\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -150,6 +154,8 @@
     <ClInclude Include="Source\GameState.hpp" />
     <ClInclude Include="Source\LTexture.hpp" />
     <ClInclude Include="Source\Math.hpp" />
+    <ClInclude Include="Source\MenuSystem.hpp" />
+    <ClInclude Include="Source\NPC.hpp" />
     <ClInclude Include="Source\player.hpp" />
     <ClInclude Include="Source\Timer.hpp" />
   </ItemGroup>

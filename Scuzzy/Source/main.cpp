@@ -13,7 +13,11 @@
 #include "Source/Timer.hpp"
 #include "Source/Entity.hpp"
 #include "Source/Enemy.hpp"
+#include "Source/NPC.hpp"
 #include "Source/GameState.hpp"
+#include "Source/MenuSystem.hpp"
+
+#include "Source/TestNPC's.hpp"
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 1920;
@@ -49,8 +53,9 @@ TTF_Font* gFont = NULL;
 //Rendered TEXT texture
 LTexture gTextTexture;
 
-
+std::vector<std::shared_ptr<Entity>> Entities;
 Vector2f playerinitpos;
+SDL_Rect CheckBox;
 
 //Box collision detector
 //bool checkCollision(SDL_Rect a, SDL_Rect b);
@@ -92,7 +97,10 @@ struct saveData {
 	Vector2f pos;
 	std::string room;
 	std::vector<int> items;
+	int kills = 0;
+	int money = 0;
 } SaveData;
+
 
 
 
@@ -110,7 +118,7 @@ bool init()
 	else
 	{
 		//Create window
-		gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+		gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP);
 		if (gWindow == NULL)
 		{
 			printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
@@ -217,8 +225,11 @@ SDL_Surface* loadSurface(std::string path)
 
 void GameStart() {
 	playerinitpos = SaveData.pos;
+	CheckBox = { (int)playerinitpos.x,(int)playerinitpos.y, 20,20};
 	gameState.room = SaveData.room;
 	gameState.Inventory = SaveData.items;
+	gameState.kills = SaveData.kills;
+	gameState.money = SaveData.money;
 }
 
 
@@ -232,6 +243,8 @@ void SaveGame(int x, int y) {
 		SaveData.items = gameState.Inventory;
 		saveFile << SaveData.pos.x << " " << SaveData.pos.y << "\n";
 		saveFile << SaveData.room << "\n";
+		saveFile << SaveData.kills << "\n";
+		saveFile << SaveData.money << "\n";
 		saveFile << SaveData.items.size();
 		if (SaveData.items.size() > 0) {
 			for (int i = 0; i < SaveData.items.size(); i++) {
@@ -253,6 +266,11 @@ int LoadSave() {
 		saveFile.ignore(); // ignore \n;
 		saveFile >> SaveData.room;
 		saveFile.ignore(); // ignore \n;
+		saveFile >> SaveData.kills;
+		saveFile.ignore();
+		saveFile >> SaveData.money;
+		saveFile.ignore();
+
 		int items;
 		saveFile >> items;
 		SaveData.items.resize(items);
@@ -520,6 +538,222 @@ std::vector<SDL_Rect> getSurroundingCollisionBoxes(Player& player, const std::ve
 }
 
 
+/*
+void renderTextBox(SDL_Renderer* renderer, int x, int y, int width, int height) {
+	SDL_Rect box = { x, y, width, height };
+
+	// Render black background
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+	SDL_RenderFillRect(renderer, &box);
+
+	// Render deep red border
+	// #660010
+	SDL_SetRenderDrawColor(renderer, 237, 28, 36, 255);
+	SDL_RenderDrawRect(renderer, &box);
+}*/
+
+
+
+
+void renderTextBox(SDL_Renderer* renderer) {
+	int boxWidth = SCREEN_WIDTH * 0.9;  // 90% of the screen width
+	int boxHeight = 300;               // Fixed height for the text box
+	int xPos = (SCREEN_WIDTH - boxWidth) / 2;  // Center the box horizontally
+	int yPos = SCREEN_HEIGHT - boxHeight - 20; // Place the box 20 pixels above the bottom
+
+	// Set the color for the text box (e.g., black)
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+	SDL_Rect textBoxRect = { xPos, yPos, boxWidth, boxHeight };
+	SDL_RenderFillRect(renderer, &textBoxRect);
+
+	// Draw a red border around the text box
+	SDL_SetRenderDrawColor(renderer, 103, 0, 0, 255);
+	SDL_RenderDrawRect(renderer, &textBoxRect);
+}
+
+void renderText(SDL_Renderer* renderer, TTF_Font* font, std::string text, int x, int y, SDL_Color color) {
+	SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_Rect dstRect = { x, y, surface->w, surface->h };
+	SDL_RenderCopy(renderer, texture, NULL, &dstRect);
+
+	SDL_FreeSurface(surface);
+	SDL_DestroyTexture(texture);
+}
+
+//int dialogueIndex = 0;
+std::vector<std::string> dialogue = {
+	"Hello, welcome to the game.",
+	"We hope you enjoy your journey.",
+	"Press Z to continue."
+};
+void handleDialogue(SDL_Event event) {
+	if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
+		if (gameState.textIndex < gameState.Text.size() - 1) {
+			gameState.textIndex++;
+		}
+		else {
+			// Dialogue finished
+			gameState.textIndex = 0;
+			gameState.textAvailable = false;
+		}
+	}
+}
+
+
+void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) { // TDOD: implement new lines for 100 char limit per line
+	// Get screen dimensions
+	int screenWidth, screenHeight;
+	SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+
+	// Render the text box at the bottom of the screen
+	renderTextBox(renderer);
+
+	// Calculate text position inside the text box
+	int boxWidth = screenWidth * 0.9;
+	int xOffset = screenWidth * 0.05 + 20;  // Small margin inside the box
+	int yOffset = screenHeight - 275;       // Positioning inside the text box
+
+	// If the current line exists, render it
+	if (gameState.textIndex < gameState.Text.size()) {
+		SDL_Color white = { 255, 255, 255 };  // Normal text color
+		renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, white);
+	}
+}
+
+
+
+std::vector<std::string> menuOptions = {
+	"Start Game",
+	"Options",
+	"Exit"
+};
+int selectedIndex = 0;
+
+void renderMenu(SDL_Renderer* renderer, TTF_Font* font) {
+	renderTextBox(renderer);
+	SDL_Color white = { 255, 255, 255 };
+	SDL_Color red = { 179, 0, 0 };
+
+	for (int i = 0; i < menuOptions.size(); i++) {
+		SDL_Color color = (i == selectedIndex) ? red : white;
+		renderText(renderer, font, menuOptions[i], 60, 410 + (i * 40), color);
+	}
+}
+
+void handleMenuInput(SDL_Event event) {
+	if (event.type == SDL_KEYDOWN) {
+		if (event.key.keysym.sym == SDLK_UP) {
+			selectedIndex = (selectedIndex > 0) ? selectedIndex - 1 : menuOptions.size() - 1;
+		}
+		else if (event.key.keysym.sym == SDLK_DOWN) {
+			selectedIndex = (selectedIndex < menuOptions.size() - 1) ? selectedIndex + 1 : 0;
+		}
+		else if (event.key.keysym.sym == SDLK_z) {
+			// Perform action based on selectedIndex
+			if (selectedIndex == 0) {
+				// Start Game
+				gameState.inMenu = false;
+			}
+			else if (selectedIndex == 1) {
+				// Options
+				gameState.inMenu = false;
+			}
+			else if (selectedIndex == 2) {
+				// Exit
+				gameState.inMenu = false;
+			}
+		}
+	}
+}
+
+
+
+void renderMenuSideBySide(SDL_Renderer* renderer, TTF_Font* font) {
+	// Get screen dimensions
+	int screenWidth = SCREEN_WIDTH, screenHeight = SCREEN_HEIGHT;
+	SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+
+	// Render the text box at the bottom of the screen
+	renderTextBox(renderer);
+
+	// Calculate text rendering position and dynamic spacing
+	int boxWidth = screenWidth * 0.9;
+	int xOffset = screenWidth * 0.05 + 10;  // Start slightly inside the text box
+	int yOffset = screenHeight - 275;       // Place the text inside the box
+
+	int totalTextWidth = 0;
+	//int numOptions = menuOptions.size();
+	int numOptions = gameState.Text.size();
+
+	// Calculate total width of all the text
+	for (const auto& option : gameState.Text) {
+		//totalTextWidth += getTextWidth(font, option);
+		int textWidth = 0;
+		int textHeight = 0;
+		TTF_SizeText(font, option.c_str(), &textWidth, &textHeight);
+		totalTextWidth += textWidth;
+	}
+
+	// Calculate remaining space and distribute it as spacing between options
+	int remainingSpace = boxWidth - totalTextWidth;
+	int spacing = remainingSpace / (numOptions + 1);
+
+	// Render each option side by side with dynamic spacing
+	int currentX = xOffset + spacing;
+
+	SDL_Color white = { 255, 255, 255 };  // Normal text color
+	SDL_Color red = { 237, 28, 36 };   // Highlighted text color
+
+	for (int i = 0; i < numOptions; i++) {
+		SDL_Color color = (i == selectedIndex) ? red : white;
+
+		renderText(renderer, font, gameState.Text[i], currentX, yOffset, color);
+
+		//currentX += getTextWidth(font, menuOptions[i]) + spacing;
+		int textWidth = 0;
+		int textHeight = 0;
+		TTF_SizeText(font, gameState.Text[i].c_str(), &textWidth, &textHeight);
+		currentX += textWidth + spacing;
+	}
+}
+
+void handleMenuInputSideBySide(SDL_Event event) {
+	if (event.type == SDL_KEYDOWN) {
+		if (event.key.keysym.sym == SDLK_LEFT) {
+			// Move left, wrapping around if necessary
+			selectedIndex = (selectedIndex > 0) ? selectedIndex - 1 : menuOptions.size() - 1;
+		}
+		else if (event.key.keysym.sym == SDLK_RIGHT) {
+			// Move right, wrapping around if necessary
+			selectedIndex = (selectedIndex < menuOptions.size() - 1) ? selectedIndex + 1 : 0;
+		}
+		else if (event.key.keysym.sym == SDLK_z) {
+			// Perform action based on selected option
+			/*
+			if (selectedIndex == 0) {
+				// Start Game
+				gameState.inMenu = false;
+			}
+			else if (selectedIndex == 1) {
+				// Options
+				gameState.inMenu = false;
+			}
+			else if (selectedIndex == 2) {
+				// Exit
+				gameState.inMenu = false;
+			}
+			*/
+			gameState.selectionIndex = selectedIndex + 1; // 0 is not selected anything yet!
+			gameState.inMenu = false;
+			if (gameState.callbackNPC) {
+				gameState.callbackNPC->handleChoice(gameState.selectionIndex); // tell the NPC who triggered a choice the selection.
+			}
+			
+		}
+	}
+}
+
 
 
 
@@ -564,10 +798,11 @@ int main(int argc, char* args[])
 			 
 			GameStart();
 			
-
-			Player player(playerinitpos);
-			
 			std::vector<std::shared_ptr<Entity>> Entities;
+			
+			Player player(playerinitpos, Entities);
+			
+			
 
 			/*
 			    Parent parent;
@@ -584,7 +819,7 @@ int main(int argc, char* args[])
 
 			
 			// Load first entity:
-			Vector2f entityPos(950, 950);
+			Vector2f entityPos(950, 390);
 			SDL_Rect entityRect = { 0,0,128,128 }; // for sprite
 			LTexture entityTex; // init with a texture
 			if (!entityTex.loadFromFile("data/box_fuck_u_ari_1.png")) { // data/fuckyoubox.png
@@ -608,6 +843,31 @@ int main(int argc, char* args[])
 			Entities.push_back(entity); // vector of all entities to render.
 
 			collisionBoxes.push_back(&entity->m_Collider);
+
+
+			Vector2f signpos(1000, 1000);
+			SDL_Rect signRect = { 0,0,128,128 };
+			LTexture signTexture;
+			if (!signTexture.loadFromFile("data/hintsign.png")) {
+				printf("Faileds to load sign entity!");
+			}
+			clips.clear();
+			clips.push_back({ 0,0,128,128 });
+			SDL_Rect signCB = { signpos.x + 25, signpos.y + 25, signRect.w - 45, signRect.h - 55 };
+			//auto entity = std::make_shared<Entity>(entityPos, entity_cb, entityRect, &entityTex, 2, clips, 44);
+			auto signentity = std::make_shared<Entity>(signpos, signCB, signRect, &signTexture, 1, clips, 2);
+			Entities.push_back(signentity);
+
+			//SIGNNPC signnpc({"Hello, I'm a fucking sign"}, signentity);
+			
+			//std::shared_ptr<NPC> signchild = std::make_shared<NPC>(signentity, { "Hello, I'm a fucking sign" });
+			//signentity->setNPC(signchild);
+			std::vector<std::string> dialogue = { "Hello, I'm a fucking sign" };
+			std::shared_ptr<NPC> signnpc = std::make_shared<SIGNNPC>(dialogue, signentity);
+			signentity->setNPC(signnpc);
+
+			signentity->m_NPC->m_Dialogue = { "Hello, I'm a sign!" };
+
 
 
 
@@ -652,6 +912,8 @@ int main(int argc, char* args[])
 			  \/_____/   \/_____/   \/_____/   \/_/   
 			
 			*/
+			
+
 			while (!quit)
 			{
 				//Start cap timer
@@ -671,6 +933,63 @@ int main(int argc, char* args[])
 					if (e.key.keysym.scancode == SDL_SCANCODE_F11) {
 						LoadSave();
 					}
+
+					if (e.key.keysym.scancode == SDL_SCANCODE_F4) {
+						/*
+						gameState.Text = {
+							"Hello, welcome to the game.",
+							"We hope you enjoy your journey.",
+							"Press Z to continue."
+							};
+						*/
+						gameState.Text = {
+							// 100 char limit per line
+							"AAAA BBBB CCCC DDDD EEEE FFFF GGGG HHHH IIII JJJJ KKKK LLLL MMMM NNNN OOOO PPPP QQQQ RRRR SSSS TTTT UUUU VVVV WWWW XXXX"
+						};
+
+						gameState.textAvailable = true;
+					}
+					if (e.key.keysym.scancode == SDL_SCANCODE_F5) {
+						gameState.Text = { "Start", "Options", "Quit" };
+						gameState.inMenu = true;
+					}
+
+
+					if (gameState.textAvailable) {
+						handleDialogue(e);
+					}
+					else if (gameState.inMenu) {
+						//handleMenuInput(e);
+						//handleMenuInputSideBySide(e);
+						MS_handleMenuInput(e);
+
+					}
+
+
+					if (e.key.keysym.scancode == SDL_SCANCODE_X) {
+						// opejn a menu
+						/*
+						gameState.Text = { "Talk", "Items" };
+						gameState.inMenu = true;
+						gameState.OpenedMenu = true;
+						*/
+						gameState.inMenu = true;
+						MS_renderMenu(gRenderer, gFont);
+						//SDL_RenderPresent(gRenderer);
+					}
+
+					/*
+					if (gameState.textAvailable) {
+						handleDialogue(e);
+					}
+					else if (gameState.inMenu) {
+						//handleMenuInput(e);
+						//handleMenuInputSideBySide(e);
+						MS_handleMenuInput(e);
+					
+					}*/
+
+
 					// Come back to this in fight
 					player.handleEvent(e);
 
@@ -698,7 +1017,18 @@ int main(int argc, char* args[])
 
 
 				//if (!InFight)
-				if (!gameState.inFight)
+				if (gameState.textAvailable) {
+					renderDialogue(gRenderer, gFont);
+				}
+				else if (gameState.OpenedMenu) {
+					renderMenuSideBySide(gRenderer, gFont);
+
+				}
+				else if (gameState.inMenu) {
+					//renderMenuSideBySide(gRenderer, gFont);
+					MS_renderMenu(gRenderer, gFont);
+				}
+				else if (!gameState.inFight)
 					// OverWorld Rendering 
 				{
 
@@ -716,7 +1046,7 @@ int main(int argc, char* args[])
 
 					// Pass the filtered collision boxes to the player
 					//player.Update(surroundingBoxes, deltaTime);
-					
+
 					player.Update(collisionBoxes, deltaTime);
 
 					//SDL_RenderDrawRect(gRenderer, &player.GetColliderAddress());
@@ -757,14 +1087,14 @@ int main(int argc, char* args[])
 					//Render wall
 					//SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
 					//SDL_RenderDrawRect(gRenderer, &wall);
-					
-					
-					
+
+
+
 					//SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
 					//renderCollisionBoxes(gRenderer, camera);
 					//SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-					
-					
+
+
 					for (auto& box : Entities) { // const?
 						// Calculate the intersection between the box and the camera
 						SDL_Rect intersectedBox;
@@ -783,19 +1113,20 @@ int main(int argc, char* args[])
 					}
 
 					renderCollisionBoxes(gRenderer, camera);
-					
+					//SDL_RenderDrawRect(gRenderer, &player.m_CheckBox);
+
 					//player.render(camera.x, camera.y); // moved so player renders above everything else. might have to come back to this.
-					
-					
-					
+
+
+
 					//collisionBoxes.push_back(player.GetCollider());
 					//SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
 					// Update every entity.
 					for (int i = 0; i < Entities.size(); i++) {
 						Entities.at(i)->Update(deltaTime, camera, player.GetCollider());
-						
+
 						//SDL_RenderDrawRect(gRenderer, &Entities.at(i).m_FOV);
-						
+
 						// render collision boxes
 						SDL_Rect intersectedBox;
 						if (SDL_IntersectRect(&Entities.at(i)->m_Collider, &camera, &intersectedBox)) {
@@ -812,19 +1143,34 @@ int main(int argc, char* args[])
 							SDL_RenderDrawRect(gRenderer, &renderBox);
 
 
-							
+
 						}
 
 					}
-					//SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-					
 
-					
+					{
+						// RENDER BASIC CHECK BOX
+						SDL_Rect checkb = player.m_CheckBox;
+						SDL_Rect rendercheckBox = {
+							checkb.x - camera.x,
+							checkb.y - camera.y,
+							checkb.w,
+							checkb.h
+						};
+
+						// Draw the box
+						SDL_RenderDrawRect(gRenderer, &rendercheckBox);
+					}
+
+					//SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+
+
+
 					//Cycle animation frames
 					++countedFrames;
 					//Go to next animation frame for player
 					++frame;
-					
+
 					if (frame / 20 >= WALKING_ANIMATION_FRAMES)
 					{
 						frame = 0;
@@ -834,6 +1180,14 @@ int main(int argc, char* args[])
 					// END OF OVERWORLD RENDERING 
 					player.render(camera.x, camera.y); // last thing to be rendered is the player so it's above everything else.
 					SDL_RenderDrawRect(gRenderer, &renderBox); // render players collision box above player.
+
+
+					//SDL_RenderClear(renderer);
+
+
+
+					//SDL_RenderPresent(renderer);
+
 				}
 				else { // IN FIGHT 
 					//Clear screen

@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include "Source/math.hpp"
 #include <vector>
+#include <Source/Entity.hpp>
 
 
 enum class State {
@@ -22,6 +23,21 @@ enum class Direction {
 
 class Player {
 public:
+
+	Player(Vector2f initPos, std::vector<std::shared_ptr<Entity>>& entityVec); // init
+	//void Update(const std::vector<SDL_Rect>& walls, float deltaTime);
+	void Update(std::vector<SDL_Rect*>& walls, float deltaTime);
+
+	void handleEvent(SDL_Event& e);
+	//void move(const std::vector<SDL_Rect>& walls, float deltaTime);
+	//void move(std::vector<SDL_Rect> grid[40][40]);
+	void render(int camX, int camY);
+	int GetPosX();
+	int GetPosY();
+	SDL_Rect GetCollider();
+	SDL_Rect& GetColliderAddress();
+
+
 	State currentState;
 	Direction currentDirection;
 	int currentFrame;
@@ -35,25 +51,19 @@ public:
 	static const int MaxVelocity = 300;
 	//static const int MaxAcceleration = 300;
 
-	Player(Vector2f initPos); // init
-	//void Update(const std::vector<SDL_Rect>& walls, float deltaTime);
-	void Update(std::vector<SDL_Rect*>& walls, float deltaTime);
-
-	void handleEvent(SDL_Event& e);
-	//void move(const std::vector<SDL_Rect>& walls, float deltaTime);
-	//void move(std::vector<SDL_Rect> grid[40][40]);
-	void render(int camX, int camY);
-	int GetPosX();
-	int GetPosY();
-	SDL_Rect GetCollider();
-	SDL_Rect& GetColliderAddress();
+	std::vector<std::shared_ptr<Entity>>& AllEntities;
+	SDL_Rect m_CheckBox;
 
 private:
+	
 	int m_PosX, m_PosY;
 	int m_VelX, m_VelY;
 	SDL_Rect m_Collider;
+	
 	LTexture SpriteSheet;
 	LTexture CurrentSprite;
+
+	bool menuOpened = false;
 
 	bool keyUpPressed = false;
 	bool keyDownPressed = false;
