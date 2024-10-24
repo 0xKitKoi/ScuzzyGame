@@ -919,6 +919,9 @@ int main(int argc, char* args[])
 				//Start cap timer
 				capTimer.start();
 
+
+
+
 				//Handle events on queue
 				while (SDL_PollEvent(&e) != 0)
 				{
@@ -958,22 +961,24 @@ int main(int argc, char* args[])
 					if (gameState.textAvailable) {
 						handleDialogue(e);
 					}
-					else if (gameState.inMenu) {
+
+					if (gameState.inMenu) {
 						//handleMenuInput(e);
 						//handleMenuInputSideBySide(e);
+						MS_renderMenu(gRenderer, gFont);
 						MS_handleMenuInput(e);
 
 					}
-
-
-					if (e.key.keysym.scancode == SDL_SCANCODE_X) {
+					if (e.key.keysym.scancode == SDL_SCANCODE_C) {
 						// opejn a menu
 						/*
 						gameState.Text = { "Talk", "Items" };
 						gameState.inMenu = true;
 						gameState.OpenedMenu = true;
 						*/
+
 						gameState.inMenu = true;
+						
 						MS_renderMenu(gRenderer, gFont);
 						//SDL_RenderPresent(gRenderer);
 					}
@@ -1024,10 +1029,12 @@ int main(int argc, char* args[])
 					renderMenuSideBySide(gRenderer, gFont);
 
 				}
+				
 				else if (gameState.inMenu) {
 					//renderMenuSideBySide(gRenderer, gFont);
 					MS_renderMenu(gRenderer, gFont);
 				}
+				
 				else if (!gameState.inFight)
 					// OverWorld Rendering 
 				{

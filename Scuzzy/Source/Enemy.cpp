@@ -48,6 +48,9 @@ Vector2f Enemy::moveEntity(Vector2f pos, float deltaTime, Vector2f target) {
 
 
 void Enemy::Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
+
+    /// TODO fix enemy collisions !!!!!!!
+
 	// move to the player if player is in POV box. once touch player, set game state to fight mode.
 	if (SDL_HasIntersection(&m_Entity->m_FOV, &PlayerPos)) {
 			//printf("Enemy can see the player!\n");
