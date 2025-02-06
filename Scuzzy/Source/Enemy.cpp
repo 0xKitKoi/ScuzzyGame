@@ -66,6 +66,7 @@ void Enemy::Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
             if (SDL_HasIntersection(&m_Entity->m_Collider, &PlayerPos)) {
                 gameState.inFight = true;
                 gameState.enemyID = m_EnemyID;
+                gameState.enemy = this;
             }
 	}
     else {

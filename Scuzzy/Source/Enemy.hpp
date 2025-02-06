@@ -13,6 +13,13 @@ class Entity;
 class Enemy {
 public:
 	//Enemy(Entity& p);
+
+	/// <summary>
+	/// Enemys derive from Entity. Link the two together like so:
+	/// std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity); // make an enemy object initialized with the entity object
+	///	entity->setEnemy(child); // bind the new enemy object to the entity
+	/// </summary>
+	/// <param name="entity">Entity Object.</param>
 	Enemy(std::shared_ptr<Entity> entity) : m_Entity(entity), m_EnemyID(entity->m_EntityID) {}
 	void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos);
 	void move(Vector2f targetPos);
@@ -21,6 +28,9 @@ public:
 	//Entity &m_Entity;
 	std::shared_ptr<Entity> m_Entity;
 	int m_EnemyID = 0;
+	std::string m_EnemyFightSprite = "data/Error.png";
+
+	
 };
 
 #endif // ENEMY_H

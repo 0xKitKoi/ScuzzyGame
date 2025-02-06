@@ -163,11 +163,14 @@
     <Image Include="data\box_fuck_u_ari_1.png" />
     <Image Include="data\box_fuck_u_ari_fiight.png" />
     <Image Include="data\concept art.bmp" />
+    <Image Include="data\Error.png" />
     <Image Include="data\fuckyoubox.png" />
+    <Image Include="data\Death.png" />
     <Image Include="data\noss cartman 128.png" />
     <Image Include="data\noss cartman 200.png" />
     <Image Include="data\noss cartman 32.png" />
     <Image Include="data\playerspritesheet.png" />
+    <Image Include="data\startingalley.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

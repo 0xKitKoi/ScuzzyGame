@@ -11,10 +11,19 @@ extern SDL_Renderer* gRenderer;
 LTexture::LTexture()
 {
 	//Initialize
-	mTexture = NULL;
+	mTexture = nullptr;
 	mWidth = 0;
 	mHeight = 0;
 }
+
+//LTexture::LTexture(std::string texturepath, int w, int h)
+//{
+//	//Initialize
+//	loadFromFile(texturepath);
+//	//mTexture = NULL;
+//	mWidth = w;
+//	mHeight = h;
+//}
 
 LTexture::~LTexture()
 {

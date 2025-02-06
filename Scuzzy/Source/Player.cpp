@@ -12,6 +12,8 @@ const int SCREEN_WIDTH = 1920;
 const int SCREEN_HEIGHT = 1080;
 const int LEVEL_WIDTH = 4000;
 const int LEVEL_HEIGHT = 4000;
+extern int levelWidth;
+extern int levelHeight;
 
 const int GRID_CELL_SIZE = 100;
 const int GRID_WIDTH = LEVEL_WIDTH / GRID_CELL_SIZE;
@@ -318,6 +320,23 @@ Player::Player(Vector2f initPos, std::vector<std::shared_ptr<Entity>>& entityVec
 /// <param name="deltaTime">Scales movement and animations based on time between frames.</param>
 //void Player::Update(const std::vector<SDL_Rect>& walls, float deltaTime) {
 void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
+	//if (gameState.inMenu) {
+	//	m_VelX = 0;
+	//	m_VelY = 0;
+	//	currentState = State::Idle;
+	//	return;
+	//}
+	if (gameState.inMenu) {
+		m_VelX = 0;
+		m_VelY = 0;
+		currentState = State::Idle;
+		keyDownPressed = false;
+		keyUpPressed = false;
+		keyLeftPressed = false;
+		keyRightPressed = false;
+		return;
+	}
+
 	// Advance animation frames
 	lastFrameTime += deltaTime * 1000.0f;
 	if (lastFrameTime >= frameDuration) {
@@ -405,11 +424,11 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	}
 
 	// Boundary checks (keep player within level bounds)
-	if (m_PosX < 0 || m_PosX + SpriteWidth > LEVEL_WIDTH) {
+	if (m_PosX < 0 || m_PosX + SpriteWidth > levelWidth) { // LEVEL_WIDTH
 		m_PosX = originalX; // Revert position if out of bounds
 	}
 
-	if (m_PosY < 0 || m_PosY + SpriteHeight > LEVEL_HEIGHT) {
+	if (m_PosY < 0 || m_PosY + SpriteHeight > levelHeight) { // LEVEL_HEIGHT
 		m_PosY = originalY; // Revert position if out of bounds
 	}
 
@@ -433,30 +452,17 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 /// <param name="e">SDL checks for key presses. We check for the buttons.</param>
 void Player::handleEvent(SDL_Event& e) {
 	if (!gameState.inFight) {
-		// If a key was pressed
-		if (menuOpened) {
-			
-			bool someone = false;
-			if (gameState.selectionIndex == 1) {
-				// player has attempted to talk to someone!
-				for (const auto& entity : AllEntities) {
-					if (SDL_HasIntersection(&m_CheckBox, &entity->m_Collider)) { // &entity->m_Collider
-						printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
-						printf(std::to_string(entity->m_EntityID).c_str());
-						someone = true;
-						if (entity->m_NPC) {
-							entity->m_NPC->m_checked = true;
-						}
-					}
-				}
-				if (!someone) {
-					gameState.Text.clear();
-					gameState.Text[0] = "Who are you talking to..?";
-					gameState.textAvailable = true;
-				}
-				menuOpened = false;
-			}
+		if (gameState.inMenu) {
+			m_VelX = 0;
+			m_VelY = 0;
+			currentState = State::Idle;
+			keyDownPressed = false;
+			keyUpPressed = false;
+			keyLeftPressed = false;
+			keyRightPressed = false;
+			return;
 		}
+
 
 
 		if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {
@@ -486,15 +492,6 @@ void Player::handleEvent(SDL_Event& e) {
 				currentState = State::Walking;
 				currentDirection = Direction::Right;
 				break;
-
-				/* // this did not do well. moving this to the main
-				case SDLK_x:
-					// player pressed x, open the menu.
-					gameState.Text = {"Talk", "Items"};
-					gameState.inMenu = true;
-					menuOpened = true;
-					// TODO find a way to get the selected index of the options back here from the game manager or cut the middle man.
-				*/
 			}
 		}
 
@@ -657,7 +654,7 @@ void Player::render(int camX, int camY) {
 		srcRect = RightWalking[0];
 	}
 
-	else if (currentState == State::Walking && currentDirection == Direction::Down) {
+	if (currentState == State::Walking && currentDirection == Direction::Down) {
 		if (currentFrame > DownWalking.size()) {
 			//srcRect = idleDown[idleDown.size()];
 			srcRect = DownWalking[DownWalking.size()];

@@ -12,6 +12,7 @@ class LTexture
 public:
 	//Initializes variables
 	LTexture();
+	//LTexture(std::string texturepath, int w, int h);
 
 	//Deallocates memory
 	~LTexture();

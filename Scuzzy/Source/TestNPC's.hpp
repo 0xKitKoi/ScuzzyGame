@@ -27,6 +27,7 @@ public:
         if (m_checked) {
             gameState.Text = m_Dialogue;
             gameState.textAvailable = true;
+            m_checked = false;
         }
     }
 

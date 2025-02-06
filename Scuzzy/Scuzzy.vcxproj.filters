@@ -100,5 +100,14 @@
     <Image Include="data\box_fuck_u_ari_fiight.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="data\startingalley.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="data\Death.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="data\Error.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

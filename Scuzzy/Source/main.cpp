@@ -18,6 +18,7 @@
 #include "Source/MenuSystem.hpp"
 
 #include "Source/TestNPC's.hpp"
+#include <unordered_map>
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 1920;
@@ -25,7 +26,9 @@ const int SCREEN_HEIGHT = 1080;
 const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 const int LEVEL_WIDTH = 4000;
+int levelWidth = 4000; // TODO: make the grid array a vector..? fix the math or abandon it?
 const int LEVEL_HEIGHT = 4000;
+int levelHeight = 4000;
 
 //Starts up SDL and creates window
 bool init();
@@ -53,7 +56,7 @@ TTF_Font* gFont = NULL;
 //Rendered TEXT texture
 LTexture gTextTexture;
 
-std::vector<std::shared_ptr<Entity>> Entities;
+//std::vector<std::shared_ptr<Entity>> Entities;
 Vector2f playerinitpos;
 SDL_Rect CheckBox;
 
@@ -92,6 +95,23 @@ float lerp(float x, float y, float t) {
 
 
 GameState gameState;
+std::vector<std::shared_ptr<Entity>> Entities;
+std::vector<SDL_Rect> clips; // sprite sheet mapings TODO: Doesnt need to be global, i was just lazy
+
+std::unordered_map<std::string, std::shared_ptr<LTexture>> textureCache; 
+// unfortunately needed because the pointer to my sprites were getting deleted when the LTexture went out of scope.
+// getTexture("player.png") returns a pointer to the LTexture object, which is a wrapper around SDL_Texture*.
+std::shared_ptr<LTexture> getTexture(const std::string& filename) {
+	if (textureCache.find(filename) == textureCache.end()) { // If not found, make a LTexture object.
+		auto texture = std::make_shared<LTexture>();
+		if (!texture->loadFromFile(filename)) {
+			std::cerr << "Failed to load texture: " << filename << std::endl;
+			return nullptr;
+		}
+		textureCache[filename] = texture;
+	}
+	return textureCache[filename];
+}
 
 struct saveData {
 	Vector2f pos;
@@ -230,6 +250,48 @@ void GameStart() {
 	gameState.Inventory = SaveData.items;
 	gameState.kills = SaveData.kills;
 	gameState.money = SaveData.money;
+
+	// get room from save file. if none, default. 
+	// load room, and based on room load NPCs & Enemies. Plot Flags Later.
+	if (gameState.room == "test") {
+
+		// Load first entity , Enemy !
+		Vector2f entityPos(950, 390);
+		SDL_Rect entityRect = { 0,0,128,128 };
+		SDL_Rect tmp = { 0,0,128,128 };
+		clips.push_back(tmp);
+		tmp = { 128,0,128,128 };
+		clips.push_back(tmp);
+		tmp = { 128 * 2,0,128,128 };
+		clips.push_back(tmp);
+		tmp = { 128 * 3,0,128,128 };
+		clips.push_back(tmp);
+		SDL_Rect entity_cb = { entityPos.x + 25, entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
+		auto entity = std::make_shared<Entity>(entityPos, entity_cb, entityRect, getTexture("data/box_fuck_u_ari_1.png"), 2, clips, 44);
+		// create the enemy and bind it to the entity
+		std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity); // make an enemy object initialized with the entity object
+		entity->setEnemy(child); // bind the new enemy object to the entity
+		Entities.push_back(entity); // vector of all entities to render.
+		collisionBoxes.push_back(&entity->m_Collider);
+
+
+		// first NPC! 
+		Vector2f signpos(1000, 1000);
+		SDL_Rect signRect = { 0,0,128,128 };
+		auto signTexture = getTexture("data/hintsign.png");
+		clips.clear();
+		clips.push_back({ 0,0,128,128 });
+		SDL_Rect signCB = { signpos.x + 25, signpos.y + 25, signRect.w - 45, signRect.h - 55 };
+		auto signentity = std::make_shared<Entity>(signpos, signCB, signRect, getTexture("data/hintsign.png"), 1, clips, 2);
+		Entities.push_back(signentity);
+		std::vector<std::string> dialogue = { "Hello, I'm a fucking sign" };
+		std::shared_ptr<NPC> signnpc = std::make_shared<SIGNNPC>(dialogue, signentity);
+		signentity->setNPC(signnpc);
+
+		collisionBoxes.push_back(&signentity->m_Collider);
+
+
+	}
 }
 
 
@@ -313,23 +375,33 @@ bool loadMedia()
 	int ls = LoadSave();
 	if (ls) {
 		if (SaveData.room == "test") {
-			if (!Map.loadFromFile("data/concept art.bmp"))
+			if (!Map.loadFromFile("data/concept art.bmp")) // "data/concept art.bmp" data/startingalley.png
 			{
 				printf("Failed to load sprite sheet texture!\n");
 				success = false;
 			}
 		}
 		if (SaveData.room == "Level1") {
-			if (!Map.loadFromFile("data/concept art.bmp"))
+			if (!Map.loadFromFile("data/fight convepts.png"))
 			{
 				printf("Failed to load sprite sheet texture!\n");
 				success = false;
 			}
 		}
+		if (SaveData.room == "Level2") {
+			if (!Map.loadFromFile("data/startingalley.png"))
+			{
+				printf("Failed to load sprite sheet texture!\n");
+				success = false;
+			}
+			SaveData.pos.x = 100;
+			SaveData.pos.y = 100;
+			SaveData.room = "Level2";
+		}
 	}
 	else {
 		// Couldn't load save data. Assume game is starting for first time.
-		if (!Map.loadFromFile("data/concept art.bmp"))
+		if (!Map.loadFromFile("data/Error.png"))
 		{
 			printf("Failed to load sprite sheet texture!\n");
 			success = false;
@@ -339,7 +411,8 @@ bool loadMedia()
 		SaveData.room = "test";
 	}
 
-
+	levelHeight = Map.getHeight();
+	levelWidth = Map.getWidth();
 	return success;
 }
 
@@ -582,11 +655,12 @@ void renderText(SDL_Renderer* renderer, TTF_Font* font, std::string text, int x,
 }
 
 //int dialogueIndex = 0;
+/*
 std::vector<std::string> dialogue = {
 	"Hello, welcome to the game.",
 	"We hope you enjoy your journey.",
 	"Press Z to continue."
-};
+};*/
 void handleDialogue(SDL_Event event) {
 	if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
 		if (gameState.textIndex < gameState.Text.size() - 1) {
@@ -619,6 +693,7 @@ void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) { // TDOD: implement
 		SDL_Color white = { 255, 255, 255 };  // Normal text color
 		renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, white);
 	}
+	
 }
 
 
@@ -756,9 +831,6 @@ void handleMenuInputSideBySide(SDL_Event event) {
 
 
 
-
-
-
 int main(int argc, char* args[])
 {
 	//Start up SDL and create window
@@ -773,7 +845,6 @@ int main(int argc, char* args[])
 		{
 			printf("Warning: Linear texture filtering not enabled!");
 		}
-		//Load media "C:\\Users\\kirby\\OneDrive\\Desktop\\project gradiant.png"
 		if (!loadMedia())
 		{
 			printf("Failed to load media!\n");
@@ -795,15 +866,12 @@ int main(int argc, char* args[])
 			fpsTimer.start();
 
 
-			 
 			GameStart();
 			
-			std::vector<std::shared_ptr<Entity>> Entities;
+			//std::vector<std::shared_ptr<Entity>> Entities; // made global because everything needs to see all entities for collision detection.
 			
 			Player player(playerinitpos, Entities);
 			
-			
-
 			/*
 			    Parent parent;
 
@@ -816,60 +884,6 @@ int main(int argc, char* args[])
 				// Call the child's function through the parent
 				parent.callChildFunction();
 			*/
-
-			
-			// Load first entity:
-			Vector2f entityPos(950, 390);
-			SDL_Rect entityRect = { 0,0,128,128 }; // for sprite
-			LTexture entityTex; // init with a texture
-			if (!entityTex.loadFromFile("data/box_fuck_u_ari_1.png")) { // data/fuckyoubox.png
-				printf("Faileds to load entoty!");
-			}
-			
-			std::vector<SDL_Rect> clips; // sprite sheet mapings
-			SDL_Rect tmp = { 0,0,128,128 };
-			clips.push_back(tmp);
-			tmp = { 128,0,128,128 };
-			clips.push_back(tmp);
-			SDL_Rect entity_cb = { entityPos.x + 25, entityPos.y + 25, entityRect.w-45, entityRect.h-55 };
-
-			//Entity entity(entityPos, entity_cb, entityRect, &entityTex, 2, clips); // creates the entity
-			// Create the entity object using a shared pointer
-			auto entity = std::make_shared<Entity>(entityPos, entity_cb, entityRect, &entityTex, 2, clips, 44);
-			// create the enemy and bind it to the entity
-			std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity); // make an enemy object initialized with the entity object
-			entity->setEnemy(child); // bind the new enemy object to the entity
-
-			Entities.push_back(entity); // vector of all entities to render.
-
-			collisionBoxes.push_back(&entity->m_Collider);
-
-
-			Vector2f signpos(1000, 1000);
-			SDL_Rect signRect = { 0,0,128,128 };
-			LTexture signTexture;
-			if (!signTexture.loadFromFile("data/hintsign.png")) {
-				printf("Faileds to load sign entity!");
-			}
-			clips.clear();
-			clips.push_back({ 0,0,128,128 });
-			SDL_Rect signCB = { signpos.x + 25, signpos.y + 25, signRect.w - 45, signRect.h - 55 };
-			//auto entity = std::make_shared<Entity>(entityPos, entity_cb, entityRect, &entityTex, 2, clips, 44);
-			auto signentity = std::make_shared<Entity>(signpos, signCB, signRect, &signTexture, 1, clips, 2);
-			Entities.push_back(signentity);
-
-			//SIGNNPC signnpc({"Hello, I'm a fucking sign"}, signentity);
-			
-			//std::shared_ptr<NPC> signchild = std::make_shared<NPC>(signentity, { "Hello, I'm a fucking sign" });
-			//signentity->setNPC(signchild);
-			std::vector<std::string> dialogue = { "Hello, I'm a fucking sign" };
-			std::shared_ptr<NPC> signnpc = std::make_shared<SIGNNPC>(dialogue, signentity);
-			signentity->setNPC(signnpc);
-
-			signentity->m_NPC->m_Dialogue = { "Hello, I'm a sign!" };
-
-
-
 
 
 
@@ -956,6 +970,20 @@ int main(int argc, char* args[])
 						gameState.Text = { "Start", "Options", "Quit" };
 						gameState.inMenu = true;
 					}
+					if (e.key.keysym.scancode == SDL_SCANCODE_C) {
+						// opejn a menu
+						/*
+						gameState.Text = { "Talk", "Items" };
+						gameState.inMenu = true;
+						gameState.OpenedMenu = true;
+						*/
+
+						gameState.inMenu = true;
+
+						MS_renderMenu(gRenderer, gFont);
+						//SDL_RenderPresent(gRenderer);
+					}
+
 
 
 					if (gameState.textAvailable) {
@@ -969,19 +997,19 @@ int main(int argc, char* args[])
 						MS_handleMenuInput(e);
 
 					}
-					if (e.key.keysym.scancode == SDL_SCANCODE_C) {
-						// opejn a menu
-						/*
-						gameState.Text = { "Talk", "Items" };
-						gameState.inMenu = true;
-						gameState.OpenedMenu = true;
-						*/
+					//if (e.key.keysym.scancode == SDL_SCANCODE_C) {
+					//	// opejn a menu
+					//	/*
+					//	gameState.Text = { "Talk", "Items" };
+					//	gameState.inMenu = true;
+					//	gameState.OpenedMenu = true;
+					//	*/
 
-						gameState.inMenu = true;
-						
-						MS_renderMenu(gRenderer, gFont);
-						//SDL_RenderPresent(gRenderer);
-					}
+					//	gameState.inMenu = true;
+					//	
+					//	MS_renderMenu(gRenderer, gFont);
+					//	//SDL_RenderPresent(gRenderer);
+					//}
 
 					/*
 					if (gameState.textAvailable) {
@@ -996,7 +1024,10 @@ int main(int argc, char* args[])
 
 
 					// Come back to this in fight
-					player.handleEvent(e);
+					else {
+						player.handleEvent(e);
+					}
+					
 
 				}
 
@@ -1022,22 +1053,40 @@ int main(int argc, char* args[])
 
 
 				//if (!InFight)
-				if (gameState.textAvailable) {
-					renderDialogue(gRenderer, gFont);
-				}
-				else if (gameState.OpenedMenu) {
-					renderMenuSideBySide(gRenderer, gFont);
+				//if (gameState.textAvailable) {
+				//	renderDialogue(gRenderer, gFont);
+				//}
+				//else if (gameState.OpenedMenu) {
+				//	renderMenuSideBySide(gRenderer, gFont);
 
-				}
+				//}
+				//
+				//else if (gameState.inMenu) {
+				//	//renderMenuSideBySide(gRenderer, gFont);
+				//	MS_renderMenu(gRenderer, gFont);
+				//}
+
+				//else if (gameState.checkFlag) {
+				//	bool someone = false;
+				//	for (const auto& entity : Entities) {
+				//		if (SDL_HasIntersection(&player.m_CheckBox, &entity->m_Collider)) { // &entity->m_Collider
+				//			printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
+				//			printf(std::to_string(entity->m_EntityID).c_str());
+				//			someone = true;
+				//			if (entity->m_NPC) {
+				//				entity->m_NPC->m_checked = true;
+				//			}
+				//		}
+				//	}
+				//	if (!someone) {
+				//		gameState.Text.clear();
+				//		gameState.Text.push_back("Who are you talking to..?");
+				//		gameState.textAvailable = true;
+				//	}
+				//	gameState.checkFlag = false;
+				//}
 				
-				else if (gameState.inMenu) {
-					//renderMenuSideBySide(gRenderer, gFont);
-					MS_renderMenu(gRenderer, gFont);
-				}
-				
-				else if (!gameState.inFight)
-					// OverWorld Rendering 
-				{
+				if (!gameState.inFight) {	// OverWorld Rendering 
 
 					//Clear screen
 					SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -1080,13 +1129,13 @@ int main(int argc, char* args[])
 					{
 						camera.y = 0;
 					}
-					if (camera.x > LEVEL_WIDTH - camera.w)
+					if (camera.x > levelWidth - camera.w) // LEVEL_WIDTH
 					{
-						camera.x = LEVEL_WIDTH - camera.w;
+						camera.x = levelWidth - camera.w;
 					}
-					if (camera.y > LEVEL_HEIGHT - camera.h)
+					if (camera.y > levelHeight - camera.h) // LEVEL_HEIGHT
 					{
-						camera.y = LEVEL_HEIGHT - camera.h;
+						camera.y = levelHeight - camera.h;
 					}
 
 					//player.Update(deltaTime);
@@ -1130,6 +1179,7 @@ int main(int argc, char* args[])
 					//SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
 					// Update every entity.
 					for (int i = 0; i < Entities.size(); i++) {
+						/*if (gameState.inMenu) { break; }*/
 						Entities.at(i)->Update(deltaTime, camera, player.GetCollider());
 
 						//SDL_RenderDrawRect(gRenderer, &Entities.at(i).m_FOV);
@@ -1206,19 +1256,59 @@ int main(int argc, char* args[])
 					gTextTexture.loadFromRenderedText(bruh, { 0xFF, 0xFF, 0xFF, 0xFF });
 					gTextTexture.render(0, 0);
 
+					// Get this from Enemy ID.
 					LTexture EnemySprite;
 					EnemySprite.loadFromFile("data/box_fuck_u_ari_1.png");
 					SDL_Rect rect = { 0,0,128,128 };
 					EnemySprite.render((SCREEN_WIDTH/2)-128, (SCREEN_HEIGHT/2)-128*2, &rect);
 
 
-					
 
-
-					
+					// Player gets first move. dialogue box with options. turn based. 
 				}
 
-				
+
+
+
+
+				if (gameState.textAvailable) {
+					renderDialogue(gRenderer, gFont);
+					player.currentState = State::Idle;
+				}
+				else if (gameState.OpenedMenu) {
+					renderMenuSideBySide(gRenderer, gFont);
+					player.currentState = State::Idle;
+
+				}
+				else if (gameState.inMenu) {
+					//renderMenuSideBySide(gRenderer, gFont);
+					MS_renderMenu(gRenderer, gFont);
+					player.currentState = State::Idle;
+				}
+
+				if (gameState.checkFlag) {
+					bool someone = false;
+					for (const auto& entity : Entities) {
+						if (SDL_HasIntersection(&player.m_CheckBox, &entity->m_Collider)) { // &entity->m_Collider
+							printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
+							printf(std::to_string(entity->m_EntityID).c_str());
+							someone = true;
+							if (entity->m_NPC) {
+								entity->m_NPC->m_checked = true;
+							}
+						}
+					}
+					if (!someone) {
+						gameState.Text.clear();
+						gameState.Text.push_back("Who are you talking to..?");
+						gameState.textAvailable = true;
+					}
+					gameState.checkFlag = false;
+				}
+
+
+
+
 				//Update screen
 				SDL_RenderPresent(gRenderer);
 

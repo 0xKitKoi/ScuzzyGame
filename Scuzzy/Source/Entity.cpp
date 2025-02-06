@@ -11,7 +11,7 @@ Entity::Entity(Vector2f p_pos, SDL_Texture* p_tex, int framecount)
 	:m_Pos(p_pos), m_Texture(p_tex)
 */
 
-Entity::Entity() : m_Enemy(nullptr) {}
+Entity::Entity() :m_Enemy(nullptr), m_NPC(nullptr), FRAME_COUNT(0), currentFrame({ 0,0,0,0 }), m_Collider({ 0,0,0,0 }), m_FOV({ 0,0,0,0 }), m_PosX(0), m_PosY(0) {}
 //m_Pos(p_pos)
 
 
@@ -24,8 +24,8 @@ Entity::Entity() : m_Enemy(nullptr) {}
 /// <param name="p_tex">Sprite Sheet texture. LTexture Object Abstracting away SDL2's raw texture handling. Entity::Update calls LTexture's render().</param>
 /// <param name="framecount">Number of frames in the animation.</param>
 /// <param name="Clips">Vector of Rects. This is a mapping of the sprite sheet.</param>
-Entity::Entity(Vector2f p_pos, SDL_Rect CollisionBox, SDL_Rect FrameRect, LTexture* p_tex, int framecount, std::vector<SDL_Rect> Clips, int EntityID)
-	:m_Texture(p_tex), currentFrame(FrameRect), m_Enemy(nullptr), m_NPC(nullptr), m_EntityID(EntityID)
+Entity::Entity(Vector2f p_pos, SDL_Rect CollisionBox, SDL_Rect FrameRect, std::shared_ptr<LTexture> p_tex, int framecount, std::vector<SDL_Rect> Clips, int EntityID)
+	: m_Texture(p_tex), currentFrame(FrameRect), m_Enemy(nullptr), m_NPC(nullptr), m_EntityID(EntityID)
 {
 	//currentFrame.x = 0;
 	//currentFrame.y = 0;
@@ -44,14 +44,14 @@ Entity::Entity(Vector2f p_pos, SDL_Rect CollisionBox, SDL_Rect FrameRect, LTextu
 	// This will hopefully let the entity detect the player around it.
 	//m_FOV = { -m_Collider.x * 2, -m_Collider.y * 2, m_Collider.x * 2, m_Collider.y * 2 };
 	m_FOV = { (int)((p_pos.x + CollisionBox.w / 2) - (128*3)/2), (int)(p_pos.y + CollisionBox.h / 2) - (128 * 3) / 2, (128 * 3), (128 * 3)};
-
+	//m_Texture = LTexture(p_tex, FrameRect.w, FrameRect.h);
 }
 
 Entity::~Entity() {
 	// The unique_ptr will automatically delete the child if it exists
 }
 
-LTexture* Entity::getTex() //SDL_Texture* Entity::getTex
+std::shared_ptr<LTexture> Entity::getTex() //SDL_Texture* Entity::getTex
 {
 	return m_Texture;
 }

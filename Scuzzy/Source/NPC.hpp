@@ -23,6 +23,7 @@ public:
 			gameState.Text = m_Dialogue;
 			gameState.textAvailable;
 			gameState.callbackNPC = this;
+			m_checked = false;
 		}
 	}
 	/*
