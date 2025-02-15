@@ -7,6 +7,8 @@
 #include <Source/Entity.hpp>
 #include <Source/NPC.hpp>
 
+#include "Source/FightSystem.hpp"
+
 //bool checkCollision(SDL_Rect a, SDL_Rect b);
 const int SCREEN_WIDTH = 1920;
 const int SCREEN_HEIGHT = 1080;
@@ -554,6 +556,10 @@ void Player::handleEvent(SDL_Event& e) {
 			I've decided to focus on NPC dialogue first. 
 		
 		*/
+
+		FS_HandleInput(gRenderer, gFont, e);
+
+
 
 		if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {
 			// Adjust the velocity and update direction/state

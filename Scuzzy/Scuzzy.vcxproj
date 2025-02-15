@@ -139,6 +139,7 @@
   <ItemGroup>
     <ClCompile Include="Source\Entity.cpp" />
     <ClCompile Include="Source\Enemy.cpp" />
+    <ClCompile Include="Source\FightSystem.cpp" />
     <ClCompile Include="Source\LTexture.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\MenuSystem.cpp" />
@@ -151,6 +152,7 @@
   <ItemGroup>
     <ClInclude Include="Source\Enemy.hpp" />
     <ClInclude Include="Source\Entity.hpp" />
+    <ClInclude Include="Source\FightSystem.hpp" />
     <ClInclude Include="Source\GameState.hpp" />
     <ClInclude Include="Source\LTexture.hpp" />
     <ClInclude Include="Source\Math.hpp" />

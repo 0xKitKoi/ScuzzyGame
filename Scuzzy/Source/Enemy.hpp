@@ -30,6 +30,9 @@ public:
 	int m_EnemyID = 0;
 	std::string m_EnemyFightSprite = "data/Error.png";
 
+	std::vector<std::string> m_EnemyDialogue;
+	int m_AttackDamage = 0;
+
 	
 };
 

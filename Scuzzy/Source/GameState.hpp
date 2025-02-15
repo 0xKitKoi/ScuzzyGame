@@ -13,12 +13,19 @@ struct GameState {
     std::string room;
     int money = 0;
     int kills = 0;
+    int HP = 10;
 
     // Flags
     bool OpenedMenu = false; // This is the player's ingame menu for items and talking.
     bool textAvailable = false;
     bool inMenu = false; // in a dialogue box with chioces
+
     bool inFight = false;
+    bool FightStarted = false;
+    bool TURN = false;
+    int turnCount = 0;
+    int Plot = 0;
+
     bool checkFlag = false;
 
     int selectionIndex = 0;

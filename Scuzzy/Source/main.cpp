@@ -16,6 +16,7 @@
 #include "Source/NPC.hpp"
 #include "Source/GameState.hpp"
 #include "Source/MenuSystem.hpp"
+#include "Source/FightSystem.hpp"
 
 #include "Source/TestNPC's.hpp"
 #include <unordered_map>
@@ -267,10 +268,12 @@ void GameStart() {
 		tmp = { 128 * 3,0,128,128 };
 		clips.push_back(tmp);
 		SDL_Rect entity_cb = { entityPos.x + 25, entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
+		std::vector<std::string> enemydialogue = { "The Box Full of \"Fuck You\" Appeared!", "The Box of fuck you said ... \"Fuck you\"", "You opened the box. There was \"fuck you\" inside." };
 		auto entity = std::make_shared<Entity>(entityPos, entity_cb, entityRect, getTexture("data/box_fuck_u_ari_1.png"), 2, clips, 44);
 		// create the enemy and bind it to the entity
 		std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity); // make an enemy object initialized with the entity object
 		entity->setEnemy(child); // bind the new enemy object to the entity
+		entity->m_Enemy->m_EnemyDialogue = enemydialogue;
 		Entities.push_back(entity); // vector of all entities to render.
 		collisionBoxes.push_back(&entity->m_Collider);
 
@@ -944,6 +947,9 @@ int main(int argc, char* args[])
 					{
 						quit = true;
 					}
+
+
+
 					if (e.key.keysym.scancode == SDL_SCANCODE_F10) {
 						SaveGame(player.GetPosX(), player.GetPosY());
 					}
@@ -997,33 +1003,13 @@ int main(int argc, char* args[])
 						MS_handleMenuInput(e);
 
 					}
-					//if (e.key.keysym.scancode == SDL_SCANCODE_C) {
-					//	// opejn a menu
-					//	/*
-					//	gameState.Text = { "Talk", "Items" };
-					//	gameState.inMenu = true;
-					//	gameState.OpenedMenu = true;
-					//	*/
 
-					//	gameState.inMenu = true;
-					//	
-					//	MS_renderMenu(gRenderer, gFont);
-					//	//SDL_RenderPresent(gRenderer);
-					//}
+					if (gameState.inFight) {
+						// handle fight input..?
+						FS_HandleInput(gRenderer, gFont, e);
+						//continue;
 
-					/*
-					if (gameState.textAvailable) {
-						handleDialogue(e);
 					}
-					else if (gameState.inMenu) {
-						//handleMenuInput(e);
-						//handleMenuInputSideBySide(e);
-						MS_handleMenuInput(e);
-					
-					}*/
-
-
-					// Come back to this in fight
 					else {
 						player.handleEvent(e);
 					}
@@ -1245,6 +1231,48 @@ int main(int argc, char* args[])
 
 					//SDL_RenderPresent(renderer);
 
+
+
+					if (gameState.textAvailable) {
+						renderDialogue(gRenderer, gFont);
+						player.currentState = State::Idle;
+					}
+					else if (gameState.OpenedMenu) {
+						renderMenuSideBySide(gRenderer, gFont);
+						player.currentState = State::Idle;
+
+					}
+					else if (gameState.inMenu) {
+						//renderMenuSideBySide(gRenderer, gFont);
+						MS_renderMenu(gRenderer, gFont);
+						player.currentState = State::Idle;
+					}
+
+					if (gameState.checkFlag) {
+						bool someone = false;
+						for (const auto& entity : Entities) {
+							if (SDL_HasIntersection(&player.m_CheckBox, &entity->m_Collider)) { // &entity->m_Collider
+								printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
+								printf(std::to_string(entity->m_EntityID).c_str());
+								someone = true;
+								if (entity->m_NPC) {
+									entity->m_NPC->m_checked = true;
+								}
+							}
+						}
+						if (!someone) {
+							gameState.Text.clear();
+							gameState.Text.push_back("Who are you talking to..?");
+							gameState.textAvailable = true;
+						}
+						gameState.checkFlag = false;
+					}
+
+
+
+					//Update screen
+					SDL_RenderPresent(gRenderer);
+
 				}
 				else { // IN FIGHT 
 					//Clear screen
@@ -1263,54 +1291,59 @@ int main(int argc, char* args[])
 					EnemySprite.render((SCREEN_WIDTH/2)-128, (SCREEN_HEIGHT/2)-128*2, &rect);
 
 
+					FS_HandleInput(gRenderer, gFont, e);
+					
 
 					// Player gets first move. dialogue box with options. turn based. 
+
+					//Update screen
+					SDL_RenderPresent(gRenderer);
 				}
 
 
 
 
 
-				if (gameState.textAvailable) {
-					renderDialogue(gRenderer, gFont);
-					player.currentState = State::Idle;
-				}
-				else if (gameState.OpenedMenu) {
-					renderMenuSideBySide(gRenderer, gFont);
-					player.currentState = State::Idle;
+				//if (gameState.textAvailable) {
+				//	renderDialogue(gRenderer, gFont);
+				//	player.currentState = State::Idle;
+				//}
+				//else if (gameState.OpenedMenu) {
+				//	renderMenuSideBySide(gRenderer, gFont);
+				//	player.currentState = State::Idle;
 
-				}
-				else if (gameState.inMenu) {
-					//renderMenuSideBySide(gRenderer, gFont);
-					MS_renderMenu(gRenderer, gFont);
-					player.currentState = State::Idle;
-				}
+				//}
+				//else if (gameState.inMenu) {
+				//	//renderMenuSideBySide(gRenderer, gFont);
+				//	MS_renderMenu(gRenderer, gFont);
+				//	player.currentState = State::Idle;
+				//}
 
-				if (gameState.checkFlag) {
-					bool someone = false;
-					for (const auto& entity : Entities) {
-						if (SDL_HasIntersection(&player.m_CheckBox, &entity->m_Collider)) { // &entity->m_Collider
-							printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
-							printf(std::to_string(entity->m_EntityID).c_str());
-							someone = true;
-							if (entity->m_NPC) {
-								entity->m_NPC->m_checked = true;
-							}
-						}
-					}
-					if (!someone) {
-						gameState.Text.clear();
-						gameState.Text.push_back("Who are you talking to..?");
-						gameState.textAvailable = true;
-					}
-					gameState.checkFlag = false;
-				}
-
-
+				//if (gameState.checkFlag) {
+				//	bool someone = false;
+				//	for (const auto& entity : Entities) {
+				//		if (SDL_HasIntersection(&player.m_CheckBox, &entity->m_Collider)) { // &entity->m_Collider
+				//			printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
+				//			printf(std::to_string(entity->m_EntityID).c_str());
+				//			someone = true;
+				//			if (entity->m_NPC) {
+				//				entity->m_NPC->m_checked = true;
+				//			}
+				//		}
+				//	}
+				//	if (!someone) {
+				//		gameState.Text.clear();
+				//		gameState.Text.push_back("Who are you talking to..?");
+				//		gameState.textAvailable = true;
+				//	}
+				//	gameState.checkFlag = false;
+				//}
 
 
-				//Update screen
-				SDL_RenderPresent(gRenderer);
+
+
+				////Update screen
+				//SDL_RenderPresent(gRenderer);
 
 				// shitty handmade vsync
 				//If frame finished early

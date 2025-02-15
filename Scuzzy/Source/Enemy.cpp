@@ -67,6 +67,7 @@ void Enemy::Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
                 gameState.inFight = true;
                 gameState.enemyID = m_EnemyID;
                 gameState.enemy = this;
+                gameState.FightStarted = true;
             }
 	}
     else {
