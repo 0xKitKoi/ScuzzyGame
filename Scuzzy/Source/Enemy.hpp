@@ -32,6 +32,7 @@ public:
 
 	std::vector<std::string> m_EnemyDialogue;
 	int m_AttackDamage = 0;
+	bool alive = true;
 
 	
 };

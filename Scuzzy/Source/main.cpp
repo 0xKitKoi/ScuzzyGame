@@ -272,6 +272,7 @@ void GameStart() {
 		auto entity = std::make_shared<Entity>(entityPos, entity_cb, entityRect, getTexture("data/box_fuck_u_ari_1.png"), 2, clips, 44);
 		// create the enemy and bind it to the entity
 		std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity); // make an enemy object initialized with the entity object
+		child->m_AttackDamage = 1;
 		entity->setEnemy(child); // bind the new enemy object to the entity
 		entity->m_Enemy->m_EnemyDialogue = enemydialogue;
 		Entities.push_back(entity); // vector of all entities to render.
@@ -1138,6 +1139,11 @@ int main(int argc, char* args[])
 
 
 					for (auto& box : Entities) { // const?
+						if (box->m_Enemy != NULL) {
+							if (!box->m_Enemy->alive) {
+								continue;
+							}
+						}
 						// Calculate the intersection between the box and the camera
 						SDL_Rect intersectedBox;
 						if (SDL_IntersectRect(&box->m_FOV, &camera, &intersectedBox)) {
@@ -1165,6 +1171,11 @@ int main(int argc, char* args[])
 					//SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
 					// Update every entity.
 					for (int i = 0; i < Entities.size(); i++) {
+						if (Entities[i]->m_Enemy != NULL) {
+							if (!Entities[i]->m_Enemy->alive) {
+								continue;
+							}
+						}
 						/*if (gameState.inMenu) { break; }*/
 						Entities.at(i)->Update(deltaTime, camera, player.GetCollider());
 

@@ -10,12 +10,19 @@ bool infightbutDialogue = false; // in a fight but the enemy is talking.
 std::string fightText = "oopsie whoopsie i did a fuckywucky";
 
 
-int chance(int n) {
-    static std::random_device rd;
-    static std::mt19937 gen(rd()); // Seed the random number generator once
-    std::uniform_int_distribution<int> dist(1, n); // Generate numbers from 1 to n
+//int chance(int n) {
+//    static std::random_device rd;
+//    static std::mt19937 gen(rd()); // Seed the random number generator once
+//    std::uniform_int_distribution<int> dist(1, n); // Generate numbers from 1 to n
+//
+//    return dist(gen);
+//}
 
-    return dist(gen);
+int chance(int n) {
+    // Seed the random number generator
+    // Providing a seed value
+    srand((unsigned)time(NULL));
+    return 1 + (rand() % n);
 }
 
 void FS_renderTextBox(SDL_Renderer* renderer) {
@@ -75,7 +82,6 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     if (gameState.FightStarted) {
         if (event.key.keysym.sym == SDLK_z) {
             gameState.FightStarted = false;
-
             gameState.Plot++;
             gameState.TURN = true;
         }
@@ -126,9 +132,9 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
 					case 0: // Fight
 						printf("Fight\n");
                         gameState.TURN = false;
-                        gameState.inFight = false;
-                        gameState.textAvailable = true;
-                        gameState.Text.push_back("You Won!");
+                        //gameState.inFight = false;
+                        //gameState.textAvailable = true;
+                        //gameState.Text.push_back("You Won!");
 
 						break;
 					case 1: // Actions
@@ -175,32 +181,49 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
             // this is a basic enemy type fight. Player will take some damage, or get dialogue.
             // FS_renderText(renderer, font, gameState.enemy->m_EnemyDialogue[gameState.Plot], { 255, 255, 255);
             int event = chance(5); // 50% chance to dodge or take damage
+            printf("Chance: %d", event);
             if (event == 1) {
-                // player takes damage
-                gameState.HP -= gameState.enemy->m_AttackDamage;
-                if (gameState.HP < 0) {
-                    {
-                        gameState.HP = 0; // impliment death ig
-                        printf("You died!\n");
+                // player dodges
+                printf("You dodged the attack!\n");
+                infightbutDialogue = true;
+                fightText = "You dodged the attack!";
+                //FS_renderText(renderer, font, "You dodged the attack!", { 255, 255, 255 });
 
-                    }
-                    printf("You took %d damage!\n", gameState.enemy->m_AttackDamage);
-                }
+               
             }
             else if (event == 3 || event == 4) {
                     // Diaogue time
                     //gameState.Text.push_back(gameState.enemy->m_EnemyDialogue[gameState.Plot]);
                     //FS_renderText(renderer, font, gameState.enemy->m_EnemyDialogue[gameState.Plot], { 255, 255, 255 });
                     infightbutDialogue = true;
-                    fightText = gameState.enemy->m_EnemyDialogue[ chance( gameState.enemy->m_EnemyDialogue.size() -1 ) ];
+                    if (gameState.enemy->m_EnemyDialogue.size() - 1 <= 0) {
+                        printf("Error on dialogue index. %d", (int)(gameState.enemy->m_EnemyDialogue.size() - 1));
+                    }
+                    else {
+                        fightText = gameState.enemy->m_EnemyDialogue[chance(gameState.enemy->m_EnemyDialogue.size() - 1)];
+                    }
+                    
                     //gameState.Plot++;
             }
             else {
-                    // player dodges
-                    printf("You dodged the attack!\n");
-                    infightbutDialogue = true;
-                    fightText = "You dodged the attack!";
-                    //FS_renderText(renderer, font, "You dodged the attack!", { 255, 255, 255 });
+                // player takes damage
+                gameState.HP -= gameState.enemy->m_AttackDamage;
+                if (gameState.HP <= 0) {
+                    {
+                        gameState.HP = 0; // impliment death ig
+                        printf("You died!\n");
+                        gameState.inFight = false;
+                        gameState.enemy->alive = false;
+
+                    }
+
+                }
+                printf("You took %d damage!\n", gameState.enemy->m_AttackDamage);
+                infightbutDialogue = true;
+
+                fightText = "You took ";
+                fightText.append(std::to_string(gameState.enemy->m_AttackDamage));
+                fightText.append(" damage!\n");
             }
         }
     }
