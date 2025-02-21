@@ -1173,6 +1173,15 @@ int main(int argc, char* args[])
 					for (int i = 0; i < Entities.size(); i++) {
 						if (Entities[i]->m_Enemy != NULL) {
 							if (!Entities[i]->m_Enemy->alive) {
+								
+								
+								for (int j = 0; j < collisionBoxes.size(); j++) {
+									if (collisionBoxes[j] == &Entities[i]->m_Collider) {
+										// remove the collision box from the list.
+										collisionBoxes.erase(collisionBoxes.begin() + j);
+									}
+								}
+								//Entities[i].~shared_ptr();
 								continue;
 							}
 						}

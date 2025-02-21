@@ -79,6 +79,13 @@ void FS_renderText(SDL_Renderer* renderer, TTF_Font* font, std::string text, SDL
 
 int selection = 0;
 void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
+	std::string HP = "HP: ";
+	HP += std::to_string(gameState.HP);
+	FS_renderText(renderer, font, HP, 200, 700, { 237, 28, 36 });
+	std::string enemyHP = "Enemy HP: ";
+	enemyHP += std::to_string(gameState.enemy->HP);
+	FS_renderText(renderer, font, enemyHP, 200, 50, { 237, 28, 36 });
+
     if (gameState.FightStarted) {
         if (event.key.keysym.sym == SDLK_z) {
             gameState.FightStarted = false;
@@ -132,18 +139,37 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
 					case 0: // Fight
 						printf("Fight\n");
                         gameState.TURN = false;
-                        //gameState.inFight = false;
-                        //gameState.textAvailable = true;
-                        //gameState.Text.push_back("You Won!");
+						if (gameState.enemy->HP <= 0) {
+							gameState.enemy->alive = false;
+							gameState.inFight = false;
+							gameState.TURN = false;
+							gameState.Text.push_back("You Won!");
+							gameState.textAvailable = true;
+						}
+						else {
+							gameState.enemy->HP -= 1;
+							gameState.TURN = false;
+							fightText = "You hit the ";
+							fightText.append("{ENEMY ID: ");
+							fightText.append( std::to_string(gameState.enemy->m_EnemyID ));
+                            fightText.append(" }\n");
+							infightbutDialogue = true;
+                            //FS_renderText(renderer, font, fightText, { 255, 255, 255 });
 
+						}
+						gameState.turnCount++;
 						break;
 					case 1: // Actions
 						printf("Actions\n");
                         gameState.TURN = false;
+                        // based on enemy ID, different options will be available. switch statement. 
+                        gameState.turnCount++;
 						break;
 					case 2: // Items
 						printf("Items\n");
+						// remake inventory GUI for fight system.
                         gameState.TURN = false;
+                        gameState.turnCount++;
 						break;
 				}
 			}
@@ -157,7 +183,9 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
                 if (event.key.keysym.sym == SDLK_z) {
                     infightbutDialogue = false;
                     gameState.Plot++;
-                    gameState.TURN = true;
+                    if (gameState.turnCount % 2 == 0) {
+						gameState.TURN = true;
+                    }
                     /*
                     if (gameState.Plot >= gameState.enemy->m_EnemyDialogue.size()) {
                         gameState.Plot = 0;
@@ -167,6 +195,7 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
                     */
                 }
             }
+            gameState.turnCount++;
             return;
         }
         // since its not the player's turn, time to decide the fight mechanic. Undertale style dodging? cavestory fight in an undertale style format?
@@ -191,7 +220,7 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
 
                
             }
-            else if (event == 3 || event == 4) {
+            else if (event == 4) {
                     // Diaogue time
                     //gameState.Text.push_back(gameState.enemy->m_EnemyDialogue[gameState.Plot]);
                     //FS_renderText(renderer, font, gameState.enemy->m_EnemyDialogue[gameState.Plot], { 255, 255, 255 });
@@ -227,4 +256,5 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
             }
         }
     }
+    gameState.turnCount++;
 }
