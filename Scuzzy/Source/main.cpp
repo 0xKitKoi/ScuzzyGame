@@ -19,7 +19,7 @@
 #include "Source/MenuSystem.hpp"
 #include "Source/FightSystem.hpp"
 
-#include "Source/TestNPC's.hpp"
+#include "Source/TestNPC.cpp"
 #include <unordered_map>
 
 //Screen dimension constants
@@ -285,6 +285,23 @@ void GameStart() {
 		Entities.push_back(entity); // vector of all entities to render.
 		collisionBoxes.push_back(&entity->m_Collider);
 
+
+		// DOOR TEST
+		clips.clear();
+		Vector2f doorPos(400, 300);
+		entityRect = { 0,0,128,128 };
+		tmp = { 0,0,128,128 };
+		clips.push_back(tmp);
+		tmp = { 128,0,128,128 };
+		clips.push_back(tmp);
+		entity_cb = { (int)entityPos.x + 25, (int)entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
+		auto Doorentity = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 44);
+		Entities.push_back(Doorentity); // vector of all entities to render.
+		Vector2f outpos(960, 960);
+		std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity, "Level2", outpos);
+		doornpc->m_Entity = Doorentity;
+		Doorentity->setNPC(doornpc);
+		collisionBoxes.push_back(&Doorentity->m_Collider);
 
 		// first NPC! 
 		Vector2f signpos(1000, 1000);
@@ -1102,8 +1119,13 @@ int main(int argc, char* args[])
 					SDL_RenderClear(gRenderer);
 					SDL_SetRenderDrawColor(gRenderer, 0, 0, 20, 0xFF);
 					SDL_RenderClear(gRenderer);
-					int offsetX = (windowWidth - levelWidth) / 2;
-					int offsetY = (windowHeight - levelHeight) / 2;
+					int offsetX = 0, offsetY = 0;
+					if (windowHeight > levelHeight) {
+						offsetX = (windowWidth - levelWidth) / 2;
+					}
+					if (windowWidth > levelWidth) {
+						offsetY = (windowHeight - levelHeight) / 2;
+					}
 
 					Map.render(offsetX, offsetY, &camera);
 

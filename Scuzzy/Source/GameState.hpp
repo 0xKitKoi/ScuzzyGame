@@ -32,6 +32,7 @@ struct GameState {
 
     // Flags
 	FightState fightState;
+	bool LoadingScreen = false; // Loading screen for room transitions
     bool OpenedMenu = false; // This is the player's ingame menu for items and talking.
     bool textAvailable = false;
     bool inMenu = false; // in a dialogue box with chioces

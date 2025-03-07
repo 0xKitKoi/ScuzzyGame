@@ -2,6 +2,23 @@
 #include "Source/NPC.hpp"
 #include <vector>
 
+class DoorNPC : public NPC {
+public:
+    DoorNPC(std::shared_ptr<Entity> entity, std::string room, Vector2f Location) : NPC(entity, gameState.Text) { // needs a vector to shutup
+        m_Location = Location;
+        m_room = room;
+    }
+    void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) override {
+        if (m_checked) {
+            gameState.room = m_room;
+			gameState.LoadingScreen = true;
+            gameState.textAvailable;
+            gameState.callbackNPC = this;
+            m_checked = false;
+        }
+    }
+};
+
 class VillagerNPC : public NPC {
 public:
     VillagerNPC(const std::vector<std::string>& dialogue, std::shared_ptr<Entity> entity) : NPC(entity, dialogue) {}

@@ -39,7 +39,7 @@
     <ClCompile Include="Source\NPC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\TestNPC%27s.hpp">
+    <ClCompile Include="Source\TestNPC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\MenuSystem.cpp">

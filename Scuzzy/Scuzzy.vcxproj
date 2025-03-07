@@ -145,7 +145,7 @@
     <ClCompile Include="Source\MenuSystem.cpp" />
     <ClCompile Include="Source\NPC.cpp" />
     <ClCompile Include="Source\Player.cpp" />
-    <ClCompile Include="Source\TestNPC%27s.hpp" />
+    <ClCompile Include="Source\TestNPC.cpp" />
     <ClCompile Include="Source\TextBox.cpp" />
     <ClCompile Include="Source\Timer.cpp" />
   </ItemGroup>
