@@ -8,8 +8,8 @@ Currently in early alpha stages. I work on this on and off between work and coll
 
 ## Proof of Concept
 ![In Game Screenshot](https://github.com/0xKitKoi/ScuzzyGame/blob/master/Scuzzy/data/POC.gif)
-
-
+## Proof of Concept Download
+![Download](https://scuzzy.space/Release.zip)
 ## Roadmap
 
 - Level changes
