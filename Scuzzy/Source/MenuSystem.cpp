@@ -2,6 +2,7 @@
 
 #include "Source/MenuSystem.hpp"
 #include "Source/GameState.hpp"
+#include "Source/Enums.hpp"
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include < stdio.h >

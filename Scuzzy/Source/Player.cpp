@@ -328,7 +328,7 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	//	currentState = State::Idle;
 	//	return;
 	//}
-	if (gameState.inMenu) {
+	if (gameState.inMenu || gameState.inFight || gameState.wonFight) {
 		m_VelX = 0;
 		m_VelY = 0;
 		currentState = State::Idle;
@@ -336,6 +336,7 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 		keyUpPressed = false;
 		keyLeftPressed = false;
 		keyRightPressed = false;
+		gameState.wonFight = false;
 		return;
 	}
 
@@ -453,6 +454,16 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 /// </summary>
 /// <param name="e">SDL checks for key presses. We check for the buttons.</param>
 void Player::handleEvent(SDL_Event& e) {
+	if (gameState.inMenu || gameState.inFight) {
+		m_VelX = 0;
+		m_VelY = 0;
+		currentState = State::Idle;
+		keyDownPressed = false;
+		keyUpPressed = false;
+		keyLeftPressed = false;
+		keyRightPressed = false;
+		
+	}
 	if (!gameState.inFight) {
 		if (gameState.inMenu) {
 			m_VelX = 0;
@@ -543,6 +554,14 @@ void Player::handleEvent(SDL_Event& e) {
 		}
 	}
 	else {
+		m_VelX = 0;
+		m_VelY = 0;
+		currentState = State::Idle;
+		keyDownPressed = false;
+		keyUpPressed = false;
+		keyLeftPressed = false;
+		keyRightPressed = false;
+		
 
 		// IN FIGHT MOVEMENT AND SPRITE STATE AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 

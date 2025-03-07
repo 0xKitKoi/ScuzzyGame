@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <fstream>
+//#include <random>
 
 #include "Source/LTexture.hpp"
 #include "Source/player.hpp"
@@ -30,6 +31,7 @@ const int LEVEL_WIDTH = 4000;
 int levelWidth = 4000; // TODO: make the grid array a vector..? fix the math or abandon it?
 const int LEVEL_HEIGHT = 4000;
 int levelHeight = 4000;
+
 
 //Starts up SDL and creates window
 bool init();
@@ -176,6 +178,8 @@ bool init()
 						success = false;
 					}
 				}
+				SDL_RenderSetLogicalSize(gRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+
 			}
 			//Initialize SDL_ttf
 			if (TTF_Init() == -1)
@@ -224,6 +228,7 @@ SDL_Surface* loadSurface(std::string path)
 
 	//Load image at specified path
 	SDL_Surface* loadedSurface = IMG_Load(path.c_str());
+	return loadedSurface;
 	if (loadedSurface == NULL)
 	{
 		printf("Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError());
@@ -357,6 +362,7 @@ int LoadSave() {
 
 bool loadMedia()
 {
+
 	//Loading success flag
 	bool success = true;
 
@@ -393,6 +399,11 @@ bool loadMedia()
 				printf("Failed to load sprite sheet texture!\n");
 				success = false;
 			}
+			std::string levelstats = "LEVEL STATS: ";
+			levelstats += std::to_string(Map.getHeight());
+			levelstats += "x";
+			levelstats += std::to_string(Map.getWidth());
+			printf(levelstats.c_str());
 		}
 		if (SaveData.room == "Level2") {
 			if (!Map.loadFromFile("data/startingalley.png"))
@@ -403,6 +414,11 @@ bool loadMedia()
 			SaveData.pos.x = 100;
 			SaveData.pos.y = 100;
 			SaveData.room = "Level2";
+			std::string levelstats = "LEVEL STATS: ";
+			levelstats += std::to_string(Map.getHeight());
+			levelstats += "x";
+			levelstats += std::to_string(Map.getWidth());
+			printf(levelstats.c_str());
 		}
 	}
 	else {
@@ -839,6 +855,7 @@ void handleMenuInputSideBySide(SDL_Event event) {
 
 int main(int argc, char* args[])
 {
+	//srand((unsigned)time(NULL));
 	//Start up SDL and create window
 	if (!init())
 	{
@@ -933,6 +950,9 @@ int main(int argc, char* args[])
 			
 			*/
 			
+			int windowWidth, windowHeight;
+			SDL_GetWindowSize(gWindow, &windowWidth, &windowHeight);
+			printf("Window size: %d x %d\n", windowWidth, windowHeight);
 
 			while (!quit)
 			{
@@ -1080,8 +1100,12 @@ int main(int argc, char* args[])
 					//Clear screen
 					SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 					SDL_RenderClear(gRenderer);
-					SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
-					Map.render(0, 0, &camera);
+					SDL_SetRenderDrawColor(gRenderer, 0, 0, 20, 0xFF);
+					SDL_RenderClear(gRenderer);
+					int offsetX = (windowWidth - levelWidth) / 2;
+					int offsetY = (windowHeight - levelHeight) / 2;
+
+					Map.render(offsetX, offsetY, &camera);
 
 					gTextTexture.render(0, 0); // render any text.
 					//gTextTexture.render((SCREEN_WIDTH - gTextTexture.getWidth()) / 2, (SCREEN_HEIGHT - gTextTexture.getHeight()) / 2);
@@ -1126,6 +1150,12 @@ int main(int argc, char* args[])
 					{
 						camera.y = levelHeight - camera.h;
 					}
+
+					camera.w = std::min(levelWidth, windowWidth);  // Don't exceed level size
+					camera.h = std::min(levelHeight, windowHeight);
+
+					camera.x = std::max(0, std::min(player.GetPosX() - camera.w / 2, levelWidth - camera.w));
+					camera.y = std::max(0, std::min(player.GetPosY() - camera.h / 2, levelHeight - camera.h));
 
 					//player.Update(deltaTime);
 

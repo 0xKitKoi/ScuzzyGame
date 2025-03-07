@@ -1,8 +1,8 @@
-
-
-# entity class
+# currently working on
 
 # first level
-# first enemy
-# game loop?
+	# level loading system
+	# Entity object, Update() will have custom check() to load next level.
+
+
 # save / load system
