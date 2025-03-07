@@ -10,14 +10,6 @@ bool infightbutDialogue = false; // in a fight but the enemy is talking.
 std::string fightText = "oopsie whoopsie i did a fuckywucky";
 
 
-//int chance(int n) {
-//    static std::random_device rd;
-//    static std::mt19937 gen(rd()); // Seed the random number generator once
-//    std::uniform_int_distribution<int> dist(1, n); // Generate numbers from 1 to n
-//
-//    return dist(gen);
-//}
-
 int chance(int n) {
     // Seed the random number generator
     // Providing a seed value
@@ -103,6 +95,14 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
         FS_renderTextBox(renderer);
         // render main fight menu and handle input. 
         std::vector<std::string> fightMenu = { "Fight", "Actions", "Items" };
+        if (gameState.ActionsMenu) {
+            fightMenu = gameState.enemy->m_Actions;
+        }
+        else if (gameState.ActionResponse) {
+            fightText = gameState.enemy->m_ActionResponse[selection];
+            infightbutDialogue = true;
+        }
+        
         int screenWidth, screenHeight;
         SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
         int xOffset = screenWidth * 0.05 + 30;  // Start slightly inside the text box
@@ -135,6 +135,26 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
 			}
 			else if (event.key.keysym.sym == SDLK_z) {
 				// Handle the action based on the selected menu item
+				if (gameState.ActionsMenu) { // if the actions menu was opened, make sure to handle this. TODO: take this out and make it a function. + invcentory items
+					gameState.ActionsMenu = false;
+					//gameState.Text.clear();
+					gameState.TURN = false;
+					gameState.turnCount++;
+                    infightbutDialogue = true;
+					gameState.ActionResponse = true; // where do i set this to false..?
+
+
+					//return;
+                }
+				else if (gameState.ActionResponse && infightbutDialogue) {
+					gameState.ActionResponse = false;
+					gameState.TURN = false;
+					//gameState.turnCount++;
+					//infightbutDialogue = false;
+					return;
+				}
+
+
 				switch (selection) {
 					case 0: // Fight
 						printf("Fight\n");
@@ -145,6 +165,8 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
 							gameState.TURN = false;
 							gameState.Text.push_back("You Won!");
 							gameState.textAvailable = true;
+							gameState.kills++;
+							gameState.money += chance(10);
 						}
 						else {
 							gameState.enemy->HP -= 1;
@@ -160,8 +182,21 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
 						gameState.turnCount++;
 						break;
 					case 1: // Actions
-						printf("Actions\n");
-                        gameState.TURN = false;
+						printf("Actions Menu Entered.\n");
+						gameState.ActionsMenu = true;
+                         // based on the enemy, different actions should be available
+                        switch (gameState.enemyID) { // tell the game to display the possible actions against this enemny
+                        case 44: // Box of fuck you
+                            //gameState.Text = { "Info","sit","kick??" };
+                            //gameState.ActionResponse = true;
+
+                            break;
+                        default:
+                            gameState.Text = { "[-] Fucky WUcky in actions menu!!\n" };
+                            break;
+                        }
+
+                        //gameState.TURN = false;
                         // based on enemy ID, different options will be available. switch statement. 
                         gameState.turnCount++;
 						break;
@@ -183,8 +218,11 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
                 if (event.key.keysym.sym == SDLK_z) {
                     infightbutDialogue = false;
                     gameState.Plot++;
+                    
+                    //gameState.turnCount++;
                     if (gameState.turnCount % 2 == 0) {
 						gameState.TURN = true;
+                        gameState.turnCount++;
                     }
                     /*
                     if (gameState.Plot >= gameState.enemy->m_EnemyDialogue.size()) {
@@ -195,32 +233,25 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
                     */
                 }
             }
-            gameState.turnCount++;
+            //gameState.turnCount++;
             return;
         }
-        // since its not the player's turn, time to decide the fight mechanic. Undertale style dodging? cavestory fight in an undertale style format?
-        // or just a simple fight system where you can choose to attack or use an item, and take the hit like in earthbound?
-        // ... i'm thinking all three, but depending on the enemy.
-        // I like how the main boss fights in undertale are all unique. normal fights will be like earthbound, but the main bosses
-        // will have some spice. 
+        // since its not the player's turn, time to decide the fight mechanic.
         if (gameState.enemyID > 0 && gameState.enemyID < 5) {
             // boss-fight fight mode. this will have dodge mechanics and special scripted things.
         }
         else {
             // this is a basic enemy type fight. Player will take some damage, or get dialogue.
             // FS_renderText(renderer, font, gameState.enemy->m_EnemyDialogue[gameState.Plot], { 255, 255, 255);
-            int event = chance(5); // 50% chance to dodge or take damage
+            int event = chance(8); // chance to dodge or take damage
             printf("Chance: %d", event);
             if (event == 1) {
                 // player dodges
                 printf("You dodged the attack!\n");
                 infightbutDialogue = true;
                 fightText = "You dodged the attack!";
-                //FS_renderText(renderer, font, "You dodged the attack!", { 255, 255, 255 });
-
-               
             }
-            else if (event == 4) {
+            else if (event >=4 && event <=6 ) {
                     // Diaogue time
                     //gameState.Text.push_back(gameState.enemy->m_EnemyDialogue[gameState.Plot]);
                     //FS_renderText(renderer, font, gameState.enemy->m_EnemyDialogue[gameState.Plot], { 255, 255, 255 });
@@ -231,8 +262,6 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
                     else {
                         fightText = gameState.enemy->m_EnemyDialogue[chance(gameState.enemy->m_EnemyDialogue.size() - 1)];
                     }
-                    
-                    //gameState.Plot++;
             }
             else {
                 // player takes damage

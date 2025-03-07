@@ -164,8 +164,19 @@ int handleMenuInputGrid(SDL_Event event, std::vector<std::string>* options) {
         gameState.selectionIndex = MS_selectedIndex;
         return MS_selectedIndex + 1;
     }
-    if (event.key.keysym.sym == SDLK_x) {
+    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x && currentMenu != MAIN_MENU) {
+        //gameState.inMenu = false;
+		// skip over this, erroneous
+        return 0;
+    }
+    else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x && currentMenu == MAIN_MENU) {
         gameState.inMenu = false;
+		//MS_selectedIndex = 0;
+		return 0;
+    }
+    else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x) {
+        currentMenu = MAIN_MENU;
+        MS_selectedIndex = 0;
         return 0;
     }
     return 0;
@@ -390,7 +401,7 @@ void renderStatsMenu(SDL_Renderer* renderer, TTF_Font* font) {
     options.push_back(buffer);
     sprintf_s(buffer, "Money: %d", gameState.money);
     options.push_back(buffer);
-    options.push_back("absolute bullshjit");
+    options.push_back("\nText can be here too!");
 
     MS_renderTextBox(renderer);
 
@@ -428,8 +439,7 @@ void handleMainMenuSelection(SDL_Event event) {
     // Handle input for the main menu
     std::vector<std::string> options = { "Check", "Items", "Stats" };
 
-    if (event.key.keysym.sym == SDLK_x) {
-        printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+    if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_x && currentMenu != MAIN_MENU) {
         gameState.inMenu = false;
         return;
     }
@@ -494,7 +504,7 @@ void handleInventoryMenuSelection(SDL_Event event) {
             currentMenu = ITEM_OPTIONS_MENU;  // Enter item options
             gameState.selectionIndex = MS_selectedIndex;
             subMenuSelectionIndex = MS_selectedIndex;
-            printf("BEUHHHHHHHHHHHHHHHHHHHHHHHHH :   %d", MS_selectedIndex);
+            printf("Selected item index :   %d", MS_selectedIndex);
             MS_selectedIndex = 0;
         }
         else if (event.key.keysym.sym == SDLK_x) {

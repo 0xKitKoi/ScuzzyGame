@@ -31,6 +31,8 @@ public:
 	std::string m_EnemyFightSprite = "data/Error.png";
 
 	std::vector<std::string> m_EnemyDialogue;
+	std::vector<std::string> m_Actions;
+	std::vector<std::string> m_ActionResponse;
 	int m_AttackDamage = 0;
 	bool alive = true;
 	int HP = 5;

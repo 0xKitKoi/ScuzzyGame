@@ -275,6 +275,8 @@ void GameStart() {
 		child->m_AttackDamage = 1;
 		entity->setEnemy(child); // bind the new enemy object to the entity
 		entity->m_Enemy->m_EnemyDialogue = enemydialogue;
+		entity->m_Enemy->m_Actions = {"info", "sit", "kick.?"};
+		entity->m_Enemy->m_ActionResponse = {"STATUS: .. its a box..?", "You sat on the box, it left a dent in it.", "WHAM! you left a big dent in its fleshy cardboard."};
 		Entities.push_back(entity); // vector of all entities to render.
 		collisionBoxes.push_back(&entity->m_Collider);
 

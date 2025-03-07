@@ -25,6 +25,8 @@ struct GameState {
     bool TURN = false;
     int turnCount = 0;
     int Plot = 0;
+	bool ActionsMenu = false;
+    bool ActionResponse = false;
 
     bool checkFlag = false;
 
