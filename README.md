@@ -12,9 +12,5 @@ Currently in early alpha stages. I work on this on and off between work and coll
 
 ## Roadmap
 
-- Add Fight Mechanics
-
-- Fix GUI
-
 - Level changes
 
