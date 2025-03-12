@@ -10,8 +10,11 @@ public:
     }
     void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) override {
         if (m_checked) {
+			printf("Loading new room: %s\n", m_room.c_str());
             gameState.room = m_room;
-			gameState.LoadingScreen = true;
+			gameState.LoadingScreen = true;\
+            gameState.DoneLoading = false;
+            gameState.fade = true;
             gameState.textAvailable;
             gameState.callbackNPC = this;
             m_checked = false;

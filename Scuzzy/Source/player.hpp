@@ -54,14 +54,16 @@ public:
 	std::vector<std::shared_ptr<Entity>>& AllEntities;
 	SDL_Rect m_CheckBox;
 
+
+	LTexture CurrentSprite; // need to access for fading.
 private:
 	
 	int m_PosX, m_PosY;
 	int m_VelX, m_VelY;
 	SDL_Rect m_Collider;
-	
+	//LTexture CurrentSprite;
 	LTexture SpriteSheet;
-	LTexture CurrentSprite;
+	
 
 	bool menuOpened = false;
 

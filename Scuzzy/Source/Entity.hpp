@@ -1,6 +1,4 @@
 #pragma once
-#ifndef ENTITY_H
-#define ENTITY_H
 #include <memory>  // For std::unique_ptr
 
 
@@ -9,6 +7,10 @@
 #include <vector>
 #include "Source/Math.hpp"
 #include "Source/LTexture.hpp"
+
+#ifndef ENTITY_H
+#define ENTITY_H
+
 //#include "Source/Enemy.hpp"
 
 class Enemy;

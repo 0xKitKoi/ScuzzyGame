@@ -20,3 +20,4 @@ struct Vector2f
 	float x, y;
 };
 
+void draw_circle(SDL_Renderer* renderer, int x, int y, int radius, SDL_Color color);

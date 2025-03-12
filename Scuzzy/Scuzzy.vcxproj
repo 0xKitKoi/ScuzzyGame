@@ -137,11 +137,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Helper.cpp" />
     <ClCompile Include="Source\Entity.cpp" />
     <ClCompile Include="Source\Enemy.cpp" />
     <ClCompile Include="Source\FightSystem.cpp" />
     <ClCompile Include="Source\LTexture.cpp" />
     <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\Math.cpp" />
     <ClCompile Include="Source\MenuSystem.cpp" />
     <ClCompile Include="Source\NPC.cpp" />
     <ClCompile Include="Source\Player.cpp" />
@@ -150,6 +152,7 @@
     <ClCompile Include="Source\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Helper.hpp" />
     <ClInclude Include="Source\Enemy.hpp" />
     <ClInclude Include="Source\Entity.hpp" />
     <ClInclude Include="Source\Enums.hpp" />
