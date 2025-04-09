@@ -53,7 +53,8 @@ project "Scuzzy"
       -- Copy SDL2_image.dll
       "{COPY} %{wks.location}/thirdparty/SDL2_image/lib/x64/SDL2_image.dll %{cfg.targetdir}",
       -- Copy SDL2_ttf.dll
-      "{COPY} %{wks.location}/thirdparty/SDL2_ttf/lib/x64/SDL2_ttf.dll %{cfg.targetdir}"
+      "{COPY} %{wks.location}/thirdparty/SDL2_ttf/lib/x64/SDL2_ttf.dll %{cfg.targetdir}",
+      "{COPYDIR} %{wks.location}/Scuzzy/data %{cfg.targetdir}/data"
    }
 
 
