@@ -1,14 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
@@ -19,49 +11,27 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{5DEABCD0-498C-E7A6-3247-FBFA1E886EF7}</ProjectGuid>
+    <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{4cff44c2-a550-473a-91dc-60308ce9fb23}</ProjectGuid>
     <RootNamespace>Scuzzy</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
-  <ImportGroup Label="Shared">
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -71,78 +41,93 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>C:\Users\kirby\OneDrive\Documents\SDL2_ttf-2.22.0\lib\x64;C:\Users\kirby\OneDrive\Documents\SDL2_image-2.8.2\lib\x64;C:\Users\kirby\OneDrive\Documents\SDL2-2.30.6\lib\x64;$(LibraryPath)</LibraryPath>
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>..\bin\Debug\</OutDir>
+    <IntDir>..\bin-int\Debug\</IntDir>
+    <TargetName>Scuzzy</TargetName>
+    <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>C:\Users\kirby\OneDrive\Documents\SDL2_ttf-2.22.0\lib\x64;C:\Users\kirby\OneDrive\Documents\SDL2_image-2.8.2\lib\x64;C:\Users\kirby\OneDrive\Documents\SDL2-2.30.6\lib\x64;$(LibraryPath)</LibraryPath>
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>..\bin\Release\</OutDir>
+    <IntDir>..\bin-int\Release\</IntDir>
+    <TargetName>Scuzzy</TargetName>
+    <TargetExt>.exe</TargetExt>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\kirby\OneDrive\Documents\SDL2_ttf-2.22.0\include;C:\Users\kirby\source\repos\Scuzzy\Scuzzy;C:\Users\kirby\OneDrive\Documents\SDL2_image-2.8.2\include;%(AdditionalIncludeDirectories);C:\Users\kirby\OneDrive\Documents\SDL2-2.30.6\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\thirdparty\SDL2\include;..\thirdparty\SDL2_image\include;..\thirdparty\SDL2_ttf\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\thirdparty\SDL2\lib\x64;..\thirdparty\SDL2_image\lib\x64;..\thirdparty\SDL2_ttf\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>IF EXIST $(SolutionDir)\thirdparty\SDL2\lib\x64\SDL2.dll\ (xcopy /Q /E /Y /I $(SolutionDir)\thirdparty\SDL2\lib\x64\SDL2.dll ..\bin\Debug &gt; nul) ELSE (xcopy /Q /Y /I $(SolutionDir)\thirdparty\SDL2\lib\x64\SDL2.dll ..\bin\Debug &gt; nul)
+IF EXIST $(SolutionDir)\thirdparty\SDL2_image\lib\x64\SDL2_image.dll\ (xcopy /Q /E /Y /I $(SolutionDir)\thirdparty\SDL2_image\lib\x64\SDL2_image.dll ..\bin\Debug &gt; nul) ELSE (xcopy /Q /Y /I $(SolutionDir)\thirdparty\SDL2_image\lib\x64\SDL2_image.dll ..\bin\Debug &gt; nul)
+IF EXIST $(SolutionDir)\thirdparty\SDL2_ttf\lib\x64\SDL2_ttf.dll\ (xcopy /Q /E /Y /I $(SolutionDir)\thirdparty\SDL2_ttf\lib\x64\SDL2_ttf.dll ..\bin\Debug &gt; nul) ELSE (xcopy /Q /Y /I $(SolutionDir)\thirdparty\SDL2_ttf\lib\x64\SDL2_ttf.dll ..\bin\Debug &gt; nul)
+xcopy /Q /E /Y /I $(SolutionDir)\Scuzzy\data ..\bin\Debug\data</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\thirdparty\SDL2\include;..\thirdparty\SDL2_image\include;..\thirdparty\SDL2_ttf\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\kirby\OneDrive\Documents\SDL2_ttf-2.22.0\include;C:\Users\kirby\source\repos\Scuzzy\Scuzzy;C:\Users\kirby\OneDrive\Documents\SDL2_image-2.8.2\include;%(AdditionalIncludeDirectories);C:\Users\kirby\OneDrive\Documents\SDL2-2.30.6\include</AdditionalIncludeDirectories>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\thirdparty\SDL2\lib\x64;..\thirdparty\SDL2_image\lib\x64;..\thirdparty\SDL2_ttf\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>IF EXIST $(SolutionDir)\thirdparty\SDL2\lib\x64\SDL2.dll\ (xcopy /Q /E /Y /I $(SolutionDir)\thirdparty\SDL2\lib\x64\SDL2.dll ..\bin\Release &gt; nul) ELSE (xcopy /Q /Y /I $(SolutionDir)\thirdparty\SDL2\lib\x64\SDL2.dll ..\bin\Release &gt; nul)
+IF EXIST $(SolutionDir)\thirdparty\SDL2_image\lib\x64\SDL2_image.dll\ (xcopy /Q /E /Y /I $(SolutionDir)\thirdparty\SDL2_image\lib\x64\SDL2_image.dll ..\bin\Release &gt; nul) ELSE (xcopy /Q /Y /I $(SolutionDir)\thirdparty\SDL2_image\lib\x64\SDL2_image.dll ..\bin\Release &gt; nul)
+IF EXIST $(SolutionDir)\thirdparty\SDL2_ttf\lib\x64\SDL2_ttf.dll\ (xcopy /Q /E /Y /I $(SolutionDir)\thirdparty\SDL2_ttf\lib\x64\SDL2_ttf.dll ..\bin\Release &gt; nul) ELSE (xcopy /Q /Y /I $(SolutionDir)\thirdparty\SDL2_ttf\lib\x64\SDL2_ttf.dll ..\bin\Release &gt; nul)
+xcopy /Q /E /Y /I $(SolutionDir)\Scuzzy\data ..\bin\Release\data</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Helper.cpp" />
-    <ClCompile Include="Source\Entity.cpp" />
+    <ClInclude Include="Source\Enemy.hpp" />
+    <ClInclude Include="Source\Entity.hpp" />
+    <ClInclude Include="Source\Enums.hpp" />
+    <ClInclude Include="Source\FightSystem.hpp" />
+    <ClInclude Include="Source\GameState.hpp" />
+    <ClInclude Include="Source\Helper.hpp" />
+    <ClInclude Include="Source\LTexture.hpp" />
+    <ClInclude Include="Source\Math.hpp" />
+    <ClInclude Include="Source\MenuSystem.hpp" />
+    <ClInclude Include="Source\NPC.hpp" />
+    <ClInclude Include="Source\Timer.hpp" />
+    <ClInclude Include="Source\player.hpp" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="Source\Enemy.cpp" />
+    <ClCompile Include="Source\Entity.cpp" />
     <ClCompile Include="Source\FightSystem.cpp" />
+    <ClCompile Include="Source\Helper.cpp" />
     <ClCompile Include="Source\LTexture.cpp" />
-    <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\Math.cpp" />
     <ClCompile Include="Source\MenuSystem.cpp" />
     <ClCompile Include="Source\NPC.cpp" />
@@ -150,33 +135,7 @@
     <ClCompile Include="Source\TestNPC.cpp" />
     <ClCompile Include="Source\TextBox.cpp" />
     <ClCompile Include="Source\Timer.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Source\Helper.hpp" />
-    <ClInclude Include="Source\Enemy.hpp" />
-    <ClInclude Include="Source\Entity.hpp" />
-    <ClInclude Include="Source\Enums.hpp" />
-    <ClInclude Include="Source\FightSystem.hpp" />
-    <ClInclude Include="Source\GameState.hpp" />
-    <ClInclude Include="Source\LTexture.hpp" />
-    <ClInclude Include="Source\Math.hpp" />
-    <ClInclude Include="Source\MenuSystem.hpp" />
-    <ClInclude Include="Source\NPC.hpp" />
-    <ClInclude Include="Source\player.hpp" />
-    <ClInclude Include="Source\Timer.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="data\box_fuck_u_ari_1.png" />
-    <Image Include="data\box_fuck_u_ari_fiight.png" />
-    <Image Include="data\concept art.bmp" />
-    <Image Include="data\Error.png" />
-    <Image Include="data\fuckyoubox.png" />
-    <Image Include="data\Death.png" />
-    <Image Include="data\noss cartman 128.png" />
-    <Image Include="data\noss cartman 200.png" />
-    <Image Include="data\noss cartman 32.png" />
-    <Image Include="data\playerspritesheet.png" />
-    <Image Include="data\startingalley.png" />
+    <ClCompile Include="Source\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
