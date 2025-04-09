@@ -57,8 +57,22 @@ project "Scuzzy"
       "{COPYDIR} %{wks.location}/Scuzzy/data %{cfg.targetdir}/data"
    }
 
+    filter "system:linux"
+      defines { "PLATFORM_LINUX" }
+      links { "SDL2", "SDL2_image", "SDL2_ttf" }
+      libdirs {
+         "/usr/lib/x86_64-linux-gnu",
+         "/usr/local/lib"
+      }
+      includedirs {
+         "/usr/include/SDL2",
+         "/usr/local/include/SDL2"
+      }
 
-
+      postbuildcommands {
+         -- Copy the data directory to the output directory
+         "{COPYDIR} data %{cfg.targetdir} /s /e"
+      }
 
 
    filter "configurations:Debug"
