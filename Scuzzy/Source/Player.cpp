@@ -1,6 +1,6 @@
 #include "Source/player.hpp"
 #include "Source/LTexture.hpp"
-#include "Source/math.hpp"
+#include "Source/Math.hpp"
 #include "Source/GameState.hpp"
 #include <vector>
 #include <stdio.h>

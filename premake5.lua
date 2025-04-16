@@ -71,7 +71,7 @@ project "Scuzzy"
 
       postbuildcommands {
          -- Copy the data directory to the output directory
-         "{COPYDIR} data %{cfg.targetdir} /s /e"
+         "{COPYDIR} data %{cfg.targetdir}"
       }
 
 
