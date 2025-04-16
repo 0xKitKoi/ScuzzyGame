@@ -1,7 +1,7 @@
 #pragma once
 #include "Source/LTexture.hpp"
 #include <SDL.h>
-#include "Source/math.hpp"
+#include "Source/Math.hpp"
 #include <vector>
 #include <Source/Entity.hpp>
 

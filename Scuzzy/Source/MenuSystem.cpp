@@ -5,7 +5,14 @@
 #include "Source/Enums.hpp"
 #include <SDL.h>
 #include <SDL_ttf.h>
-#include < stdio.h >
+#include <stdio.h>
+
+#ifdef _WIN32
+#define sprintf_s sprintf_s
+#else
+#define sprintf_s snprintf
+#endif
+
 
 //extern const int SCREEN_WIDTH;
 //extern const int SCREEN_HEIGHT;
@@ -398,9 +405,11 @@ void renderItemOptionsMenu(SDL_Renderer* renderer, TTF_Font* font) {
 void renderStatsMenu(SDL_Renderer* renderer, TTF_Font* font) {
     std::vector<std::string> options;
     char buffer[30];
-    sprintf_s(buffer, "Kills: %d", gameState.kills);
+    //sprintf_s(buffer, "Kills: %d", gameState.kills);
+    //
+    sprintf_s(buffer, sizeof(buffer), "Kills: %d", gameState.kills);
     options.push_back(buffer);
-    sprintf_s(buffer, "Money: %d", gameState.money);
+    sprintf_s(buffer, sizeof(buffer), "Money: %d", gameState.money);
     options.push_back(buffer);
     options.push_back("\nText can be here too!");
 
