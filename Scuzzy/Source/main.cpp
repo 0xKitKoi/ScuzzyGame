@@ -35,6 +35,10 @@ int levelWidth = 4000; // TODO: make the grid array a vector..? fix the math or 
 const int LEVEL_HEIGHT = 4000;
 int levelHeight = 4000;
 
+int screenwidth = 0;
+int screenheight = 0;
+
+
 
 //Starts up SDL and creates window
 bool init();
@@ -143,8 +147,20 @@ bool init()
 	}
 	else
 	{
+		//SDL_GetCurrentDisplayMode(0, screenwidth, screenheight, NULL);
+		SDL_DisplayMode displayMode;
+		if (SDL_GetCurrentDisplayMode(0, &displayMode) != 0) {
+    		printf("Could not get display mode: %s\n", SDL_GetError());
+    		success = false;
+    		// handle error, maybe return false or exit
+		}else {
+			screenwidth = (int)displayMode.w;
+			screenheight = (int)displayMode.h;
+
+		}
+
 		//Create window
-		gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP);
+		gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, screenwidth, screenheight, SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP);
 		if (gWindow == NULL)
 		{
 			printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
@@ -152,6 +168,8 @@ bool init()
 		}
 		else
 		{
+			camera.w = screenwidth;
+			camera.h = screenheight;
 			//Initialize PNG loading
 			int imgFlags = IMG_INIT_PNG;
 			if (!(IMG_Init(imgFlags) & imgFlags))
@@ -181,7 +199,7 @@ bool init()
 						success = false;
 					}
 				}
-				SDL_RenderSetLogicalSize(gRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+				SDL_RenderSetLogicalSize(gRenderer, screenwidth, screenheight);
 
 			}
 			//Initialize SDL_ttf
@@ -671,10 +689,10 @@ void renderTextBox(SDL_Renderer* renderer, int x, int y, int width, int height) 
 
 
 void renderTextBox(SDL_Renderer* renderer) {
-	int boxWidth = SCREEN_WIDTH * 0.9;  // 90% of the screen width
+	int boxWidth = screenwidth * 0.9;  // 90% of the screen width
 	int boxHeight = 300;               // Fixed height for the text box
-	int xPos = (SCREEN_WIDTH - boxWidth) / 2;  // Center the box horizontally
-	int yPos = SCREEN_HEIGHT - boxHeight - 20; // Place the box 20 pixels above the bottom
+	int xPos = (screenwidth - boxWidth) / 2;  // Center the box horizontally
+	int yPos = screenheight- boxHeight - 20; // Place the box 20 pixels above the bottom
 
 	// Set the color for the text box (e.g., black)
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -1111,8 +1129,8 @@ int main(int argc, char* args[])
 
 						int offsetX = 0, offsetY = 0;
 						//Center the camera over the dot
-						camera.x = (player.GetPosX() + player.SpriteWidth / 2) - SCREEN_WIDTH / 2;
-						camera.y = (player.GetPosY() + player.SpriteHeight / 2) - SCREEN_HEIGHT / 2;
+						camera.x = (player.GetPosX() + player.SpriteWidth / 2) - screenwidth / 2;
+						camera.y = (player.GetPosY() + player.SpriteHeight / 2) - screenheight / 2;
 
 						//Keep the camera in bounds
 						if (camera.x < 0)
@@ -1132,8 +1150,8 @@ int main(int argc, char* args[])
 							camera.y = levelHeight - camera.h;
 						}
 
-						camera.w = std::min(levelWidth, windowWidth);  // Don't exceed level size
-						camera.h = std::min(levelHeight, windowHeight);
+						camera.w = std::min(levelWidth, screenwidth);  // Don't exceed level size
+						camera.h = std::min(levelHeight, screenheight);
 
 						camera.x = std::max(0, std::min(player.GetPosX() - camera.w / 2, levelWidth - camera.w));
 						camera.y = std::max(0, std::min(player.GetPosY() - camera.h / 2, levelHeight - camera.h));
@@ -1211,8 +1229,8 @@ int main(int argc, char* args[])
 					//player.move(collisionBoxes);
 
 					//Center the camera over the dot
-					camera.x = (player.GetPosX() + player.SpriteWidth / 2) - SCREEN_WIDTH / 2;
-					camera.y = (player.GetPosY() + player.SpriteHeight / 2) - SCREEN_HEIGHT / 2;
+					camera.x = (player.GetPosX() + player.SpriteWidth / 2) - screenwidth / 2;
+					camera.y = (player.GetPosY() + player.SpriteHeight / 2) - screenheight / 2;
 
 					//Keep the camera in bounds
 					if (camera.x < 0)
