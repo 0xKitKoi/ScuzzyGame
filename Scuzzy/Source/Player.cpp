@@ -16,6 +16,8 @@ const int LEVEL_WIDTH = 4000;
 const int LEVEL_HEIGHT = 4000;
 extern int levelWidth;
 extern int levelHeight;
+extern int MapoffsetX;
+extern int MapoffsetY;
 
 const int GRID_CELL_SIZE = 100;
 const int GRID_WIDTH = LEVEL_WIDTH / GRID_CELL_SIZE;
@@ -434,6 +436,8 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	if (m_PosY < 0 || m_PosY + SpriteHeight > levelHeight) { // LEVEL_HEIGHT
 		m_PosY = originalY; // Revert position if out of bounds
 	}
+	//m_PosX = m_PosX + MapoffsetX; // TODO: add this to boundary checks.
+	//m_PosY = m_PosY + MapoffsetY;
 
 	m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };
 

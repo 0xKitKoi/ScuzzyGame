@@ -37,6 +37,7 @@ int levelHeight = 4000;
 
 int screenwidth = 0;
 int screenheight = 0;
+int MapoffsetX = 0, MapoffsetY = 0;
 
 
 
@@ -641,8 +642,8 @@ void renderCollisionBoxes(SDL_Renderer* gRenderer, const SDL_Rect& camera) {
 		if (SDL_IntersectRect( box, &camera, &intersectedBox)) {
 			// Adjust box position relative to camera
 			SDL_Rect renderBox = {
-				box->x - camera.x,
-				box->y - camera.y,
+				box->x - camera.x + MapoffsetX,
+				box->y - camera.y + MapoffsetY,
 				box->w,
 				box->h
 			};
@@ -1122,13 +1123,15 @@ int main(int argc, char* args[])
 						}
 
 						// when done, load the new map, and fade back in.
-						LoadLevel(gameState.room, &Map);
+						Vector2f mapdim = LoadLevel(gameState.room, &Map);
+						levelHeight = mapdim.y;
+						levelWidth = mapdim.x;
 						gameState.DoneLoading = true;
 					}
 					while (gameState.fade) { // fade IN
 
 						int offsetX = 0, offsetY = 0;
-						//Center the camera over the dot
+						//Center the camera
 						camera.x = (player.GetPosX() + player.SpriteWidth / 2) - screenwidth / 2;
 						camera.y = (player.GetPosY() + player.SpriteHeight / 2) - screenheight / 2;
 
@@ -1196,15 +1199,17 @@ int main(int argc, char* args[])
 					SDL_RenderClear(gRenderer);
 					SDL_SetRenderDrawColor(gRenderer, 0, 0, 20, 0xFF);
 					SDL_RenderClear(gRenderer);
-					int offsetX = 0, offsetY = 0;
+					//int offsetX = 0, offsetY = 0;
 					if (windowHeight > levelHeight) {
-						offsetX = (windowWidth - levelWidth) / 2;
+						MapoffsetX = (windowWidth - levelWidth) / 2;
 					}
+					else {MapoffsetX = 0;}
 					if (windowWidth > levelWidth) {
-						offsetY = (windowHeight - levelHeight) / 2;
+						MapoffsetY = (windowHeight - levelHeight) / 2;
 					}
+					else {MapoffsetY = 0;}
 
-					Map.render(offsetX, offsetY, &camera);
+					Map.render(MapoffsetX, MapoffsetY, &camera);
 
 					gTextTexture.render(0, 0); // render any text.
 					//gTextTexture.render((SCREEN_WIDTH - gTextTexture.getWidth()) / 2, (SCREEN_HEIGHT - gTextTexture.getHeight()) / 2);
@@ -1280,10 +1285,10 @@ int main(int argc, char* args[])
 						if (SDL_IntersectRect(&box->m_FOV, &camera, &intersectedBox)) {
 							// Adjust box position relative to camera
 							SDL_Rect renderBox = {
-								box->m_FOV.x - camera.x,
-								box->m_FOV.y - camera.y,
+								box->m_FOV.x - camera.x + MapoffsetX,
+								box->m_FOV.y - camera.y + MapoffsetY,
 								box->m_FOV.w,
-								box->m_FOV.h
+								box->m_FOV.h 
 							};
 
 							// Draw the box
@@ -1327,8 +1332,8 @@ int main(int argc, char* args[])
 							//printf("bruh");
 							// Adjust box position relative to camera
 							SDL_Rect renderBox = {
-								Entities.at(i)->m_Collider.x - camera.x,
-								Entities.at(i)->m_Collider.y - camera.y,
+								Entities.at(i)->m_Collider.x - camera.x + MapoffsetX,
+								Entities.at(i)->m_Collider.y - camera.y + MapoffsetY,
 								Entities.at(i)->m_Collider.w,
 								Entities.at(i)->m_Collider.h
 							};
@@ -1346,8 +1351,8 @@ int main(int argc, char* args[])
 						// RENDER BASIC CHECK BOX
 						SDL_Rect checkb = player.m_CheckBox;
 						SDL_Rect rendercheckBox = {
-							checkb.x - camera.x,
-							checkb.y - camera.y,
+							checkb.x - camera.x + MapoffsetX,
+							checkb.y - camera.y + MapoffsetY,
 							checkb.w,
 							checkb.h
 						};
@@ -1372,7 +1377,7 @@ int main(int argc, char* args[])
 
 
 					// END OF OVERWORLD RENDERING 
-					player.render(camera.x, camera.y); // last thing to be rendered is the player so it's above everything else.
+					player.render(camera.x + MapoffsetX, camera.y + MapoffsetY); // last thing to be rendered is the player so it's above everything else.
 					SDL_RenderDrawRect(gRenderer, &renderBox); // render players collision box above player.
 
 
