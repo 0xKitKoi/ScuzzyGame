@@ -35,6 +35,11 @@ int levelWidth = 4000; // TODO: make the grid array a vector..? fix the math or 
 const int LEVEL_HEIGHT = 4000;
 int levelHeight = 4000;
 
+int screenwidth = 0;
+int screenheight = 0;
+int MapoffsetX = 0, MapoffsetY = 0;
+
+
 
 //Starts up SDL and creates window
 bool init();
@@ -143,8 +148,20 @@ bool init()
 	}
 	else
 	{
+		//SDL_GetCurrentDisplayMode(0, screenwidth, screenheight, NULL);
+		SDL_DisplayMode displayMode;
+		if (SDL_GetCurrentDisplayMode(0, &displayMode) != 0) {
+    		printf("Could not get display mode: %s\n", SDL_GetError());
+    		success = false;
+    		// handle error, maybe return false or exit
+		}else {
+			screenwidth = (int)displayMode.w;
+			screenheight = (int)displayMode.h;
+
+		}
+
 		//Create window
-		gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP);
+		gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, screenwidth, screenheight, SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP);
 		if (gWindow == NULL)
 		{
 			printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
@@ -152,6 +169,8 @@ bool init()
 		}
 		else
 		{
+			camera.w = screenwidth;
+			camera.h = screenheight;
 			//Initialize PNG loading
 			int imgFlags = IMG_INIT_PNG;
 			if (!(IMG_Init(imgFlags) & imgFlags))
@@ -181,7 +200,7 @@ bool init()
 						success = false;
 					}
 				}
-				SDL_RenderSetLogicalSize(gRenderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+				SDL_RenderSetLogicalSize(gRenderer, screenwidth, screenheight);
 
 			}
 			//Initialize SDL_ttf
@@ -623,8 +642,8 @@ void renderCollisionBoxes(SDL_Renderer* gRenderer, const SDL_Rect& camera) {
 		if (SDL_IntersectRect( box, &camera, &intersectedBox)) {
 			// Adjust box position relative to camera
 			SDL_Rect renderBox = {
-				box->x - camera.x,
-				box->y - camera.y,
+				box->x - camera.x + MapoffsetX,
+				box->y - camera.y + MapoffsetY,
 				box->w,
 				box->h
 			};
@@ -671,10 +690,10 @@ void renderTextBox(SDL_Renderer* renderer, int x, int y, int width, int height) 
 
 
 void renderTextBox(SDL_Renderer* renderer) {
-	int boxWidth = SCREEN_WIDTH * 0.9;  // 90% of the screen width
+	int boxWidth = screenwidth * 0.9;  // 90% of the screen width
 	int boxHeight = 300;               // Fixed height for the text box
-	int xPos = (SCREEN_WIDTH - boxWidth) / 2;  // Center the box horizontally
-	int yPos = SCREEN_HEIGHT - boxHeight - 20; // Place the box 20 pixels above the bottom
+	int xPos = (screenwidth - boxWidth) / 2;  // Center the box horizontally
+	int yPos = screenheight- boxHeight - 20; // Place the box 20 pixels above the bottom
 
 	// Set the color for the text box (e.g., black)
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -1104,15 +1123,17 @@ int main(int argc, char* args[])
 						}
 
 						// when done, load the new map, and fade back in.
-						LoadLevel(gameState.room, &Map);
+						Vector2f mapdim = LoadLevel(gameState.room, &Map);
+						levelHeight = mapdim.y;
+						levelWidth = mapdim.x;
 						gameState.DoneLoading = true;
 					}
 					while (gameState.fade) { // fade IN
 
 						int offsetX = 0, offsetY = 0;
-						//Center the camera over the dot
-						camera.x = (player.GetPosX() + player.SpriteWidth / 2) - SCREEN_WIDTH / 2;
-						camera.y = (player.GetPosY() + player.SpriteHeight / 2) - SCREEN_HEIGHT / 2;
+						//Center the camera
+						camera.x = (player.GetPosX() + player.SpriteWidth / 2) - screenwidth / 2;
+						camera.y = (player.GetPosY() + player.SpriteHeight / 2) - screenheight / 2;
 
 						//Keep the camera in bounds
 						if (camera.x < 0)
@@ -1132,8 +1153,8 @@ int main(int argc, char* args[])
 							camera.y = levelHeight - camera.h;
 						}
 
-						camera.w = std::min(levelWidth, windowWidth);  // Don't exceed level size
-						camera.h = std::min(levelHeight, windowHeight);
+						camera.w = std::min(levelWidth, screenwidth);  // Don't exceed level size
+						camera.h = std::min(levelHeight, screenheight);
 
 						camera.x = std::max(0, std::min(player.GetPosX() - camera.w / 2, levelWidth - camera.w));
 						camera.y = std::max(0, std::min(player.GetPosY() - camera.h / 2, levelHeight - camera.h));
@@ -1178,15 +1199,17 @@ int main(int argc, char* args[])
 					SDL_RenderClear(gRenderer);
 					SDL_SetRenderDrawColor(gRenderer, 0, 0, 20, 0xFF);
 					SDL_RenderClear(gRenderer);
-					int offsetX = 0, offsetY = 0;
+					//int offsetX = 0, offsetY = 0;
 					if (windowHeight > levelHeight) {
-						offsetX = (windowWidth - levelWidth) / 2;
+						MapoffsetX = (windowWidth - levelWidth) / 2;
 					}
+					else {MapoffsetX = 0;}
 					if (windowWidth > levelWidth) {
-						offsetY = (windowHeight - levelHeight) / 2;
+						MapoffsetY = (windowHeight - levelHeight) / 2;
 					}
+					else {MapoffsetY = 0;}
 
-					Map.render(offsetX, offsetY, &camera);
+					Map.render(MapoffsetX, MapoffsetY, &camera);
 
 					gTextTexture.render(0, 0); // render any text.
 					//gTextTexture.render((SCREEN_WIDTH - gTextTexture.getWidth()) / 2, (SCREEN_HEIGHT - gTextTexture.getHeight()) / 2);
@@ -1211,8 +1234,8 @@ int main(int argc, char* args[])
 					//player.move(collisionBoxes);
 
 					//Center the camera over the dot
-					camera.x = (player.GetPosX() + player.SpriteWidth / 2) - SCREEN_WIDTH / 2;
-					camera.y = (player.GetPosY() + player.SpriteHeight / 2) - SCREEN_HEIGHT / 2;
+					camera.x = (player.GetPosX() + player.SpriteWidth / 2) - screenwidth / 2;
+					camera.y = (player.GetPosY() + player.SpriteHeight / 2) - screenheight / 2;
 
 					//Keep the camera in bounds
 					if (camera.x < 0)
@@ -1262,10 +1285,10 @@ int main(int argc, char* args[])
 						if (SDL_IntersectRect(&box->m_FOV, &camera, &intersectedBox)) {
 							// Adjust box position relative to camera
 							SDL_Rect renderBox = {
-								box->m_FOV.x - camera.x,
-								box->m_FOV.y - camera.y,
+								box->m_FOV.x - camera.x + MapoffsetX,
+								box->m_FOV.y - camera.y + MapoffsetY,
 								box->m_FOV.w,
-								box->m_FOV.h
+								box->m_FOV.h 
 							};
 
 							// Draw the box
@@ -1309,8 +1332,8 @@ int main(int argc, char* args[])
 							//printf("bruh");
 							// Adjust box position relative to camera
 							SDL_Rect renderBox = {
-								Entities.at(i)->m_Collider.x - camera.x,
-								Entities.at(i)->m_Collider.y - camera.y,
+								Entities.at(i)->m_Collider.x - camera.x + MapoffsetX,
+								Entities.at(i)->m_Collider.y - camera.y + MapoffsetY,
 								Entities.at(i)->m_Collider.w,
 								Entities.at(i)->m_Collider.h
 							};
@@ -1328,8 +1351,8 @@ int main(int argc, char* args[])
 						// RENDER BASIC CHECK BOX
 						SDL_Rect checkb = player.m_CheckBox;
 						SDL_Rect rendercheckBox = {
-							checkb.x - camera.x,
-							checkb.y - camera.y,
+							checkb.x - camera.x + MapoffsetX,
+							checkb.y - camera.y + MapoffsetY,
 							checkb.w,
 							checkb.h
 						};
@@ -1354,7 +1377,7 @@ int main(int argc, char* args[])
 
 
 					// END OF OVERWORLD RENDERING 
-					player.render(camera.x, camera.y); // last thing to be rendered is the player so it's above everything else.
+					player.render(camera.x + MapoffsetX, camera.y + MapoffsetY); // last thing to be rendered is the player so it's above everything else.
 					SDL_RenderDrawRect(gRenderer, &renderBox); // render players collision box above player.
 
 
