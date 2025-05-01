@@ -330,6 +330,14 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	//	currentState = State::Idle;
 	//	return;
 	//}
+	if (gameState.HP <= 0) {
+		// player has died, run death screen and load from save.
+		gameState.Text.clear();
+		gameState.Text.push_back("You greened out lil bro, nap time for you.");
+		gameState.textAvailable = true;
+		gameState.dead = true;
+	}
+
 	if (gameState.inMenu || gameState.inFight || gameState.wonFight) {
 		m_VelX = 0;
 		m_VelY = 0;
@@ -399,6 +407,7 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 
 
 
+
 	for (const auto& entity : AllEntities) {
 		if (SDL_HasIntersection(&m_Collider, &entity->m_Collider )) { // &entity->m_Collider
 			printf(std::to_string(entity->m_EntityID).c_str());
@@ -410,7 +419,7 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	for (const auto& wall : boxes) {
 		if (SDL_HasIntersection(&m_Collider, wall)) {
 			m_PosX = originalX; // Revert position
-			m_Collider.x = m_PosX; // Update collider position
+			
 			break;
 		}
 	}
@@ -418,26 +427,43 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	// Move along Y axis
 	m_PosY += m_VelY * deltaTime;
 	m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };
-
+	//m_Collider.x = m_PosX + 40; // Update collider position
+	//m_Collider.y = m_PosY + 60; // Update collider position
 	// Check for collisions on Y axis
 	for (const auto& wall : boxes) {
 		if (SDL_HasIntersection(&m_Collider, wall)) {
 			m_PosY = originalY; // Revert position
-			m_Collider.y = m_PosY; // Update collider position
+			
 			break;
 		}
 	}
 
 	// Boundary checks (keep player within level bounds)
-	if (m_PosX < 0 || m_PosX + SpriteWidth > levelWidth) { // LEVEL_WIDTH
+	// Account for map offsets in the boundary checks
+	int effectiveLeftBound = 0 + MapoffsetX;
+	int effectiveTopBound = 0 + MapoffsetY;
+	int effectiveRightBound = MapoffsetX +  levelWidth;
+	int effectiveBottomBound = MapoffsetY + levelHeight;
+
+	// Check left/right boundaries
+	if (m_PosX < effectiveLeftBound || m_PosX + SpriteWidth > effectiveRightBound) {
 		m_PosX = originalX; // Revert position if out of bounds
 	}
 
-	if (m_PosY < 0 || m_PosY + SpriteHeight > levelHeight) { // LEVEL_HEIGHT
+	// Check top/bottom boundaries
+	if (m_PosY < effectiveTopBound || m_PosY + SpriteHeight > effectiveBottomBound) {
 		m_PosY = originalY; // Revert position if out of bounds
 	}
-	//m_PosX = m_PosX + MapoffsetX; // TODO: add this to boundary checks.
-	//m_PosY = m_PosY + MapoffsetY;
+	//// Boundary checks (keep player within level bounds)
+	//if (m_PosX < 0 || m_PosX + SpriteWidth > levelWidth) { // LEVEL_WIDTH
+	//	m_PosX = originalX; // Revert position if out of bounds
+	//}
+
+	//if (m_PosY < 0 || m_PosY + SpriteHeight > levelHeight) { // LEVEL_HEIGHT
+	//	m_PosY = originalY; // Revert position if out of bounds
+	//}
+	////m_PosX = m_PosX + MapoffsetX; // TODO: add this to boundary checks.
+	////m_PosY = m_PosY + MapoffsetY;
 
 	m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };
 
@@ -724,8 +750,10 @@ void Player::render(int camX, int camY) {
 
 	// hey dickhead tell the Ltexture to render with the rect you have!!!
 	//SpriteSheet.render(m_PosX, m_PosY, &srcRect);
-	SpriteSheet.render(m_PosX - camX, m_PosY - camY, &srcRect);
+	SpriteSheet.render(m_PosX - camX + MapoffsetX, m_PosY - camY + MapoffsetY, &srcRect);
 
+	//m_Collider.x = m_Collider.x - camX + MapoffsetX;
+	//m_Collider.y = m_Collider.y - camY + MapoffsetY;
 }
 
 int Player::GetPosX() {

@@ -406,6 +406,9 @@ void FS_InitFight() {
     fightText = "";
     gameState.Plot = 0;
     gameState.turnCount = 0;
+    gameState.inFight = true;
+    gameState.wonFight = false;
+    gameState.inMenu = false;
 
     // Set initial state
     gameState.fightState = FightState::INTRO;

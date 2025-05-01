@@ -268,7 +268,8 @@ void renderInventoryMenu(SDL_Renderer* renderer, TTF_Font* font) {
 
 
     int xOffset = screenWidth * 0.05 + 10;  // Start slightly inside the text box
-    int yOffset = screenHeight/2 - 275;       // Place the text inside the box
+    int yOffset = screenHeight - 275;       // Place the text inside the box
+    // i dont know why /2 is wrong.. that should give me half the screen? but maybe im tired
 
     int boxWidth = screenWidth * 0.9;  // 90% of the screen width
     int boxHeight = 300;               // Fixed height for the text box
@@ -289,7 +290,7 @@ void renderInventoryMenu(SDL_Renderer* renderer, TTF_Font* font) {
 
 
     if (gameState.Inventory.empty()) {
-        //MS_renderTextBox(renderer);
+        MS_renderTextBox(renderer);
         // TODO: puyt the damn text in a textbox plsss
         MS_renderText(renderer, font, "* You don't have any items.", xOffset, yOffset, { 255, 255, 255 });
         //currentMenu = MAIN_MENU;
@@ -448,7 +449,9 @@ void renderStatsMenu(SDL_Renderer* renderer, TTF_Font* font) {
 void handleMainMenuSelection(SDL_Event event) {
     // Handle input for the main menu
     std::vector<std::string> options = { "Check", "Items", "Stats" };
-
+	if (event.key.repeat != 0) {
+		return; // Ignore repeated key events
+	}
     if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_x && currentMenu != MAIN_MENU) {
         gameState.inMenu = false;
         return;
@@ -492,7 +495,11 @@ void handleInventoryMenuSelection(SDL_Event event) {
     std::vector<std::string> options;
     if (gameState.Inventory.empty()) {
         // no items
-        printf("No items what are we doign here");
+        //printf("No items what are we doign here");
+		if (event.key.keysym.sym == SDLK_x) {
+			currentMenu = MAIN_MENU;
+			MS_selectedIndex = 0;
+		}
         return;
     }
     for (int i = 0; i < gameState.Inventory.size(); i++) {

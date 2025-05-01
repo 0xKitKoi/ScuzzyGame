@@ -29,6 +29,7 @@ struct GameState {
     int money = 0;
     int kills = 0;
     int HP = 10;
+    bool dead = false;
 
     // Flags
 	FightState fightState;

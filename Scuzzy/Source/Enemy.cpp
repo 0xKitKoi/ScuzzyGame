@@ -3,6 +3,7 @@
 #include "Source/Math.hpp"
 #include <stdio.h>
 #include "Source/GameState.hpp"
+#include "Source/FightSystem.hpp"
 
 
 extern float lerp(float x, float y, float t);
@@ -65,11 +66,12 @@ void Enemy::Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
             m_Entity->m_PosY = out.y;
 
             if (SDL_HasIntersection(&m_Entity->m_Collider, &PlayerPos)) {
-                gameState.inFight = true;
+                
                 gameState.enemyID = m_EnemyID;
                 gameState.enemy = this;
                 gameState.FightStarted = true;
                 gameState.Plot = 0;
+				FS_InitFight();
             }
 	}
     else {

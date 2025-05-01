@@ -106,7 +106,12 @@ float lerp(float x, float y, float t) {
 
 
 GameState gameState;
-std::vector<std::shared_ptr<Entity>> Entities;
+
+
+
+std::vector<std::shared_ptr<Entity>> Entities; // This is the one and only vector of entities.
+
+
 std::vector<SDL_Rect> clips; // sprite sheet mapings TODO: Doesnt need to be global, i was just lazy
 
 std::unordered_map<std::string, std::shared_ptr<LTexture>> textureCache; 
@@ -642,8 +647,8 @@ void renderCollisionBoxes(SDL_Renderer* gRenderer, const SDL_Rect& camera) {
 		if (SDL_IntersectRect( box, &camera, &intersectedBox)) {
 			// Adjust box position relative to camera
 			SDL_Rect renderBox = {
-				box->x - camera.x + MapoffsetX,
-				box->y - camera.y + MapoffsetY,
+				box->x - camera.x,
+				box->y - camera.y,
 				box->w,
 				box->h
 			};
@@ -1010,55 +1015,110 @@ int main(int argc, char* args[])
 						quit = true;
 					}
 
-
-
-					if (e.key.keysym.scancode == SDL_SCANCODE_F10) {
-						SaveGame(player.GetPosX(), player.GetPosY());
-					}
-					if (e.key.keysym.scancode == SDL_SCANCODE_F11) {
-						LoadSave();
-					}
-
-					if (e.key.keysym.scancode == SDL_SCANCODE_F4) {
-						/*
-						gameState.Text = {
-							"Hello, welcome to the game.",
-							"We hope you enjoy your journey.",
-							"Press Z to continue."
+					switch (e.type) {
+						/* Look for a keypress */
+					case SDL_KEYDOWN:
+						/* Check the SDLKey values and move change the coords */
+						switch (e.key.keysym.sym) {
+						case SDLK_F10:
+							SaveGame(player.GetPosX(), player.GetPosY());
+							break;
+						case SDLK_F11:
+							LoadSave();
+							break;
+						case SDLK_F4:
+							gameState.Text = {
+								// 100 char limit per line
+								"AAAA BBBB CCCC DDDD EEEE FFFF GGGG HHHH IIII JJJJ KKKK LLLL MMMM NNNN OOOO PPPP QQQQ RRRR SSSS TTTT UUUU VVVV WWWW XXXX"
 							};
-						*/
-						gameState.Text = {
-							// 100 char limit per line
-							"AAAA BBBB CCCC DDDD EEEE FFFF GGGG HHHH IIII JJJJ KKKK LLLL MMMM NNNN OOOO PPPP QQQQ RRRR SSSS TTTT UUUU VVVV WWWW XXXX"
-						};
 
-						gameState.textAvailable = true;
+							gameState.textAvailable = true;
+							break;
+						case SDLK_F5:
+							gameState.Text = { "Start", "Options", "Quit" };
+							gameState.inMenu = true;
+							break;
+						case SDLK_c:
+							gameState.inMenu = true;
+
+							MS_renderMenu(gRenderer, gFont);
+							break;
+						default:
+							break;
+						}
+						break;
+						/* We must also use the SDL_KEYUP events to zero the x */
+						/* and y velocity variables. But we must also be       */
+						/* careful not to zero the velocities when we shouldn't*/
+					case SDL_KEYUP:
+						switch (e.key.keysym.sym) {
+						default:
+							break;
+						}
+						break;
+
+					default:
+						break;
 					}
-					if (e.key.keysym.scancode == SDL_SCANCODE_F5) {
-						gameState.Text = { "Start", "Options", "Quit" };
-						gameState.inMenu = true;
+
+					/*if (e.key.keysym.scancode == SDL_SCANCODE_F10) {
+						SaveGame(player.GetPosX(), player.GetPosY());
+					}*/
+					/*if (e.key.keysym.scancode == SDL_SCANCODE_F11) {
+						LoadSave();
+					}*/
+
+					//if (e.key.keysym.scancode == SDL_SCANCODE_F4) {
+					//	/*
+					//	gameState.Text = {
+					//		"Hello, welcome to the game.",
+					//		"We hope you enjoy your journey.",
+					//		"Press Z to continue."
+					//		};
+					//	*/
+					//	gameState.Text = {
+					//		// 100 char limit per line
+					//		"AAAA BBBB CCCC DDDD EEEE FFFF GGGG HHHH IIII JJJJ KKKK LLLL MMMM NNNN OOOO PPPP QQQQ RRRR SSSS TTTT UUUU VVVV WWWW XXXX"
+					//	};
+
+					//	gameState.textAvailable = true;
+					//}
+					//if (e.key.keysym.scancode == SDL_SCANCODE_F5) {
+					//	gameState.Text = { "Start", "Options", "Quit" };
+					//	gameState.inMenu = true;
+					//}
+					//if (e.key.keysym.scancode == SDL_SCANCODE_C) {
+					//	// opejn a menu
+					//	/*
+					//	gameState.Text = { "Talk", "Items" };
+					//	gameState.inMenu = true;
+					//	gameState.OpenedMenu = true;
+					//	*/
+
+					//	gameState.inMenu = true;
+
+					//	MS_renderMenu(gRenderer, gFont);
+					//	//SDL_RenderPresent(gRenderer);
+					//}
+
+
+					if (gameState.dead) {
+						// render the death png
+						// auto barrel = std::make_shared<Entity>(Vector2f(2322, 258), SDL_Rect{ 0,0,128,128 }, SDL_Rect{ 0,0,128,128 }, getTexture("data/barrel_nuclear.png"), 1, clips, 1);
+						Entities.clear();
+						LTexture deathScreen;
+						deathScreen.loadFromFile("data/Death.png");
+						deathScreen.render(0, 0, &camera);
+						continue;
+
 					}
-					if (e.key.keysym.scancode == SDL_SCANCODE_C) {
-						// opejn a menu
-						/*
-						gameState.Text = { "Talk", "Items" };
-						gameState.inMenu = true;
-						gameState.OpenedMenu = true;
-						*/
-
-						gameState.inMenu = true;
-
-						MS_renderMenu(gRenderer, gFont);
-						//SDL_RenderPresent(gRenderer);
-					}
-
 
 
 					if (gameState.textAvailable) {
 						handleDialogue(e);
 					}
-
-					if (gameState.inMenu) {
+					
+					else if (gameState.inMenu) {
 						//handleMenuInput(e);
 						//handleMenuInputSideBySide(e);
 						MS_renderMenu(gRenderer, gFont);
@@ -1066,7 +1126,7 @@ int main(int argc, char* args[])
 
 					}
 
-					if (gameState.inFight) {
+					else if (gameState.inFight) {
 						// handle fight input..?
 						FS_HandleInput(gRenderer, gFont, e);
 						//continue;
@@ -1103,7 +1163,6 @@ int main(int argc, char* args[])
 				// Starting Point!
 				
 				if (gameState.LoadingScreen) {
-
 					// fade to black, load map texture based on room name, and fade back in.
 					// player position and Level is loaded from the DOOR.
 					// Maybe player direction should be given..?
@@ -1255,11 +1314,54 @@ int main(int argc, char* args[])
 						camera.y = levelHeight - camera.h;
 					}
 
+
+					// TESTING MAP OFFSETS
+
+
 					camera.w = std::min(levelWidth, windowWidth);  // Don't exceed level size
 					camera.h = std::min(levelHeight, windowHeight);
 
 					camera.x = std::max(0, std::min(player.GetPosX() - camera.w / 2, levelWidth - camera.w));
 					camera.y = std::max(0, std::min(player.GetPosY() - camera.h / 2, levelHeight - camera.h));
+
+
+					// Calculate map offsets for centering smaller maps
+					if (windowWidth > levelWidth) {
+						MapoffsetX = (windowWidth - levelWidth) / 2;
+					}
+					else {
+						MapoffsetX = 0;
+					}
+
+					if (windowHeight > levelHeight) {
+						MapoffsetY = (windowHeight - levelHeight) / 2;
+					}
+					else {
+						MapoffsetY = 0;
+					}
+
+
+					// Center the camera over the player
+					camera.w = std::min(levelWidth, windowWidth);  // Don't exceed level size
+					camera.h = std::min(levelHeight, windowHeight);
+
+					// Only apply camera if the map is larger than the screen
+					if (levelWidth > windowWidth) {
+						camera.x = std::max(0, std::min(player.GetPosX() + player.SpriteWidth / 2 - windowWidth / 2,
+							levelWidth - camera.w));
+					}
+					else {
+						camera.x = 0; // No camera movement needed for small maps
+					}
+
+					if (levelHeight > windowHeight) {
+						camera.y = std::max(0, std::min(player.GetPosY() + player.SpriteHeight / 2 - windowHeight / 2,
+							levelHeight - camera.h));
+					}
+					else {
+						camera.y = 0; // No camera movement needed for small maps
+					}
+
 
 					//player.Update(deltaTime);
 
@@ -1285,8 +1387,8 @@ int main(int argc, char* args[])
 						if (SDL_IntersectRect(&box->m_FOV, &camera, &intersectedBox)) {
 							// Adjust box position relative to camera
 							SDL_Rect renderBox = {
-								box->m_FOV.x - camera.x + MapoffsetX,
-								box->m_FOV.y - camera.y + MapoffsetY,
+								box->m_FOV.x - camera.x,
+								box->m_FOV.y - camera.y,
 								box->m_FOV.w,
 								box->m_FOV.h 
 							};
@@ -1351,8 +1453,8 @@ int main(int argc, char* args[])
 						// RENDER BASIC CHECK BOX
 						SDL_Rect checkb = player.m_CheckBox;
 						SDL_Rect rendercheckBox = {
-							checkb.x - camera.x + MapoffsetX,
-							checkb.y - camera.y + MapoffsetY,
+							checkb.x - camera.x,
+							checkb.y - camera.y,
 							checkb.w,
 							checkb.h
 						};
