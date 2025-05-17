@@ -1,6 +1,7 @@
 # Current TODOs:
 
 # fix death screen
+    # death screen blips on the screen for a frame. looks like ill have to call a function to draw the death screen and handle input on its own
   # load save after death screen
 
 

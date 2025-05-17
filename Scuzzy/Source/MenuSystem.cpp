@@ -264,12 +264,12 @@ void renderInventoryMenu(SDL_Renderer* renderer, TTF_Font* font) {
 
     std::vector<std::string> options;
     int screenWidth, screenHeight;
-    SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+    //SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+	SDL_GetWindowSize(SDL_GetWindowFromID(1), &screenWidth, &screenHeight); // Get the window size
 
 
     int xOffset = screenWidth * 0.05 + 10;  // Start slightly inside the text box
     int yOffset = screenHeight - 275;       // Place the text inside the box
-    // i dont know why /2 is wrong.. that should give me half the screen? but maybe im tired
 
     int boxWidth = screenWidth * 0.9;  // 90% of the screen width
     int boxHeight = 300;               // Fixed height for the text box

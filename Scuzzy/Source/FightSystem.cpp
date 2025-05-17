@@ -278,6 +278,7 @@ void HandlePlayerActionResultState(SDL_Renderer* renderer, TTF_Font* font, SDL_E
     }
 }
 
+void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event); // coupon clipping bastard
 void HandleEnemyTurnState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     // Determine enemy action
     int action = chance(8);
@@ -315,7 +316,10 @@ void HandleEnemyTurnState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
         if (gameState.HP <= 0) {
             gameState.HP = 0;
             fightText += "You were defeated!";
+            FS_renderText(renderer, font, fightText, { 255, 255, 255 });
             gameState.fightState = FightState::FIGHT_END;
+			gameState.dead = true;
+			HandleFightEndState(renderer, font, event);
         }
         else {
             gameState.fightState = FightState::RESULT_DIALOGUE;
@@ -341,13 +345,25 @@ void HandleResultDialogueState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event
 }
 
 void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
-    FS_renderText(renderer, font, fightText, { 255, 255, 255 });
+    gameState.inFight = false;
+    gameState.wonFight = !gameState.dead;
+	gameState.Text.clear();
+	if (!gameState.dead) {
+        gameState.Text = { "You won! FUCKJ " };
+        gameState.textAvailable = true;
+	}
+	else {
+        //gameState.Text = { "You lost the fight!" };
+	}
+	//gameState.textAvailable = true;
 
-    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
-        // Exit fight mode
-        gameState.inFight = false;
-		gameState.wonFight = true;
-    }
+  //  FS_renderText(renderer, font, fightText, { 255, 255, 255 });
+
+  //  if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
+  //      // Exit fight mode
+  //      gameState.inFight = false;
+		//gameState.wonFight = !gameState.dead;
+  //  }
 }
 
 // Main fight system input handler

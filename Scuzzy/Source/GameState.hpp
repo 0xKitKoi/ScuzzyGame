@@ -64,8 +64,13 @@ struct GameState {
     std::vector<std::string> Text;
     int textIndex = 0;
     
+    // Text animation state
+    std::string currentDisplayText;  // The text currently being displayed
+    int currentCharIndex = 0;        // Current character index in the animation
+    float textTimer = 0.0f;          // Timer for text animation
+    float textSpeed = 0.05f;         // Speed of text animation (seconds per character)
+    bool textAnimating = false;      // Whether text is currently animating
     
-
     std::vector<int> Inventory;
 
 };

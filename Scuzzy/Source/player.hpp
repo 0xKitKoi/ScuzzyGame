@@ -25,6 +25,8 @@ class Player {
 public:
 
 	Player(Vector2f initPos, std::vector<std::shared_ptr<Entity>>& entityVec); // init
+	~Player();
+	void reset(Vector2f initPos);
 	//void Update(const std::vector<SDL_Rect>& walls, float deltaTime);
 	void Update(std::vector<SDL_Rect*>& walls, float deltaTime);
 
@@ -34,6 +36,8 @@ public:
 	void render(int camX, int camY);
 	int GetPosX();
 	int GetPosY();
+	void SetPosX(int X);
+	void SetPosY(int Y);
 	SDL_Rect GetCollider();
 	SDL_Rect& GetColliderAddress();
 

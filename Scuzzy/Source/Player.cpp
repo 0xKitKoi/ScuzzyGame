@@ -317,6 +317,14 @@ Player::Player(Vector2f initPos, std::vector<std::shared_ptr<Entity>>& entityVec
 	}
 }
 
+Player::~Player() {
+	// Destructor
+	// Free the texture if it was loaded
+	printf("Player destructor called.\n");
+	SpriteSheet.free();
+}
+
+
 /// <summary>
 /// Handles Player movement, animations, collision detection.
 /// </summary>
@@ -332,20 +340,21 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	//}
 	if (gameState.HP <= 0) {
 		// player has died, run death screen and load from save.
-		gameState.Text.clear();
+		/*gameState.Text.clear();
 		gameState.Text.push_back("You greened out lil bro, nap time for you.");
-		gameState.textAvailable = true;
-		gameState.dead = true;
+		gameState.textAvailable = true;*/
+		return;
 	}
 
 	if (gameState.inMenu || gameState.inFight || gameState.wonFight) {
-		m_VelX = 0;
-		m_VelY = 0;
-		currentState = State::Idle;
-		keyDownPressed = false;
-		keyUpPressed = false;
-		keyLeftPressed = false;
-		keyRightPressed = false;
+		reset({ float(m_PosX), float(m_PosY) });
+		//m_VelX = 0;
+		//m_VelY = 0;
+		//currentState = State::Idle;
+		//keyDownPressed = false;
+		//keyUpPressed = false;
+		//keyLeftPressed = false;
+		//keyRightPressed = false;
 		gameState.wonFight = false;
 		return;
 	}
@@ -485,26 +494,28 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 /// <param name="e">SDL checks for key presses. We check for the buttons.</param>
 void Player::handleEvent(SDL_Event& e) {
 	if (gameState.inMenu || gameState.inFight) {
-		m_VelX = 0;
-		m_VelY = 0;
-		currentState = State::Idle;
-		keyDownPressed = false;
-		keyUpPressed = false;
-		keyLeftPressed = false;
-		keyRightPressed = false;
+		reset({ float(m_PosX), float(m_PosY) });
+		//m_VelX = 0;
+		//m_VelY = 0;
+		//currentState = State::Idle;
+		//keyDownPressed = false;
+		//keyUpPressed = false;
+		//keyLeftPressed = false;
+		//keyRightPressed = false;
 		
 	}
 	if (!gameState.inFight) {
-		if (gameState.inMenu) {
-			m_VelX = 0;
-			m_VelY = 0;
-			currentState = State::Idle;
-			keyDownPressed = false;
-			keyUpPressed = false;
-			keyLeftPressed = false;
-			keyRightPressed = false;
-			return;
-		}
+		//if (gameState.inMenu) {
+		//	reset({ float(m_PosX), float(m_PosY) });
+		//	//m_VelX = 0;
+		//	//m_VelY = 0;
+		//	//currentState = State::Idle;
+		//	//keyDownPressed = false;
+		//	//keyUpPressed = false;
+		//	//keyLeftPressed = false;
+		//	//keyRightPressed = false;
+		//	return;
+		//}
 
 
 
@@ -584,13 +595,14 @@ void Player::handleEvent(SDL_Event& e) {
 		}
 	}
 	else {
-		m_VelX = 0;
-		m_VelY = 0;
-		currentState = State::Idle;
-		keyDownPressed = false;
-		keyUpPressed = false;
-		keyLeftPressed = false;
-		keyRightPressed = false;
+		//m_VelX = 0;
+		//m_VelY = 0;
+		//currentState = State::Idle;
+		//keyDownPressed = false;
+		//keyUpPressed = false;
+		//keyLeftPressed = false;
+		//keyRightPressed = false;
+		reset({ float(m_PosX), float(m_PosY) });
 		
 
 		// IN FIGHT MOVEMENT AND SPRITE STATE AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -689,6 +701,27 @@ void Player::handleEvent(SDL_Event& e) {
 	}
 }
 
+
+
+void Player::reset(Vector2f initPos) {
+	m_PosX = initPos.x;
+	m_PosY = initPos.y;
+	currentState = State::Idle;
+	//currentDirection = Direction::Down;
+	currentFrame = 0; // animtion frame count.
+	m_VelX = 0;
+	m_VelY = 0;
+	keyDownPressed = false;
+	keyUpPressed = false;
+	keyLeftPressed = false;
+	keyRightPressed = false;
+	//m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };
+	//m_CheckBox = { m_PosX + 30, m_PosY , 60,60 };
+
+
+}
+
+
 /// <summary>
 /// Render's the player. Also handles State of animation like direction. 
 /// </summary>
@@ -762,6 +795,16 @@ int Player::GetPosX() {
 
 int Player::GetPosY() {
 	return m_PosY;
+}
+
+void Player::SetPosX(int X) {
+	m_PosX = X;
+	return;
+}
+
+void Player::SetPosY(int Y) {
+	m_PosY = Y;
+	return; 
 }
 
 SDL_Rect Player::GetCollider() {

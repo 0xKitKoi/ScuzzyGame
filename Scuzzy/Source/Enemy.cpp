@@ -72,6 +72,7 @@ void Enemy::Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
                 gameState.FightStarted = true;
                 gameState.Plot = 0;
 				FS_InitFight();
+                this->alive = false;
             }
 	}
     else {
