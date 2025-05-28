@@ -353,7 +353,7 @@ void renderInventoryMenu(SDL_Renderer* renderer, TTF_Font* font) {
         //    options.push_back(GetItemnameFromIndex(itemID));
         //}
         for (int i = 0; i < gameState.Inventory.size(); i++) {
-            options.push_back(GetItemnameFromIndex(i));
+            options.push_back(GetItemnameFromIndex(gameState.Inventory[i]));
         }
     }
         // not used..?
@@ -425,6 +425,11 @@ void renderItemOptionsMenu(SDL_Renderer* renderer, TTF_Font* font) {
     }*/
     //std::string itemName = GetItemnameFromIndex(gameState.Inventory.at(MS_selectedIndex) );
     //std::string itemName = GetIt  emnameFromIndex(gameState.Inventory.at(gameState.selectionIndex));
+
+	// this is wrong, the item ID is not the same as the selection index.
+    // this is currently creating a grid to make a shitty menu for the inventory. so 0 would be the index of the first option. this needs to be remade.
+
+
     std::string itemName;
     if (subMenuSelectionIndex >= 0 && subMenuSelectionIndex < gameState.Inventory.size()) {
         itemName = GetItemnameFromIndex(gameState.Inventory.at(subMenuSelectionIndex)); // LMFAOOOOOOOOOOOOOO loser 
@@ -457,9 +462,11 @@ void renderItemOptionsMenu(SDL_Renderer* renderer, TTF_Font* font) {
 
 void renderStatsMenu(SDL_Renderer* renderer, TTF_Font* font) {
     std::vector<std::string> options;
-    char buffer[30];
+    char buffer[50];
     //sprintf_s(buffer, "Kills: %d", gameState.kills);
     //
+	sprintf_s(buffer, sizeof(buffer), "Health: %d", gameState.HP);
+    options.push_back(buffer);
     sprintf_s(buffer, sizeof(buffer), "Kills: %d", gameState.kills);
     options.push_back(buffer);
     sprintf_s(buffer, sizeof(buffer), "Money: %d", gameState.money);
@@ -649,8 +656,8 @@ void handleItemOptionsMenuSelection(SDL_Event event) {
         else if (event.key.keysym.sym == SDLK_z) { // Confirm selection
             switch (MS_selectedIndex + 1) {
             case 1: // Use
-                std::cout << "Attempt to use item: " << GetItemnameFromIndex(gameState.selectionIndex) << std::endl;
-				gameState.Text = { "You used " + GetItemnameFromIndex(gameState.selectionIndex) + "." }; // Set response text
+                std::cout << "Attempt to use item: " << GetItemnameFromIndex(gameState.Inventory.at( gameState.selectionIndex)) << std::endl;
+				gameState.Text = { "You used " + GetItemnameFromIndex(gameState.Inventory.at(gameState.selectionIndex)) + "." }; // Set response text
 				gameState.textIndex = 0; // Reset text index
 
 				UseItem(gameState.Inventory[gameState.selectionIndex]); // Use the item
@@ -659,10 +666,18 @@ void handleItemOptionsMenuSelection(SDL_Event event) {
                 currentMenu = RESPONSE;
                 break;
             case 2: // View Info
-                std::cout << "Attempt to View info for: " << GetItemnameFromIndex(gameState.selectionIndex) << std::endl;
+                std::cout << "Attempt to View info for: " << GetItemnameFromIndex(gameState.Inventory.at(gameState.selectionIndex)) << std::endl;
+                gameState.Text = { GetItemDescription(gameState.Inventory.at(gameState.selectionIndex)) }; // Get item description
+				lastMenuState = ITEM_OPTIONS_MENU; // Save last menu state
+				currentMenu = RESPONSE; // Switch to response menu
                 break;
             case 3:
-                std::cout << "Attempt to Throw away item: " << GetItemnameFromIndex(gameState.selectionIndex) << std::endl;
+                std::cout << "Attempt to Throw away item: " << GetItemnameFromIndex(gameState.Inventory.at(gameState.selectionIndex)) << std::endl;
+				gameState.Text = { "You threw away " + GetItemnameFromIndex(gameState.Inventory.at(gameState.selectionIndex)) + "." }; // Set response text
+				gameState.textIndex = 0; // Reset text index
+				gameState.Inventory.erase(gameState.Inventory.begin() + gameState.selectionIndex); // Remove the item from inventory
+				lastMenuState = INVENTORY_MENU; // Save last menu state
+				currentMenu = RESPONSE; // Switch to response menu
                 break;
             default:
                 printf("\n [!] ERROR: handleItemOptionsMenuSelection() selection index: %d", gameState.selectionIndex);

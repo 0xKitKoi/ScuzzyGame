@@ -1,4 +1,5 @@
 #include "Source/FightSystem.hpp"
+#include "Source/Helper.hpp"
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <stdio.h>
@@ -239,6 +240,20 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
 
     for (int i = 0; i < itemMenu.size(); i++) {
         SDL_Color color = (i == selection) ? SDL_Color{ 237, 28, 36 } : SDL_Color{ 255, 255, 255 };
+        if (i >= 4) {
+			if (i % 4 == 0) {
+				xOffset += 40; // Reset to first column
+				yOffset += 0;
+			}
+            else {
+                xOffset += (i % 4) * 30;
+                yOffset += (i * 30);
+            }
+			
+		} // moves down
+  //          xOffset += 0; // Regular horizontal layout
+  //          yOffset += (i * 30); // Keep vertical position constant
+        
         FS_renderText(renderer, font, itemMenu[i], xOffset, yOffset + (i * 30), color);
     }
 
@@ -255,6 +270,7 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
             //gameState.fightState = FightState::PLAYER_TURN_MENU;
 			fightText = "You used the ";
 			fightText += GetItemnameFromIndex(gameState.Inventory[selection]);
+			UseItem(gameState.Inventory[selection]); // Use the selected item
             
             //selection = 2; // Set to Items option
 
@@ -265,6 +281,16 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
 
             selection = 2; // Set to Items option
         }
+
+        // mutiple items would probably break this. EDIT: thought so.
+		else if (event.key.keysym.sym == SDLK_UP) {
+			selection--;
+			if (selection < 0) selection = itemMenu.size() - 1;
+		}
+		else if (event.key.keysym.sym == SDLK_DOWN) {
+			selection++;
+			if (selection >= itemMenu.size()) selection = 0;
+		}
         
     }
 }

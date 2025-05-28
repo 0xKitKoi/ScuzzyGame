@@ -2,6 +2,7 @@
 
 # Refactor Menu System LMAOOO
     # item usage has been kinda added, errors on rendering multiple items in fight. errors on rendering the correct name of the item when multiple items are in the inventory.
+     /// Done ..? # items are rendered from the selection index, which is wrong.
 
 # level rendering is off for smaller maps, seems like the height is being rendered incorrectly, like it was squished down to fit the screen.
     # darkalley otherwise seems nice.

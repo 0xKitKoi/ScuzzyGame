@@ -282,10 +282,10 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 std::string GetItemnameFromIndex(int index) {
 	switch (index) {
 	case 0:
-		return "Test Item 1";
+		return "Healing item TEST";
 		break;
 	case 1:
-		return "Test Item 2";
+		return "money giver test";
 		break;
 	default:
 		//printf("\n [!] ERROR: Could not get Item name at selection index: %d", index);
@@ -295,6 +295,12 @@ std::string GetItemnameFromIndex(int index) {
 }
 
 // time to implement the item system.
+
+/// <summary>
+/// Manipulates the GameState Object based on ID. Caller is responcible for deleting the item from inventory.
+/// </summary>
+/// <param name="ID">Item ID</param>
+/// <returns>(int)Success</returns>
 int UseItem(int ID) {
 	int ret = -1;
 	switch (ID) {
@@ -310,4 +316,18 @@ int UseItem(int ID) {
 		break;
 	}
 	return ret;
+}
+
+std::string GetItemDescription(int ID) {
+	switch (ID) {
+	case 0:
+		return "A test item that heals you for 10 HP.";
+		break;
+	case 1:
+		return "A test item that gives you 5 money.";
+		break;
+	default:
+		return "ERROR: No description found for this item.";
+		break;
+	}
 }
