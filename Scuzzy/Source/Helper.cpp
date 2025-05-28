@@ -96,7 +96,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			SDL_Rect signCB = { signpos.x + 25, signpos.y + 25, signRect.w - 45, signRect.h - 55 };
 			auto signentity = std::make_shared<Entity>(signpos, signCB, signRect, getTexture("data/hintsign.png"), 1, clips, 2);
 			Entities.push_back(signentity);
-			std::vector<std::string> dialogue = { "Hello, I'm a fucking sign" };
+			std::vector<std::string> dialogue = { "Hello, I'm a fucking sign. ufck you" };
 			std::shared_ptr<NPC> signnpc = std::make_shared<SIGNNPC>(dialogue, signentity);
 			signentity->setNPC(signnpc);
 
@@ -146,7 +146,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 		break;
 	case 1:
-		if (!Map->loadFromFile("data/startingalley.png"))
+		if (!Map->loadFromFile("data/MLEM.png")) // "data/startingalley.png"
 		{
 			printf("Failed to load sprite sheet texture!\n");
 		}
@@ -277,4 +277,37 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 	leveldimentions.x = Map->getHeight();
 	leveldimentions.y = Map->getWidth(); // callers problem to load level dimensions. i aint doing all that.
 	return leveldimentions;
+}
+
+std::string GetItemnameFromIndex(int index) {
+	switch (index) {
+	case 0:
+		return "Test Item 1";
+		break;
+	case 1:
+		return "Test Item 2";
+		break;
+	default:
+		//printf("\n [!] ERROR: Could not get Item name at selection index: %d", index);
+		return "ERROR";
+		break;
+	}
+}
+
+// time to implement the item system.
+int UseItem(int ID) {
+	int ret = -1;
+	switch (ID) {
+	case 0:
+		printf("You used Test Item 1!\n");
+		gameState.HP += 10; // heal 10 HP
+		ret = 0;
+		break;
+	case 1:
+		printf("You used Test Item 2!\n");
+		gameState.money += 5;
+		ret = 0;
+		break;
+	}
+	return ret;
 }

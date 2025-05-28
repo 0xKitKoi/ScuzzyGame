@@ -23,10 +23,23 @@ public:
 		// detect if player check box collides with NPC hitbox?
 		// Player can detect this, how do I tell the NPC this?
 		if (m_checked) {
+			gameState.Text.clear();
 			gameState.Text = m_Dialogue;
 			gameState.textAvailable;
 			gameState.callbackNPC = this;
 			m_checked = false;
+
+			//gameState.Text.clear();
+			//gameState.Text.push_back("Who are you talking to..?");
+			gameState.textIndex = 0;
+			gameState.currentCharIndex = 1; // offset because i need a char to start the animation.
+			gameState.textTimer = 0.0f;
+			gameState.textAnimating = true;
+			gameState.currentDisplayText = gameState.Text[0][0];// "";
+			gameState.shouldAnimateText = true;  // This is dialogue, so animate it
+			gameState.textAvailable = true;
+
+
 		}
 	}
 	/*

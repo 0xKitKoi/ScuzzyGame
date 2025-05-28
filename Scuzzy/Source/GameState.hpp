@@ -68,8 +68,9 @@ struct GameState {
     std::string currentDisplayText;  // The text currently being displayed
     int currentCharIndex = 0;        // Current character index in the animation
     float textTimer = 0.0f;          // Timer for text animation
-    float textSpeed = 0.05f;         // Speed of text animation (seconds per character)
+    float textSpeed = 0.03f;         // Speed of text animation (seconds per character)
     bool textAnimating = false;      // Whether text is currently animating
+    bool shouldAnimateText = false;  // Whether the current text should be animated (dialogue vs menu)
     
     std::vector<int> Inventory;
 

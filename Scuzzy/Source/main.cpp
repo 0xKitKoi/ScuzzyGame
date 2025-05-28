@@ -704,20 +704,34 @@ std::vector<std::string> dialogue = {
 	"Press Z to continue."
 };*/
 void handleDialogue(SDL_Event event) {
+
 	if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
-		if (gameState.textIndex < gameState.Text.size() - 1) {
+		if (gameState.shouldAnimateText && gameState.textAnimating) {
+			// If text is still animating, show the full text immediately
+			gameState.currentDisplayText = gameState.Text[gameState.textIndex];
+			gameState.textAnimating = false;
+		}
+		else if (gameState.textIndex < gameState.Text.size() - 1) {
+			// Move to next line and start animating if needed
 			gameState.textIndex++;
+			if (gameState.shouldAnimateText) {
+				gameState.currentCharIndex = 0;
+				gameState.textTimer = 0.0f;
+				gameState.textAnimating = true;
+				gameState.currentDisplayText = "";
+			}
 		}
 		else {
 			// Dialogue finished
 			gameState.textIndex = 0;
 			gameState.textAvailable = false;
+			gameState.textAnimating = false;
 		}
 	}
 }
 
 
-void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) { // TDOD: implement new lines for 100 char limit per line
+void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) {
 	// Get screen dimensions
 	int screenWidth, screenHeight;
 	SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
@@ -730,12 +744,33 @@ void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) { // TDOD: implement
 	int xOffset = screenWidth * 0.05 + 20;  // Small margin inside the box
 	int yOffset = screenHeight - 275;       // Positioning inside the text box
 
-	// If the current line exists, render it
-	if (gameState.textIndex < gameState.Text.size()) {
-		SDL_Color white = { 255, 255, 255 };  // Normal text color
+	// If the current line exists, update and render it
+	if (gameState.currentCharIndex < gameState.Text[gameState.textIndex].size()) {
+		// Update text animation if needed
+		if (gameState.shouldAnimateText && gameState.textAnimating) {
+			gameState.textTimer += 1.0f / 60.0f;//60.0f; // Assuming 60 FPS
+			if (gameState.textTimer >= gameState.textSpeed) {
+				gameState.textTimer = 0.0f;
+				if (gameState.currentCharIndex < gameState.Text[gameState.textIndex].length()) {
+					gameState.currentDisplayText += gameState.Text[gameState.textIndex][gameState.currentCharIndex];
+					gameState.currentCharIndex++;
+				}
+				else {
+					gameState.textAnimating = false;
+				}
+			}
+		}
+
+
+	}
+	// Render the current text
+	SDL_Color white = { 255, 255, 255 };  // Normal text color
+	if (gameState.shouldAnimateText && gameState.textAnimating) {
+		renderText(renderer, font, gameState.currentDisplayText, xOffset, yOffset, white);
+	}
+	else {
 		renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, white);
 	}
-	
 }
 
 
@@ -1010,16 +1045,23 @@ int main(int argc, char* args[])
 								// 100 char limit per line
 								"AAAA BBBB CCCC DDDD EEEE FFFF GGGG HHHH IIII JJJJ KKKK LLLL MMMM NNNN OOOO PPPP QQQQ RRRR SSSS TTTT UUUU VVVV WWWW XXXX"
 							};
-
+							gameState.textIndex = 0;
+							gameState.currentCharIndex = 0;
+							gameState.textTimer = 0.0f;
+							gameState.textAnimating = true;
+							gameState.currentDisplayText = gameState.Text[0][0];
+							gameState.shouldAnimateText = true;  // This is dialogue, so animate it
 							gameState.textAvailable = true;
 							break;
 						case SDLK_F5:
 							gameState.Text = { "Start", "Options", "Quit" };
+							gameState.textIndex = 0;
+							gameState.shouldAnimateText = false;  // This is a menu, so don't animate
 							gameState.inMenu = true;
 							break;
 						case SDLK_c:
 							gameState.inMenu = true;
-
+							gameState.shouldAnimateText = false;
 							MS_renderMenu(gRenderer, gFont);
 							break;
 						default:
@@ -1512,21 +1554,25 @@ int main(int argc, char* args[])
 					if (gameState.textAvailable) {
 						renderDialogue(gRenderer, gFont);
 						player.currentState = State::Idle;
+						player.reset({float(player.GetPosX()), float(player.GetPosY())}); // reset the player position to the current position, so it doesn't move while dialogue is active.
 					}
 					else if (gameState.OpenedMenu) {
 						renderMenuSideBySide(gRenderer, gFont);
 						player.currentState = State::Idle;
+						player.reset({ float(player.GetPosX()), float(player.GetPosY()) });
 
 					}
 					else if (gameState.inMenu) {
 						//renderMenuSideBySide(gRenderer, gFont);
 						MS_renderMenu(gRenderer, gFont);
 						player.currentState = State::Idle;
+						player.reset({ float(player.GetPosX()), float(player.GetPosY()) });
 					}
 
 					if (gameState.checkFlag) {
 						bool someone = false;
 						player.currentState = State::Idle;
+						player.reset({ float(player.GetPosX()), float(player.GetPosY()) });
 						for (const auto& entity : Entities) {
 							if (SDL_HasIntersection(&player.m_CheckBox, &entity->m_Collider)) { // &entity->m_Collider
 								printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
@@ -1540,6 +1586,12 @@ int main(int argc, char* args[])
 						if (!someone) {
 							gameState.Text.clear();
 							gameState.Text.push_back("Who are you talking to..?");
+							gameState.textIndex = 0;
+							gameState.currentCharIndex = 1; // offset because i need a char to start the animation.
+							gameState.textTimer = 0.0f;
+							gameState.textAnimating = true;
+							gameState.currentDisplayText = gameState.Text[0][0];// "";
+							gameState.shouldAnimateText = true;  // This is dialogue, so animate it
 							gameState.textAvailable = true;
 						}
 						gameState.checkFlag = false;
