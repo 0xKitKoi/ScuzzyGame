@@ -25,6 +25,9 @@ int LevelIDFromName(std::string name) {
 	else if (name == "Level2") {
 		return 2;
 	}
+	else if (name == "MLEM") {
+		return 3;
+	}
 	else {
 		return -1;
 	}
@@ -45,6 +48,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			printf("Failed to load sprite sheet texture!\n");
 		}
 		else {
+
 			// Load first entity , Enemy !
 			Vector2f entityPos(950, 390);
 			SDL_Rect entityRect = { 0,0,128,128 };
@@ -59,6 +63,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			SDL_Rect entity_cb = { entityPos.x + 25, entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
 			std::vector<std::string> enemydialogue = { "The Box Full of \"Fuck You\" Appeared!", "The Box of fuck you said ... \"Fuck you\"", "You opened the box. There was \"fuck you\" inside." };
 			auto entity = std::make_shared<Entity>(entityPos, entity_cb, entityRect, getTexture("data/box_fuck_u_ari_1.png"), 2, clips, 44);
+			
 			// create the enemy and bind it to the entity
 			std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity); // make an enemy object initialized with the entity object
 			child->m_AttackDamage = 1;
@@ -66,8 +71,15 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			entity->m_Enemy->m_EnemyDialogue = enemydialogue;
 			entity->m_Enemy->m_Actions = { "info", "sit", "kick.?" };
 			entity->m_Enemy->m_ActionResponse = { "STATUS: .. its a box..?", "You sat on the box, it left a dent in it.", "WHAM! you left a big dent in its fleshy cardboard." };
+			entity->m_Enemy->m_EnemyFightSpriteSheet  = getTexture("data/box_fuck_u_ari_1.png");
+			//entity->m_Enemy->m_EnemySpriteClips = { {0,0,32,32}, {32*1,0,32,32}, {32 * 2,0,32,32}, {32 * 3,0,32,32} };
+			entity->m_Enemy->m_EnemySpriteClips = clips;
+			entity->m_Enemy->FRAME_COUNT = 2;
+
 			Entities.push_back(entity); // vector of all entities to render.
 			collisionBoxes.push_back(&entity->m_Collider);
+
+
 
 
 			// DOOR TEST
@@ -81,7 +93,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			entity_cb = { (int)entityPos.x + 25, (int)entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
 			auto Doorentity = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
 			Entities.push_back(Doorentity); // vector of all entities to render.
-			Vector2f outpos(1000, 960);
+			Vector2f outpos(872, 570);
 			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity, "Level1", outpos);
 			doornpc->m_Entity = Doorentity;
 			Doorentity->setNPC(doornpc);
@@ -130,6 +142,11 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			entity2->m_Enemy->m_EnemyDialogue = enemydialogue2;
 			entity2->m_Enemy->m_Actions = { "info", "dissassemble", "turn into shitbox" };
 			entity2->m_Enemy->m_ActionResponse = { "STATUS: .. its a box..?", "You flattened the box. It took Heavy Damage", "my actual pc" };
+			entity->m_Enemy->m_EnemyFightSpriteSheet = getTexture("data/DooDooMart_StorageBox-Sheet.png");
+			//entity->m_Enemy->m_EnemySpriteClips = { {0,0,32,32}, {32*1,0,32,32}, {32 * 2,0,32,32}, {32 * 3,0,32,32} };
+			entity->m_Enemy->m_EnemySpriteClips = clips;
+			entity->m_Enemy->FRAME_COUNT = 5;
+
 			Entities.push_back(entity2); // vector of all entities to render.
 			collisionBoxes.push_back(&entity2->m_Collider);
 
@@ -146,17 +163,17 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 		break;
 	case 1:
-		if (!Map->loadFromFile("data/MLEM.png")) // "data/startingalley.png"
+		if (!Map->loadFromFile("data/darkalley.png")) // "data/startingalley.png"
 		{
 			printf("Failed to load sprite sheet texture!\n");
 		}
 		else {
 			// DOOR TEST
-			Vector2f entityPos(872, 209);
+			Vector2f entityPos(872, 770);
 			SDL_Rect entityRect = { 0,0,128,128 };
 			SDL_Rect tmp, entity_cb;
 			clips.clear();
-			Vector2f doorPos(400, 300);
+			Vector2f doorPos(872, 770);
 			entityRect = { 0,0,128,128 };
 			tmp = { 0,0,128,128 };
 			clips.push_back(tmp);
@@ -165,8 +182,8 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			entity_cb = { (int)entityPos.x + 25, (int)entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
 			auto Doorentity2 = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
 			Entities.push_back(Doorentity2); // vector of all entities to render.
-			Vector2f outpos(1000, 960);
-			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity2, "test", outpos);
+			Vector2f outpos(540, 300);//(1000, 960);
+			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity2, "MLEM", outpos);
 			doornpc->m_Entity = Doorentity2;
 			Doorentity2->setNPC(doornpc);
 			collisionBoxes.push_back(&Doorentity2->m_Collider);
@@ -247,7 +264,35 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 		}
 		else {
 			// DOOR TEST
-			Vector2f entityPos(950, 390);
+			Vector2f entityPos(950, 490);
+			SDL_Rect entityRect = { 0,0,128,128 };
+			SDL_Rect tmp = { 0,0,128,128 };
+			clips.clear();
+			Vector2f doorPos(400, 300);
+			entityRect = { 0,0,128,128 };
+			tmp = { 0,0,128,128 };
+			clips.push_back(tmp);
+			tmp = { 128,0,128,128 };
+			clips.push_back(tmp);
+			SDL_Rect entity_cb = { entityPos.x + 25, entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
+			auto Doorentity = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
+			Entities.push_back(Doorentity); // vector of all entities to render.
+			Vector2f outpos(960, 960);
+			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity, "test", outpos);
+			doornpc->m_Entity = Doorentity;
+			Doorentity->setNPC(doornpc);
+			collisionBoxes.push_back(&Doorentity->m_Collider);
+		}
+		break;
+
+	case 3:
+		if (!Map->loadFromFile("data/MLEM.png"))
+		{
+			printf("Failed to load sprite sheet texture!\n");
+		}
+		else {
+			// DOOR TEST
+			Vector2f entityPos(950, 490);
 			SDL_Rect entityRect = { 0,0,128,128 };
 			SDL_Rect tmp = { 0,0,128,128 };
 			clips.clear();

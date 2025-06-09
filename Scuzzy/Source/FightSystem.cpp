@@ -230,32 +230,39 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
             itemMenu.push_back(GetItemnameFromIndex(gameState.Inventory[i]));
         }
 	}
-
+	int numOptions = itemMenu.size();
 
     // Render menu options
     int screenWidth, screenHeight;
+    
     SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+    int boxWidth = screenWidth * 0.9;
     int xOffset = screenWidth * 0.05 + 30;
     int yOffset = screenHeight - 275;
 
+    SDL_Color white = { 255, 255, 255 };  // Normal text color
+    SDL_Color red = { 237, 28, 36 };       // Highlighted text color
+
+
+    // Calculate grid dimensions
+    const int maxColumns = 4;
+    const int maxRows = (itemMenu.size() + maxColumns - 1) / maxColumns; // Calculate necessary rows
+    int optionWidth = (boxWidth - (maxColumns + 1) * 10) / maxColumns; // 10 is spacing
+    int optionHeight = 50; // Set a fixed height for each option
     for (int i = 0; i < itemMenu.size(); i++) {
-        SDL_Color color = (i == selection) ? SDL_Color{ 237, 28, 36 } : SDL_Color{ 255, 255, 255 };
-        if (i >= 4) {
-			if (i % 4 == 0) {
-				xOffset += 40; // Reset to first column
-				yOffset += 0;
-			}
-            else {
-                xOffset += (i % 4) * 30;
-                yOffset += (i * 30);
-            }
-			
-		} // moves down
-  //          xOffset += 0; // Regular horizontal layout
-  //          yOffset += (i * 30); // Keep vertical position constant
-        
-        FS_renderText(renderer, font, itemMenu[i], xOffset, yOffset + (i * 30), color);
+        int column = i % 4;  // Current column (0, 1, 2, 3)
+        int row = i / 4;      // Current row
+
+        int currentX = xOffset + (column * (optionWidth + 10)); // 10 is the spacing
+        int currentY = yOffset + (row * (optionHeight + 10));   // 10 is the spacing
+
+        // Determine color based on selection
+        SDL_Color color = (i == selection) ? red : white;
+
+        // Render the option
+        FS_renderText(renderer, font, itemMenu[i], currentX, currentY, color);
     }
+
 
     // Handle input
     if (event.type == SDL_KEYDOWN) { 
@@ -282,15 +289,44 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
             selection = 2; // Set to Items option
         }
 
-        // mutiple items would probably break this. EDIT: thought so.
-		else if (event.key.keysym.sym == SDLK_UP) {
-			selection--;
-			if (selection < 0) selection = itemMenu.size() - 1;
-		}
-		else if (event.key.keysym.sym == SDLK_DOWN) {
-			selection++;
-			if (selection >= itemMenu.size()) selection = 0;
-		}
+  //      // mutiple items would probably break this. EDIT: thought so.
+		//else if (event.key.keysym.sym == SDLK_UP) {
+		//	selection--;
+		//	if (selection < 0) selection = itemMenu.size() - 1;
+		//}
+		//else if (event.key.keysym.sym == SDLK_DOWN) {
+		//	selection++;
+		//	if (selection >= itemMenu.size()) selection = 0;
+		//}
+
+
+        if (event.key.keysym.sym == SDLK_LEFT) {
+            // Move left, wrapping around if necessary
+            if (selection % maxColumns > 0) {
+                selection--; // Move left
+            }
+            else {
+                selection = (selection + maxColumns) % numOptions; // Wrap to the end of the row
+            }
+        }
+        else if (event.key.keysym.sym == SDLK_RIGHT) {
+            // Move right, wrapping around if necessary
+            if (selection % maxColumns < maxColumns - 1 && selection < numOptions - 1) {
+                selection++; // Move right
+            }
+            else {
+                selection = (selection + 1) % numOptions; // Wrap to the start of the next row
+            }
+        }
+        else if (event.key.keysym.sym == SDLK_DOWN) {
+            // Move down, wrapping to the next row
+            selection = (selection + maxColumns < numOptions) ? selection + maxColumns : selection;
+        }
+        else if (event.key.keysym.sym == SDLK_UP) {
+            // Move up, wrapping to the previous row
+            selection = (selection - maxColumns >= 0) ? selection - maxColumns : selection;
+        }
+
         
     }
 }

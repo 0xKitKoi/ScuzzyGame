@@ -949,6 +949,8 @@ int main(int argc, char* args[])
 			//std::vector<std::shared_ptr<Entity>> Entities; // made global because everything needs to see all entities for collision detection.
 			//std::unique_ptr<Player> player = std::make_unique<Player>(playerinitpos, Entities);
 			Player player(playerinitpos, Entities);
+			gameState.player = &player;
+
 			
 			/*
 			    Parent parent;
@@ -1319,16 +1321,45 @@ int main(int argc, char* args[])
 					SDL_SetRenderDrawColor(gRenderer, 0, 0, 20, 0xFF);
 					SDL_RenderClear(gRenderer);
 					//int offsetX = 0, offsetY = 0;
-					if (windowHeight > levelHeight) {
-						MapoffsetX = (windowWidth - levelWidth) / 2;
-					}
-					else {MapoffsetX = 0;}
-					if (windowWidth > levelWidth) {
-						MapoffsetY = (windowHeight - levelHeight) / 2;
-					}
-					else {MapoffsetY = 0;}
 
-					Map.render(MapoffsetX, MapoffsetY, &camera);
+
+
+					//if (windowHeight > levelHeight) {
+					//	//MapoffsetX = (windowWidth - levelWidth) / 2;
+					//	MapoffsetY = (windowHeight - levelHeight) / 2;
+					//}
+					//else {MapoffsetX = 0;}
+					//if (windowWidth > levelWidth) {
+					//	MapoffsetX = (windowWidth - levelWidth) / 2;
+					//	
+					//}
+					//else {MapoffsetY = 0;}
+
+					//Map.render(MapoffsetX, MapoffsetY, &camera);
+
+
+					MapoffsetY = 0;
+					MapoffsetX = 0;
+					bool smol = false;
+					if (windowHeight > levelHeight) {
+						//MapoffsetX = (windowWidth - levelWidth) / 2;
+						MapoffsetY = (windowHeight - levelHeight) / 2;
+						smol = true;
+					}
+					if (windowWidth > levelWidth) {
+						MapoffsetX = (windowWidth - levelWidth) / 2;
+						smol = true;
+
+					}
+					if (smol) {
+						Map.render(MapoffsetX, MapoffsetY);
+					}
+					else {
+						Map.render(MapoffsetX, MapoffsetY, &camera);
+					}
+
+					
+
 
 					gTextTexture.render(0, 0); // render any text.
 					//gTextTexture.render((SCREEN_WIDTH - gTextTexture.getWidth()) / 2, (SCREEN_HEIGHT - gTextTexture.getHeight()) / 2);
@@ -1613,11 +1644,13 @@ int main(int argc, char* args[])
 					gTextTexture.loadFromRenderedText(bruh, { 0xFF, 0xFF, 0xFF, 0xFF });
 					gTextTexture.render(0, 0);
 
+					// Enemy will now render itself like a man
+					gameState.enemy->Update(deltaTime, SCREEN_HEIGHT, SCREEN_WIDTH);
+
+					
+
 					// Get this from Enemy ID.
-					LTexture EnemySprite;
-					EnemySprite.loadFromFile("data/box_fuck_u_ari_1.png");
-					SDL_Rect rect = { 0,0,128,128 };
-					EnemySprite.render((SCREEN_WIDTH/2)-128, (SCREEN_HEIGHT/2)-128*2, &rect);
+					//gameState.enemy->m_EnemyFightSpriteSheet->render((SCREEN_WIDTH/2)-128, (SCREEN_HEIGHT/2)-128*2, &rect);
 
 
 					FS_HandleInput(gRenderer, gFont, e);

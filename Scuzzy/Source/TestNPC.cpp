@@ -18,6 +18,9 @@ public:
             gameState.textAvailable;
             gameState.callbackNPC = this;
             m_checked = false;
+            gameState.player->SetPosX(m_Location.x);
+			gameState.player->SetPosY(m_Location.y);
+			gameState.player->reset({ m_Location.x, m_Location.y });
         }
     }
 };

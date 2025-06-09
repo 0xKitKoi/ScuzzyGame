@@ -80,6 +80,44 @@ void Enemy::Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
 	}
 }
 
+
+/// <summary>
+/// IN FIGHT UPDATE TODO: give position to render at
+/// </summary>
+/// <param name="deltaT">float Delta time</param>
+/// <param name="screenheight">int</param>
+/// <param name="screenwidth">int</param>
+void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
+	if (gameState.fightState == FightState::ENEMY_DIALOGUE) {
+		//SDL_Rect enemysprite = this->m_EnemySpriteClips[0];
+        
+        this->m_Entity->getCurrentFrame();
+
+
+        lastFrameTime += deltaT * 1000.0f;
+        if (lastFrameTime >= frameDuration) {
+            currentFrameCount = (currentFrameCount + 1) % this->m_Entity->FRAME_COUNT;
+            lastFrameTime = 0;
+        }
+
+        //enemysprite = m_EnemySpriteClips[currentFrameCount]; // render the sprite at index of animation
+        this->m_Entity->getTex()->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_Entity->getCurrentFrame());
+
+
+	}
+    else {
+		this->m_Entity->getTex()->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_Entity->getCurrentFrame());
+    }
+    //if (gameState.fightState == FightState::ENEMY_TURN) {
+    //    //
+    //    gameState.enemy->HP -= gameState.enemy->m_AttackDamage; // Example of attacking the player
+    //    if (gameState.enemy->HP <= 0) {
+    //        gameState.wonFight = true; // Player wins
+    //        gameState.inFight = false; // End fight
+    //    }
+    //}
+}
+
 void Enemy::move(Vector2f targetPos) {
 	//Vector2f prev = m_Entity.getPos();
 

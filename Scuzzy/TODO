@@ -1,5 +1,9 @@
 # Current TODOs:
 
+# get render logic for earthound battle background 
+
+# Impliment silly meter, and effects from actions
+
 # Refactor Menu System LMAOOO
     # item usage has been kinda added, errors on rendering multiple items in fight. errors on rendering the correct name of the item when multiple items are in the inventory.
      /// Done ..? # items are rendered from the selection index, which is wrong.
@@ -8,7 +12,7 @@
     # darkalley otherwise seems nice.
     # MLEM map is not as big as i thought it was.. game thinks its big, but rendered incorrectly. 
     #
-    # MAP OFFSETS NEED TO BE FIXED
+    # MAP OFFSETS NEED TO BE FIXED 
     #
     #
 
