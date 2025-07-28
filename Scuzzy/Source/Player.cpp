@@ -1,4 +1,4 @@
-#include "Source/player.hpp"
+#include "Source/Player.hpp"
 #include "Source/LTexture.hpp"
 #include "Source/Math.hpp"
 #include "Source/GameState.hpp"

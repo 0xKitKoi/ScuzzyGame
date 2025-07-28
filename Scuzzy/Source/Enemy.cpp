@@ -91,7 +91,7 @@ void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
 	if (gameState.fightState == FightState::ENEMY_DIALOGUE) {
 		//SDL_Rect enemysprite = this->m_EnemySpriteClips[0];
         
-        this->m_Entity->getCurrentFrame();
+        //this->m_Entity->getCurrentFrame();
 
 
         lastFrameTime += deltaT * 1000.0f;
@@ -101,12 +101,13 @@ void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
         }
 
         //enemysprite = m_EnemySpriteClips[currentFrameCount]; // render the sprite at index of animation
-        this->m_Entity->getTex()->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_Entity->getCurrentFrame());
-
+        //this->m_Entity->getTex()->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_Entity->getCurrentFrame());
+        this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
 
 	}
     else {
-		this->m_Entity->getTex()->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_Entity->getCurrentFrame());
+		//this->m_Entity->getTex()->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_Entity->getCurrentFrame());
+        this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
     }
     //if (gameState.fightState == FightState::ENEMY_TURN) {
     //    //

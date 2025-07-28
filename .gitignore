@@ -366,3 +366,7 @@ FodyWeavers.xsd
 /thirdparty
 /tools/premake5
 /Scuzzy.sln
+.vscode/tasks.json
+.vscode/c_cpp_properties.json
+Makefile
+.vscode/settings.json

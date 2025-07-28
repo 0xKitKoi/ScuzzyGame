@@ -242,6 +242,9 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			entity->m_Enemy->m_EnemyDialogue = enemydialogue;
 			entity->m_Enemy->m_Actions = { "info", "dissassemble", "turn into shitbox" };
 			entity->m_Enemy->m_ActionResponse = { "STATUS: .. its a box..?", "You flattened the box. It took Heavy Damage", "my actual pc" };
+			entity->m_Enemy->m_EnemyFightSpriteSheet = getTexture("data/DooDooMart_StorageBox-Sheet.png");
+			entity->m_Enemy->FRAME_COUNT = 2;
+			entity->m_Enemy->m_EnemySpriteClips = clips;
 			Entities.push_back(entity); // vector of all entities to render.
 			collisionBoxes.push_back(&entity->m_Collider);
 

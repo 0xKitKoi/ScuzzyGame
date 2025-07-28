@@ -137,16 +137,21 @@ void LTexture::setAlpha(Uint8 alpha)
 	SDL_SetTextureAlphaMod(mTexture, alpha);
 }
 
-void LTexture::render(int x, int y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip)
+void LTexture::render(int x, int y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip, float scale)
 {
 	//Set rendering space and render to screen
-	SDL_Rect renderQuad = { x, y, mWidth, mHeight };
+	//SDL_Rect renderQuad = { x, y, mWidth, mHeight };
+	SDL_Rect renderQuad = { x, y, std::round(mWidth * scale), std::round(mHeight * scale) };
 
 	//Set clip rendering dimensions
 	if (clip != NULL)
 	{
-		renderQuad.w = clip->w;
-		renderQuad.h = clip->h;
+		renderQuad.w = clip->w * scale;
+		renderQuad.h = clip->h * scale;
+	}
+	if (scale != 1.0f) {
+		renderQuad.w = static_cast<int>(renderQuad.w * scale);
+		renderQuad.h = static_cast<int>(renderQuad.h * scale);
 	}
 
 	//Render to screen

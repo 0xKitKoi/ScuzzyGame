@@ -10,7 +10,7 @@
 //#include <random>
 
 #include "Source/LTexture.hpp"
-#include "Source/player.hpp"
+#include "Source/Player.hpp"
 #include "Source/Math.hpp"
 #include "Source/Timer.hpp"
 #include "Source/Entity.hpp"
@@ -26,8 +26,10 @@
 
 
 //Screen dimension constants
-const int SCREEN_WIDTH = 1920;
-const int SCREEN_HEIGHT = 1080;
+//const int SCREEN_WIDTH = 1920;
+int SCREEN_WIDTH = 0;
+int SCREEN_HEIGHT = 0;
+//const int SCREEN_HEIGHT = 1080;
 const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 const int LEVEL_WIDTH = 4000;
@@ -161,6 +163,8 @@ bool init()
 		}else {
 			screenwidth = (int)displayMode.w;
 			screenheight = (int)displayMode.h;
+			SCREEN_HEIGHT = screenheight;
+			SCREEN_WIDTH = screenwidth;
 
 		}
 
@@ -204,7 +208,7 @@ bool init()
 						success = false;
 					}
 				}
-				SDL_RenderSetLogicalSize(gRenderer, screenwidth, screenheight);
+				//SDL_RenderSetLogicalSize(gRenderer, screenwidth, screenheight);
 
 			}
 			//Initialize SDL_ttf
@@ -1277,8 +1281,15 @@ int main(int argc, char* args[])
 						camera.w = std::min(levelWidth, screenwidth);  // Don't exceed level size
 						camera.h = std::min(levelHeight, screenheight);
 
-						camera.x = std::max(0, std::min(player.GetPosX() - camera.w / 2, levelWidth - camera.w));
-						camera.y = std::max(0, std::min(player.GetPosY() - camera.h / 2, levelHeight - camera.h));
+						//camera.x = std::max(0, std::min(player.GetPosX() - camera.w / 2, levelWidth - camera.w));
+						//camera.y = std::max(0, std::min(player.GetPosY() - camera.h / 2, levelHeight - camera.h));
+						if (levelWidth > windowWidth || levelHeight > windowHeight) {
+							camera.x = std::max(0, std::min(player.GetPosX() - camera.w / 2, levelWidth - camera.w));
+							camera.y = std::max(0, std::min(player.GetPosY() - camera.h / 2, levelHeight - camera.h));
+						} else {
+							camera.x = 0;
+							camera.y = 0;
+						}
 
 						Uint8 a = 0;
 						int count = 255;
@@ -1341,24 +1352,51 @@ int main(int argc, char* args[])
 					MapoffsetY = 0;
 					MapoffsetX = 0;
 					bool smol = false;
-					if (windowHeight > levelHeight) {
-						//MapoffsetX = (windowWidth - levelWidth) / 2;
-						MapoffsetY = (windowHeight - levelHeight) / 2;
-						smol = true;
-					}
-					if (windowWidth > levelWidth) {
-						MapoffsetX = (windowWidth - levelWidth) / 2;
-						smol = true;
+					//if (windowHeight > levelHeight) {
+					//	//MapoffsetX = (windowWidth - levelWidth) / 2;
+					//	MapoffsetY = (windowHeight - levelHeight) / 2;
+					//	smol = true;
+					//}
+					//if (windowWidth > levelWidth) {
+					//	MapoffsetX = (windowWidth - levelWidth) / 2;
+					//	smol = true;
 
-					}
-					if (smol) {
-						Map.render(MapoffsetX, MapoffsetY);
-					}
-					else {
-						Map.render(MapoffsetX, MapoffsetY, &camera);
+					//}
+					//if (smol) {
+					//	Map.render(MapoffsetX, MapoffsetY);
+					//}
+					//else {
+					//	Map.render(MapoffsetX, MapoffsetY, &camera);
+					//}
+
+
+					float scaleX = (float)windowWidth / levelWidth;
+					float scaleY = (float)(windowHeight - (windowHeight * 0.2f)) / levelHeight; // Reserve 20% of the height for padding
+					float scale = std::min(scaleX, scaleY); // Use the smaller scale to maintain aspect ratio
+					scale = std::min(scale, 1.0f); // Prevent scaling above 100%
+
+					int scaledWidth = levelWidth * scale;
+					int scaledHeight = levelHeight * scale;
+
+					int horizontalPadding = (windowWidth - scaledWidth) / 2;
+					int verticalPadding = (windowHeight - scaledHeight) / 2;
+
+					MapoffsetX = horizontalPadding;
+					MapoffsetY = std::max(0, verticalPadding); // Ensure it doesn't go negative
+
+					if (levelWidth > windowWidth || levelHeight > windowHeight) {
+    					Map.render(0, 0, &camera, scale); // Use camera for larger maps
+					} else {
+    					Map.render(MapoffsetX, MapoffsetY, nullptr, scale); // Center smaller maps with padding
 					}
 
-					
+					printf("MapoffsetX: %d, MapoffsetY: %d\n", MapoffsetX, MapoffsetY);
+					printf("scaledWidth: %d, scaledHeight: %d\n", scaledWidth, scaledHeight);
+
+
+
+
+
 
 
 					gTextTexture.render(0, 0); // render any text.
@@ -1384,8 +1422,8 @@ int main(int argc, char* args[])
 					//player.move(collisionBoxes);
 
 					//Center the camera over the dot
-					camera.x = (player.GetPosX() + player.SpriteWidth / 2) - screenwidth / 2;
-					camera.y = (player.GetPosY() + player.SpriteHeight / 2) - screenheight / 2;
+					//camera.x = (player.GetPosX() + player.SpriteWidth / 2) - screenwidth / 2;
+					//camera.y = (player.GetPosY() + player.SpriteHeight / 2) - screenheight / 2;
 
 					//Keep the camera in bounds
 					if (camera.x < 0)
@@ -1409,33 +1447,34 @@ int main(int argc, char* args[])
 					// TESTING MAP OFFSETS
 
 
-					camera.w = std::min(levelWidth, windowWidth);  // Don't exceed level size
-					camera.h = std::min(levelHeight, windowHeight);
+					//camera.w = std::min(levelWidth, windowWidth);  // Don't exceed level size
+					//camera.h = std::min(levelHeight, windowHeight);
 
-					camera.x = std::max(0, std::min(player.GetPosX() - camera.w / 2, levelWidth - camera.w));
-					camera.y = std::max(0, std::min(player.GetPosY() - camera.h / 2, levelHeight - camera.h));
+					//camera.x = std::max(0, std::min(player.GetPosX() - camera.w / 2, levelWidth - camera.w));
+					//camera.y = std::max(0, std::min(player.GetPosY() - camera.h / 2, levelHeight - camera.h));
 
-
+					
 					// Calculate map offsets for centering smaller maps
-					if (windowWidth > levelWidth) {
-						MapoffsetX = (windowWidth - levelWidth) / 2;
-					}
-					else {
-						MapoffsetX = 0;
-					}
+					//if (windowWidth > levelWidth) {
+					//	MapoffsetX = (windowWidth - levelWidth) / 2;
+					//}
+					//else {
+					//	MapoffsetX = 0;
+					//}
 
-					if (windowHeight > levelHeight) {
-						MapoffsetY = (windowHeight - levelHeight) / 2;
-					}
-					else {
-						MapoffsetY = 0;
-					}
+					//if (windowHeight > levelHeight) {
+					//	MapoffsetY = (windowHeight - levelHeight) / 2;
+					//}
+					//else {
+					//	MapoffsetY = 0;
+					//}
 
 
 					// Center the camera over the player
 					camera.w = std::min(levelWidth, windowWidth);  // Don't exceed level size
 					camera.h = std::min(levelHeight, windowHeight);
 
+					/*
 					// Only apply camera if the map is larger than the screen
 					if (levelWidth > windowWidth) {
 						camera.x = std::max(0, std::min(player.GetPosX() + player.SpriteWidth / 2 - windowWidth / 2,
@@ -1451,6 +1490,14 @@ int main(int argc, char* args[])
 					}
 					else {
 						camera.y = 0; // No camera movement needed for small maps
+					}*/
+
+					if (levelWidth > windowWidth || levelHeight > windowHeight) {
+						camera.x = std::max(0, std::min(player.GetPosX() + player.SpriteWidth / 2 - windowWidth / 2, levelWidth - camera.w));
+						camera.y = std::max(0, std::min(player.GetPosY() + player.SpriteHeight / 2 - windowHeight / 2, levelHeight - camera.h));
+					} else {
+						camera.x = 0;
+						camera.y = 0;
 					}
 
 
@@ -1569,8 +1616,19 @@ int main(int argc, char* args[])
 					}
 
 
+					printf("Final MapoffsetX: %d, MapoffsetY: %d\n", MapoffsetX, MapoffsetY);
+					printf("Final scaledWidth: %d, scaledHeight: %d\n", scaledWidth, scaledHeight);
+
 					// END OF OVERWORLD RENDERING 
-					player.render(camera.x + MapoffsetX, camera.y + MapoffsetY); // last thing to be rendered is the player so it's above everything else.
+					//player.render(camera.x + MapoffsetX, camera.y + MapoffsetY); // last thing to be rendered is the player so it's above everything else.
+
+					if (levelWidth > windowWidth || levelHeight > windowHeight) {
+						player.render(camera.x + MapoffsetX, camera.y + MapoffsetY); // Use camera for larger maps
+					} else {
+						player.render(MapoffsetX, MapoffsetY); // Use offsets for smaller maps
+					}
+
+
 					SDL_RenderDrawRect(gRenderer, &renderBox); // render players collision box above player.
 
 
