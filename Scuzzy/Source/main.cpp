@@ -331,6 +331,82 @@ void SaveGame(int x, int y) {
 	}
 	return;
 }
+
+int LoadSave() {
+    std::ifstream saveFile("save");
+    if (saveFile.is_open()) {
+        // Check if reads are successful
+        if (!(saveFile >> SaveData.pos.x >> SaveData.pos.y)) {
+            printf("Error reading position data.\n");
+            saveFile.close();
+            return 0;
+        }
+        saveFile.ignore();
+        
+        if (!(saveFile >> SaveData.room)) {
+            printf("Error reading room data.\n");
+            saveFile.close();
+            return 0;
+        }
+        saveFile.ignore();
+        
+        if (!(saveFile >> SaveData.kills)) {
+            printf("Error reading kills data.\n");
+            saveFile.close();
+            return 0;
+        }
+        saveFile.ignore();
+        
+        if (!(saveFile >> SaveData.money)) {
+            printf("Error reading money data.\n");
+            saveFile.close();
+            return 0;
+        }
+        saveFile.ignore();
+        
+        if (!(saveFile >> gameState.HP)) {
+            printf("Error reading HP data.\n");
+            saveFile.close();
+            return 0;
+        }
+        saveFile.ignore();
+        
+        int items;
+        if (!(saveFile >> items)) {
+            printf("Error reading items count.\n");
+            saveFile.close();
+            return 0;
+        }
+        
+        SaveData.items.resize(items);
+        for (int i = 0; i < items; i++) {
+            if (!(saveFile >> SaveData.items[i])) {
+                printf("Error reading item %d.\n", i);
+                saveFile.close();
+                return 0;
+            }
+        }
+        saveFile.close();
+        return 1; // Success
+    }
+    else {
+        printf("Could not read save data.\n");
+        SaveData.pos.x = 700;
+        SaveData.pos.y = 700;
+        SaveData.room = "test";
+        gameState.room = "test";
+        SaveData.items.clear();
+        SaveData.kills = 0;
+        SaveData.money = 0;
+        gameState.HP = 10;
+        SaveData.items.push_back(0);
+        SaveGame(SaveData.pos.x, SaveData.pos.y);
+        return 0;
+    }
+}
+
+
+/*
 int LoadSave() {
 	std::ifstream saveFile("save");
 	if (saveFile.is_open()) {
@@ -355,12 +431,22 @@ int LoadSave() {
 	}
 	else {
 		printf("Could not read save data.");
+		SaveData.pos.x = 700;
+		SaveData.pos.y = 700;
+		SaveData.room = "test";
+		gameState.room = "test";
+		SaveData.items.clear();
+		SaveData.kills = 0;
+		SaveData.money = 0;
+		gameState.HP = 10;
+		SaveData.items.push_back(0); // add healing item
+		SaveGame(SaveData.pos.x, SaveData.pos.y); // save the default save.
 		return 0;
 	}
 
 	return 1;
 }
-
+*/
 
 void handleDeath(SDL_Event e, Player player) {
 	SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0);
@@ -409,6 +495,7 @@ bool loadMedia()
 		}
 	}
 
+	/*
 	int ls = LoadSave();
 	if (ls) {
 		if (SaveData.room == "test") {
@@ -453,11 +540,13 @@ bool loadMedia()
 			printf("Failed to load sprite sheet texture!\n");
 			success = false;
 		}
-		SaveData.pos.x = 700;
-		SaveData.pos.y = 700;
-		SaveData.room = "test";
+		//SaveData.pos.x = 700;
+		//SaveData.pos.y = 700;
+		//SaveData.room = "test";
 	}
-
+	*/
+	LoadSave();
+	LoadLevel(SaveData.room, &Map);
 	levelHeight = Map.getHeight();
 	levelWidth = Map.getWidth();
 	deathScreen.loadFromFile("data/Death.png");
