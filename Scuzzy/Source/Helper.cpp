@@ -169,11 +169,11 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 		}
 		else {
 			// DOOR TEST
-			Vector2f entityPos(872, 770);
+			Vector2f entityPos(650, 540);
 			SDL_Rect entityRect = { 0,0,128,128 };
 			SDL_Rect tmp, entity_cb;
 			clips.clear();
-			Vector2f doorPos(872, 770);
+			Vector2f doorPos(650, 540);
 			entityRect = { 0,0,128,128 };
 			tmp = { 0,0,128,128 };
 			clips.push_back(tmp);

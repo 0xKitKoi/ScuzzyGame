@@ -1608,8 +1608,8 @@ int main(int argc, char* args[])
 
 
 
-
-					gTextTexture.render(0, 0); // render any text.
+					
+					gTextTexture.render(0, 30); // render any text.
 					//gTextTexture.render((SCREEN_WIDTH - gTextTexture.getWidth()) / 2, (SCREEN_HEIGHT - gTextTexture.getHeight()) / 2);
 
 					// Get the collision boxes in surrounding cells

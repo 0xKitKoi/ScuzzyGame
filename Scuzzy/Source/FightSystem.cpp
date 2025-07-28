@@ -432,7 +432,7 @@ void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event
 void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     // Always display HP regardless of state
     std::string HP = "HP: " + std::to_string(gameState.HP);
-    FS_renderText(renderer, font, HP, 200, 700, { 237, 28, 36 });
+    FS_renderText(renderer, font, HP, 200, 400, { 237, 28, 36 });
 
     std::string enemyHP = "Enemy HP: " + std::to_string(gameState.enemy->HP);
     FS_renderText(renderer, font, enemyHP, 200, 50, { 237, 28, 36 });
