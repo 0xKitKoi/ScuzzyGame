@@ -1,8 +1,9 @@
 #include "Source/NPC.hpp"
 #include "Source/Enemy.hpp"
 #include <Source/Entity.hpp>
-
+#include <Source/Player.hpp>
 #include "Source/Enums.hpp"
+#include <memory>
 
 //enum class FightState {
 //    INTRO,              // Initial dialogue when fight starts
@@ -24,11 +25,16 @@
 struct GameState {
     //std::vector<std::shared_ptr<Entity>> Entities;
 
+	//std::shared_ptr<Player> player = nullptr;
+	Player* player = nullptr;
 
     std::string room;
     int money = 0;
     int kills = 0;
     int HP = 10;
+    bool dead = false;
+
+    Vector2f DOOR_OUT_POS = {0,0};
 
     // Flags
 	FightState fightState;
@@ -58,13 +64,20 @@ struct GameState {
     //bool inFight = false;
     int enemyID = 0;
     Enemy* enemy = nullptr;
+    int actionindex = 0;
 
     //bool textAvailable = false;
     std::vector<std::string> Text;
     int textIndex = 0;
     
+    // Text animation state
+    std::string currentDisplayText;  // The text currently being displayed
+    int currentCharIndex = 0;        // Current character index in the animation
+    float textTimer = 0.0f;          // Timer for text animation
+    float textSpeed = 0.03f;         // Speed of text animation (seconds per character)
+    bool textAnimating = false;      // Whether text is currently animating
+    bool shouldAnimateText = false;  // Whether the current text should be animated (dialogue vs menu)
     
-
     std::vector<int> Inventory;
 
 };

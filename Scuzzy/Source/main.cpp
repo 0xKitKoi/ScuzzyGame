@@ -10,7 +10,7 @@
 //#include <random>
 
 #include "Source/LTexture.hpp"
-#include "Source/player.hpp"
+#include "Source/Player.hpp"
 #include "Source/Math.hpp"
 #include "Source/Timer.hpp"
 #include "Source/Entity.hpp"
@@ -26,8 +26,10 @@
 
 
 //Screen dimension constants
-const int SCREEN_WIDTH = 1920;
-const int SCREEN_HEIGHT = 1080;
+//const int SCREEN_WIDTH = 1920;
+int SCREEN_WIDTH = 0;
+int SCREEN_HEIGHT = 0;
+//const int SCREEN_HEIGHT = 1080;
 const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 const int LEVEL_WIDTH = 4000;
@@ -38,6 +40,9 @@ int levelHeight = 4000;
 int screenwidth = 0;
 int screenheight = 0;
 int MapoffsetX = 0, MapoffsetY = 0;
+// Calculate centering offsets
+int center_offset_x = 0;
+int center_offset_y = 0;
 
 
 
@@ -84,7 +89,7 @@ const int WALKING_ANIMATION_FRAMES = 20;
 SDL_Rect gSpriteClips[WALKING_ANIMATION_FRAMES];
 LTexture gSpriteSheetTexture;
 LTexture Map;
-
+LTexture deathScreen;
 
 // GRID design for player collision detection.
 // The idea behind this is to check collision's player's rect when they move.
@@ -106,7 +111,11 @@ float lerp(float x, float y, float t) {
 
 
 GameState gameState;
-std::vector<std::shared_ptr<Entity>> Entities;
+
+
+std::vector<std::shared_ptr<Entity>> Entities; // This is the one and only vector of entities.
+
+
 std::vector<SDL_Rect> clips; // sprite sheet mapings TODO: Doesnt need to be global, i was just lazy
 
 std::unordered_map<std::string, std::shared_ptr<LTexture>> textureCache; 
@@ -157,6 +166,8 @@ bool init()
 		}else {
 			screenwidth = (int)displayMode.w;
 			screenheight = (int)displayMode.h;
+			SCREEN_HEIGHT = screenheight;
+			SCREEN_WIDTH = screenwidth;
 
 		}
 
@@ -200,7 +211,7 @@ bool init()
 						success = false;
 					}
 				}
-				SDL_RenderSetLogicalSize(gRenderer, screenwidth, screenheight);
+				//SDL_RenderSetLogicalSize(gRenderer, screenwidth, screenheight);
 
 			}
 			//Initialize SDL_ttf
@@ -272,77 +283,25 @@ SDL_Surface* loadSurface(std::string path)
 }
 
 void GameStart() {
+	Entities.clear();
+	collisionBoxes.clear();
 	playerinitpos = SaveData.pos;
 	CheckBox = { (int)playerinitpos.x,(int)playerinitpos.y, 20,20};
 	gameState.room = SaveData.room;
 	gameState.Inventory = SaveData.items;
 	gameState.kills = SaveData.kills;
 	gameState.money = SaveData.money;
+	gameState.textAvailable = false;
+	gameState.dead = false;
+	//gameState.HP = 10;
 
-	// get room from save file. if none, default. 
-	// load room, and based on room load NPCs & Enemies. Plot Flags Later.
-	if (gameState.room == "test") { // TODO: Move to Load Level Function 
-		LoadLevel("test", &Map);
-		//// Load first entity , Enemy !
-		//Vector2f entityPos(950, 390);
-		//SDL_Rect entityRect = { 0,0,128,128 };
-		//SDL_Rect tmp = { 0,0,128,128 };
-		//clips.push_back(tmp);
-		//tmp = { 128,0,128,128 };
-		//clips.push_back(tmp);
-		//tmp = { 128 * 2,0,128,128 };
-		//clips.push_back(tmp);
-		//tmp = { 128 * 3,0,128,128 };
-		//clips.push_back(tmp);
-		//SDL_Rect entity_cb = { entityPos.x + 25, entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
-		//std::vector<std::string> enemydialogue = { "The Box Full of \"Fuck You\" Appeared!", "The Box of fuck you said ... \"Fuck you\"", "You opened the box. There was \"fuck you\" inside." };
-		//auto entity = std::make_shared<Entity>(entityPos, entity_cb, entityRect, getTexture("data/box_fuck_u_ari_1.png"), 2, clips, 44);
-		//// create the enemy and bind it to the entity
-		//std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity); // make an enemy object initialized with the entity object
-		//child->m_AttackDamage = 1;
-		//entity->setEnemy(child); // bind the new enemy object to the entity
-		//entity->m_Enemy->m_EnemyDialogue = enemydialogue;
-		//entity->m_Enemy->m_Actions = {"info", "sit", "kick.?"};
-		//entity->m_Enemy->m_ActionResponse = {"STATUS: .. its a box..?", "You sat on the box, it left a dent in it.", "WHAM! you left a big dent in its fleshy cardboard."};
-		//Entities.push_back(entity); // vector of all entities to render.
-		//collisionBoxes.push_back(&entity->m_Collider);
-
-
-		//// DOOR TEST
-		//clips.clear();
-		//Vector2f doorPos(400, 300);
-		//entityRect = { 0,0,128,128 };
-		//tmp = { 0,0,128,128 };
-		//clips.push_back(tmp);
-		//tmp = { 128,0,128,128 };
-		//clips.push_back(tmp);
-		//entity_cb = { (int)entityPos.x + 25, (int)entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
-		//auto Doorentity = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
-		//Entities.push_back(Doorentity); // vector of all entities to render.
-		//Vector2f outpos(960, 960);
-		//std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity, "Level2", outpos);
-		//doornpc->m_Entity = Doorentity;
-		//Doorentity->setNPC(doornpc);
-		//collisionBoxes.push_back(&Doorentity->m_Collider);
-
-		//// first NPC! 
-		//Vector2f signpos(1000, 1000);
-		//SDL_Rect signRect = { 0,0,128,128 };
-		//auto signTexture = getTexture("data/hintsign.png");
-		//clips.clear();
-		//clips.push_back({ 0,0,128,128 });
-		//SDL_Rect signCB = { signpos.x + 25, signpos.y + 25, signRect.w - 45, signRect.h - 55 };
-		//auto signentity = std::make_shared<Entity>(signpos, signCB, signRect, getTexture("data/hintsign.png"), 1, clips, 2);
-		//Entities.push_back(signentity);
-		//std::vector<std::string> dialogue = { "Hello, I'm a fucking sign" };
-		//std::shared_ptr<NPC> signnpc = std::make_shared<SIGNNPC>(dialogue, signentity);
-		//signentity->setNPC(signnpc);
-
-		//collisionBoxes.push_back(&signentity->m_Collider);
-
-
-	}
+	LoadLevel(gameState.room, &Map);
+	
 }
+
+
+
+
 
 
 void SaveGame(int x, int y) {
@@ -357,6 +316,7 @@ void SaveGame(int x, int y) {
 		saveFile << SaveData.room << "\n";
 		saveFile << SaveData.kills << "\n";
 		saveFile << SaveData.money << "\n";
+		saveFile << gameState.HP << "\n";
 		saveFile << SaveData.items.size();
 		if (SaveData.items.size() > 0) {
 			for (int i = 0; i < SaveData.items.size(); i++) {
@@ -382,6 +342,8 @@ int LoadSave() {
 		saveFile.ignore();
 		saveFile >> SaveData.money;
 		saveFile.ignore();
+		saveFile >> gameState.HP;
+		saveFile.ignore();
 
 		int items;
 		saveFile >> items;
@@ -398,6 +360,30 @@ int LoadSave() {
 
 	return 1;
 }
+
+
+void handleDeath(SDL_Event e, Player player) {
+	SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0);
+	// render the death png
+	// auto barrel = std::make_shared<Entity>(Vector2f(2322, 258), SDL_Rect{ 0,0,128,128 }, SDL_Rect{ 0,0,128,128 }, getTexture("data/barrel_nuclear.png"), 1, clips, 1);
+	//Entities.clear();
+	SDL_RenderClear(gRenderer);
+	deathScreen.render(screenwidth / 2, screenheight / 2);
+	//SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, count);
+	//SDL_RenderClear(gRenderer);
+
+
+	SDL_RenderPresent(gRenderer);
+	if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_z) {
+		// reset the game
+		LoadSave();
+		GameStart();
+		gameState.dead = false;
+		/*main(argc, args);*/ // lmfao dont call main in main lesson learned
+	}
+}
+
+
 
 bool loadMedia()
 {
@@ -474,6 +460,8 @@ bool loadMedia()
 
 	levelHeight = Map.getHeight();
 	levelWidth = Map.getWidth();
+	deathScreen.loadFromFile("data/Death.png");
+
 	return success;
 }
 
@@ -642,8 +630,8 @@ void renderCollisionBoxes(SDL_Renderer* gRenderer, const SDL_Rect& camera) {
 		if (SDL_IntersectRect( box, &camera, &intersectedBox)) {
 			// Adjust box position relative to camera
 			SDL_Rect renderBox = {
-				box->x - camera.x + MapoffsetX,
-				box->y - camera.y + MapoffsetY,
+				box->x - camera.x,
+				box->y - camera.y,
 				box->w,
 				box->h
 			};
@@ -723,20 +711,34 @@ std::vector<std::string> dialogue = {
 	"Press Z to continue."
 };*/
 void handleDialogue(SDL_Event event) {
+
 	if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
-		if (gameState.textIndex < gameState.Text.size() - 1) {
+		if (gameState.shouldAnimateText && gameState.textAnimating) {
+			// If text is still animating, show the full text immediately
+			gameState.currentDisplayText = gameState.Text[gameState.textIndex];
+			gameState.textAnimating = false;
+		}
+		else if (gameState.textIndex < gameState.Text.size() - 1) {
+			// Move to next line and start animating if needed
 			gameState.textIndex++;
+			if (gameState.shouldAnimateText) {
+				gameState.currentCharIndex = 0;
+				gameState.textTimer = 0.0f;
+				gameState.textAnimating = true;
+				gameState.currentDisplayText = "";
+			}
 		}
 		else {
 			// Dialogue finished
 			gameState.textIndex = 0;
 			gameState.textAvailable = false;
+			gameState.textAnimating = false;
 		}
 	}
 }
 
 
-void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) { // TDOD: implement new lines for 100 char limit per line
+void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) {
 	// Get screen dimensions
 	int screenWidth, screenHeight;
 	SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
@@ -749,12 +751,33 @@ void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) { // TDOD: implement
 	int xOffset = screenWidth * 0.05 + 20;  // Small margin inside the box
 	int yOffset = screenHeight - 275;       // Positioning inside the text box
 
-	// If the current line exists, render it
-	if (gameState.textIndex < gameState.Text.size()) {
-		SDL_Color white = { 255, 255, 255 };  // Normal text color
+	// If the current line exists, update and render it
+	if (gameState.currentCharIndex < gameState.Text[gameState.textIndex].size()) {
+		// Update text animation if needed
+		if (gameState.shouldAnimateText && gameState.textAnimating) {
+			gameState.textTimer += 1.0f / 60.0f;//60.0f; // Assuming 60 FPS
+			if (gameState.textTimer >= gameState.textSpeed) {
+				gameState.textTimer = 0.0f;
+				if (gameState.currentCharIndex < gameState.Text[gameState.textIndex].length()) {
+					gameState.currentDisplayText += gameState.Text[gameState.textIndex][gameState.currentCharIndex];
+					gameState.currentCharIndex++;
+				}
+				else {
+					gameState.textAnimating = false;
+				}
+			}
+		}
+
+
+	}
+	// Render the current text
+	SDL_Color white = { 255, 255, 255 };  // Normal text color
+	if (gameState.shouldAnimateText && gameState.textAnimating) {
+		renderText(renderer, font, gameState.currentDisplayText, xOffset, yOffset, white);
+	}
+	else {
 		renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, white);
 	}
-	
 }
 
 
@@ -892,6 +915,113 @@ void handleMenuInputSideBySide(SDL_Event event) {
 
 
 
+// Camera calculation with centering
+void update_camera(int player_x, int player_y, int map_width, int map_height) {
+    // Start with player-centered camera
+    camera.x = player_x - screenwidth / 2;
+    camera.y = player_y - screenheight / 2;
+    
+    // Apply boundaries for maps larger than screen
+    if (map_width > screenwidth) {
+        // Normal camera clamping for wide maps
+        if (camera.x < 0) camera.x = 0;
+        if (camera.x > map_width - screenwidth) {
+            camera.x = map_width - screenwidth;
+        }
+    } else {
+        // Center the map horizontally
+        camera.x = -center_offset_x;
+    }
+    
+    if (map_height > screenheight) {
+        // Normal camera clamping for tall maps
+        if (camera.y < 0) camera.y = 0;
+        if (camera.y > map_height - screenheight) {
+            camera.y = map_height - screenheight;
+        }
+    } else {
+        // Center the map vertically
+        camera.y = -center_offset_y;
+    }
+}
+
+
+
+
+
+
+// Rendering function
+void render_map(SDL_Renderer* renderer , LTexture& map_texture) {
+	int map_width = map_texture.getWidth();
+	int map_height = map_texture.getHeight();
+    SDL_Rect src_rect = {0, 0, map_width, map_height};
+    SDL_Rect dest_rect;
+    
+    if (map_width < screenwidth && map_height < screenheight) {
+        // Map is smaller than screen in both dimensions - center it
+        dest_rect.x = center_offset_x;
+        dest_rect.y = center_offset_y;
+        dest_rect.w = map_width;
+        dest_rect.h = map_height;
+        
+        SDL_RenderCopy(renderer, map_texture.getTexture(), &src_rect, &dest_rect);
+
+    } else {
+        // Map is larger in at least one dimension - use camera
+        if (map_width > screenwidth || map_height > screenheight) {
+            // Calculate what part of the map to show
+            src_rect.x = (camera.x > 0) ? camera.x : 0;
+            src_rect.y = (camera.y > 0) ? camera.y : 0;
+            src_rect.w = (map_width > screenwidth) ? screenwidth : map_width;
+            src_rect.h = (map_height > screenheight) ? screenheight : map_height;
+        }
+        
+        // Destination is screen position with centering offsets
+        dest_rect.x = (map_width < screenwidth) ? center_offset_x : ((camera.x < 0) ? -camera.x : 0);
+        dest_rect.y = (map_height < screenheight) ? center_offset_y : ((camera.y < 0) ? -camera.y : 0);
+        dest_rect.w = src_rect.w;
+        dest_rect.h = src_rect.h;
+        
+        SDL_RenderCopy(renderer, map_texture.getTexture(), &src_rect, &dest_rect);
+    }
+}
+
+// Alternative simpler approach - unified rendering
+void render_map_unified(SDL_Renderer* renderer, LTexture* map_texture) {
+    SDL_Rect src_rect, dest_rect;
+	int map_width = map_texture->getWidth();
+	int map_height = map_texture->getHeight();
+    // Calculate source rectangle (what part of map to draw)
+    if (map_width <= screenwidth) {
+        src_rect.x = 0;
+        src_rect.w = map_width;
+        dest_rect.x = center_offset_x;
+        dest_rect.w = map_width;
+    } else {
+        src_rect.x = camera.x;
+        src_rect.w = screenwidth;
+        dest_rect.x = 0;
+        dest_rect.w = screenwidth;
+    }
+    
+    if (map_height <= screenheight) {
+        src_rect.y = 0;
+        src_rect.h = map_height;
+        dest_rect.y = center_offset_y;
+        dest_rect.h = map_height;
+    } else {
+        src_rect.y = camera.y;
+        src_rect.h = screenheight;
+        dest_rect.y = 0;
+        dest_rect.h = screenheight;
+    }
+    
+    SDL_RenderCopy(renderer, map_texture->getTexture(), &src_rect, &dest_rect);
+}
+
+
+
+
 int main(int argc, char* args[])
 {
 	//srand((unsigned)time(NULL));
@@ -931,8 +1061,10 @@ int main(int argc, char* args[])
 			GameStart();
 			
 			//std::vector<std::shared_ptr<Entity>> Entities; // made global because everything needs to see all entities for collision detection.
-			
+			//std::unique_ptr<Player> player = std::make_unique<Player>(playerinitpos, Entities);
 			Player player(playerinitpos, Entities);
+			gameState.player = &player;
+
 			
 			/*
 			    Parent parent;
@@ -1001,6 +1133,8 @@ int main(int argc, char* args[])
 
 
 
+				
+
 				//Handle events on queue
 				while (SDL_PollEvent(&e) != 0)
 				{
@@ -1011,54 +1145,150 @@ int main(int argc, char* args[])
 					}
 
 
-
-					if (e.key.keysym.scancode == SDL_SCANCODE_F10) {
-						SaveGame(player.GetPosX(), player.GetPosY());
-					}
-					if (e.key.keysym.scancode == SDL_SCANCODE_F11) {
-						LoadSave();
-					}
-
-					if (e.key.keysym.scancode == SDL_SCANCODE_F4) {
-						/*
-						gameState.Text = {
-							"Hello, welcome to the game.",
-							"We hope you enjoy your journey.",
-							"Press Z to continue."
+					switch (e.type) {
+						/* Look for a keypress */
+					case SDL_KEYDOWN:
+						/* Check the SDLKey values and move change the coords */
+						switch (e.key.keysym.sym) {
+						case SDLK_F10:
+							SaveGame(player.GetPosX(), player.GetPosY());
+							break;
+						case SDLK_F11:
+							LoadSave();
+							break;
+						case SDLK_F4:
+							gameState.Text = {
+								// 100 char limit per line
+								"AAAA BBBB CCCC DDDD EEEE FFFF GGGG HHHH IIII JJJJ KKKK LLLL MMMM NNNN OOOO PPPP QQQQ RRRR SSSS TTTT UUUU VVVV WWWW XXXX"
 							};
-						*/
-						gameState.Text = {
-							// 100 char limit per line
-							"AAAA BBBB CCCC DDDD EEEE FFFF GGGG HHHH IIII JJJJ KKKK LLLL MMMM NNNN OOOO PPPP QQQQ RRRR SSSS TTTT UUUU VVVV WWWW XXXX"
-						};
+							gameState.textIndex = 0;
+							gameState.currentCharIndex = 0;
+							gameState.textTimer = 0.0f;
+							gameState.textAnimating = true;
+							gameState.currentDisplayText = gameState.Text[0][0];
+							gameState.shouldAnimateText = true;  // This is dialogue, so animate it
+							gameState.textAvailable = true;
+							break;
+						case SDLK_F5:
+							gameState.Text = { "Start", "Options", "Quit" };
+							gameState.textIndex = 0;
+							gameState.shouldAnimateText = false;  // This is a menu, so don't animate
+							gameState.inMenu = true;
+							break;
+						case SDLK_c:
+							gameState.inMenu = true;
+							gameState.shouldAnimateText = false;
+							MS_renderMenu(gRenderer, gFont);
+							break;
+						default:
+							break;
+						}
+						break;
+						/* We must also use the SDL_KEYUP events to zero the x */
+						/* and y velocity variables. But we must also be       */
+						/* careful not to zero the velocities when we shouldn't*/
+					case SDL_KEYUP:
+						switch (e.key.keysym.sym) {
+						default:
+							break;
+						}
+						break;
 
-						gameState.textAvailable = true;
+					default:
+						break;
 					}
-					if (e.key.keysym.scancode == SDL_SCANCODE_F5) {
-						gameState.Text = { "Start", "Options", "Quit" };
-						gameState.inMenu = true;
+
+					/*if (e.key.keysym.scancode == SDL_SCANCODE_F10) {
+						SaveGame(player.GetPosX(), player.GetPosY());
+					}*/
+					/*if (e.key.keysym.scancode == SDL_SCANCODE_F11) {
+						LoadSave();
+					}*/
+
+					//if (e.key.keysym.scancode == SDL_SCANCODE_F4) {
+					//	/*
+					//	gameState.Text = {
+					//		"Hello, welcome to the game.",
+					//		"We hope you enjoy your journey.",
+					//		"Press Z to continue."
+					//		};
+					//	*/
+					//	gameState.Text = {
+					//		// 100 char limit per line
+					//		"AAAA BBBB CCCC DDDD EEEE FFFF GGGG HHHH IIII JJJJ KKKK LLLL MMMM NNNN OOOO PPPP QQQQ RRRR SSSS TTTT UUUU VVVV WWWW XXXX"
+					//	};
+
+					//	gameState.textAvailable = true;
+					//}
+					//if (e.key.keysym.scancode == SDL_SCANCODE_F5) {
+					//	gameState.Text = { "Start", "Options", "Quit" };
+					//	gameState.inMenu = true;
+					//}
+					//if (e.key.keysym.scancode == SDL_SCANCODE_C) {
+					//	// opejn a menu
+					//	/*
+					//	gameState.Text = { "Talk", "Items" };
+					//	gameState.inMenu = true;
+					//	gameState.OpenedMenu = true;
+					//	*/
+
+					//	gameState.inMenu = true;
+
+					//	MS_renderMenu(gRenderer, gFont);
+					//	//SDL_RenderPresent(gRenderer);
+					//}
+
+
+					//if (gameState.dead) {
+					//	// render the death png
+					//	// auto barrel = std::make_shared<Entity>(Vector2f(2322, 258), SDL_Rect{ 0,0,128,128 }, SDL_Rect{ 0,0,128,128 }, getTexture("data/barrel_nuclear.png"), 1, clips, 1);
+					//	Entities.clear();
+					//	LTexture deathScreen;
+					//	deathScreen.loadFromFile("data/Death.png");
+					//	deathScreen.render(0, 0, &camera);
+					//	continue;
+
+					//}
+
+
+					if (gameState.dead) {
+							SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0);
+							// render the death png
+							// auto barrel = std::make_shared<Entity>(Vector2f(2322, 258), SDL_Rect{ 0,0,128,128 }, SDL_Rect{ 0,0,128,128 }, getTexture("data/barrel_nuclear.png"), 1, clips, 1);
+							//Entities.clear();
+							SDL_RenderClear(gRenderer);
+							deathScreen.render(screenwidth / 2, screenheight / 2);
+							//SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, count);
+							//SDL_RenderClear(gRenderer);
+
+
+							SDL_RenderPresent(gRenderer);
+							if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_z) {
+								// reset the game
+								printf("reseting the game\n");
+								LoadSave();
+								//player.reset(new Player(SaveData.pos, Entities));
+								player.reset(SaveData.pos);
+								player.SetPosX(SaveData.pos.x);
+								player.SetPosY(SaveData.pos.y);
+								player.currentState = State::Idle; // why is the little bastard moving on his own 
+								player.AllEntities = Entities;
+								//player = std::make_unique<Player>(SaveData.pos, Entities);
+								GameStart();
+								gameState.dead = false;
+								gameState.textAvailable = false;
+								levelHeight = Map.getHeight(); // needed to make sure death upon smaller maps doesnt break rendering loop
+								levelWidth = Map.getWidth();
+
+								/*main(argc, args);*/ // lmfao dont call main in main lesson learned
+							}
 					}
-					if (e.key.keysym.scancode == SDL_SCANCODE_C) {
-						// opejn a menu
-						/*
-						gameState.Text = { "Talk", "Items" };
-						gameState.inMenu = true;
-						gameState.OpenedMenu = true;
-						*/
 
-						gameState.inMenu = true;
-
-						MS_renderMenu(gRenderer, gFont);
-						//SDL_RenderPresent(gRenderer);
-					}
-
-
-
-					if (gameState.textAvailable) {
+					else if (gameState.textAvailable) {
 						handleDialogue(e);
 					}
-
-					if (gameState.inMenu) {
+					
+					else if (gameState.inMenu) {
 						//handleMenuInput(e);
 						//handleMenuInputSideBySide(e);
 						MS_renderMenu(gRenderer, gFont);
@@ -1066,7 +1296,7 @@ int main(int argc, char* args[])
 
 					}
 
-					if (gameState.inFight) {
+					else if (gameState.inFight) {
 						// handle fight input..?
 						FS_HandleInput(gRenderer, gFont, e);
 						//continue;
@@ -1101,9 +1331,14 @@ int main(int argc, char* args[])
 
 
 				// Starting Point!
-				
-				if (gameState.LoadingScreen) {
 
+				if (gameState.dead) {
+					//handleDeath(e, player);
+					// dont bother with the rest of the application loop.
+					continue;
+				}
+
+				if (gameState.LoadingScreen) {
 					// fade to black, load map texture based on room name, and fade back in.
 					// player position and Level is loaded from the DOOR.
 					// Maybe player direction should be given..?
@@ -1156,8 +1391,15 @@ int main(int argc, char* args[])
 						camera.w = std::min(levelWidth, screenwidth);  // Don't exceed level size
 						camera.h = std::min(levelHeight, screenheight);
 
-						camera.x = std::max(0, std::min(player.GetPosX() - camera.w / 2, levelWidth - camera.w));
-						camera.y = std::max(0, std::min(player.GetPosY() - camera.h / 2, levelHeight - camera.h));
+						//camera.x = std::max(0, std::min(player.GetPosX() - camera.w / 2, levelWidth - camera.w));
+						//camera.y = std::max(0, std::min(player.GetPosY() - camera.h / 2, levelHeight - camera.h));
+						if (levelWidth > windowWidth || levelHeight > windowHeight) {
+							camera.x = std::max(0, std::min(player.GetPosX() - camera.w / 2, levelWidth - camera.w));
+							camera.y = std::max(0, std::min(player.GetPosY() - camera.h / 2, levelHeight - camera.h));
+						} else {
+							camera.x = 0;
+							camera.y = 0;
+						}
 
 						Uint8 a = 0;
 						int count = 255;
@@ -1200,16 +1442,83 @@ int main(int argc, char* args[])
 					SDL_SetRenderDrawColor(gRenderer, 0, 0, 20, 0xFF);
 					SDL_RenderClear(gRenderer);
 					//int offsetX = 0, offsetY = 0;
-					if (windowHeight > levelHeight) {
-						MapoffsetX = (windowWidth - levelWidth) / 2;
-					}
-					else {MapoffsetX = 0;}
-					if (windowWidth > levelWidth) {
-						MapoffsetY = (windowHeight - levelHeight) / 2;
-					}
-					else {MapoffsetY = 0;}
 
-					Map.render(MapoffsetX, MapoffsetY, &camera);
+
+
+					//if (windowHeight > levelHeight) {
+					//	//MapoffsetX = (windowWidth - levelWidth) / 2;
+					//	MapoffsetY = (windowHeight - levelHeight) / 2;
+					//}
+					//else {MapoffsetX = 0;}
+					//if (windowWidth > levelWidth) {
+					//	MapoffsetX = (windowWidth - levelWidth) / 2;
+					//	
+					//}
+					//else {MapoffsetY = 0;}
+
+					//Map.render(MapoffsetX, MapoffsetY, &camera);
+
+
+					MapoffsetY = 0;
+					MapoffsetX = 0;
+					bool smol = false;
+					//if (windowHeight > levelHeight) {
+					//	//MapoffsetX = (windowWidth - levelWidth) / 2;
+					//	MapoffsetY = (windowHeight - levelHeight) / 2;
+					//	smol = true;
+					//}
+					//if (windowWidth > levelWidth) {
+					//	MapoffsetX = (windowWidth - levelWidth) / 2;
+					//	smol = true;
+
+					//}
+					//if (smol) {
+					//	Map.render(MapoffsetX, MapoffsetY);
+					//}
+					//else {
+					//	Map.render(MapoffsetX, MapoffsetY, &camera);
+					//}
+
+					/*
+					float scaleX = (float)windowWidth / levelWidth;
+					float scaleY = (float)(windowHeight - (windowHeight * 0.2f)) / levelHeight; // Reserve 20% of the height for padding
+					float scale = std::min(scaleX, scaleY); // Use the smaller scale to maintain aspect ratio
+					scale = std::min(scale, 1.0f); // Prevent scaling above 100%
+
+					int scaledWidth = levelWidth * scale;
+					int scaledHeight = levelHeight * scale;
+
+					int horizontalPadding = (windowWidth - scaledWidth) / 2;
+					int verticalPadding = ((windowHeight - scaledHeight) / 2 );
+
+					MapoffsetX = horizontalPadding;
+					MapoffsetY = std::max(0, verticalPadding); // Ensure it doesn't go negative
+
+					if (levelWidth > windowWidth || levelHeight > windowHeight) {
+    					Map.render(0, 0, &camera, scale); // Use camera for larger maps
+					} else {
+    					Map.render(MapoffsetX, MapoffsetY, nullptr, scale); // Center smaller maps with padding
+					}
+
+					printf("MapoffsetX: %d, MapoffsetY: %d\n", MapoffsetX, MapoffsetY);
+					printf("scaledWidth: %d, scaledHeight: %d\n", scaledWidth, scaledHeight);
+					*/
+
+					// If map is smaller than screen, center it
+					if (Map.getWidth() < screenwidth) {
+    					center_offset_x = (screenwidth - Map.getWidth()) / 2;
+					}
+
+					if (Map.getHeight() < screenheight) {
+    					center_offset_y = (screenheight - Map.getHeight()) / 2;
+					}
+
+					update_camera(player.GetPosX(), player.GetPosY(), Map.getWidth(), Map.getHeight());
+					//render_map(gRenderer, Map);
+					render_map_unified(gRenderer, &Map);
+
+
+
 
 					gTextTexture.render(0, 0); // render any text.
 					//gTextTexture.render((SCREEN_WIDTH - gTextTexture.getWidth()) / 2, (SCREEN_HEIGHT - gTextTexture.getHeight()) / 2);
@@ -1234,8 +1543,8 @@ int main(int argc, char* args[])
 					//player.move(collisionBoxes);
 
 					//Center the camera over the dot
-					camera.x = (player.GetPosX() + player.SpriteWidth / 2) - screenwidth / 2;
-					camera.y = (player.GetPosY() + player.SpriteHeight / 2) - screenheight / 2;
+					//camera.x = (player.GetPosX() + player.SpriteWidth / 2) - screenwidth / 2;
+					//camera.y = (player.GetPosY() + player.SpriteHeight / 2) - screenheight / 2;
 
 					//Keep the camera in bounds
 					if (camera.x < 0)
@@ -1255,11 +1564,67 @@ int main(int argc, char* args[])
 						camera.y = levelHeight - camera.h;
 					}
 
+
+					// TESTING MAP OFFSETS
+
+
+					//camera.w = std::min(levelWidth, windowWidth);  // Don't exceed level size
+					//camera.h = std::min(levelHeight, windowHeight);
+
+					//camera.x = std::max(0, std::min(player.GetPosX() - camera.w / 2, levelWidth - camera.w));
+					//camera.y = std::max(0, std::min(player.GetPosY() - camera.h / 2, levelHeight - camera.h));
+
+					
+					// Calculate map offsets for centering smaller maps
+					//if (windowWidth > levelWidth) {
+					//	MapoffsetX = (windowWidth - levelWidth) / 2;
+					//}
+					//else {
+					//	MapoffsetX = 0;
+					//}
+
+					//if (windowHeight > levelHeight) {
+					//	MapoffsetY = (windowHeight - levelHeight) / 2;
+					//}
+					//else {
+					//	MapoffsetY = 0;
+					//}
+
+
+					// Center the camera over the player
+					/*
 					camera.w = std::min(levelWidth, windowWidth);  // Don't exceed level size
 					camera.h = std::min(levelHeight, windowHeight);
+					*/
 
-					camera.x = std::max(0, std::min(player.GetPosX() - camera.w / 2, levelWidth - camera.w));
-					camera.y = std::max(0, std::min(player.GetPosY() - camera.h / 2, levelHeight - camera.h));
+
+					/*
+					// Only apply camera if the map is larger than the screen
+					if (levelWidth > windowWidth) {
+						camera.x = std::max(0, std::min(player.GetPosX() + player.SpriteWidth / 2 - windowWidth / 2,
+							levelWidth - camera.w));
+					}
+					else {
+						camera.x = 0; // No camera movement needed for small maps
+					}
+
+					if (levelHeight > windowHeight) {
+						camera.y = std::max(0, std::min(player.GetPosY() + player.SpriteHeight / 2 - windowHeight / 2,
+							levelHeight - camera.h));
+					}
+					else {
+						camera.y = 0; // No camera movement needed for small maps
+					}*/
+
+					/*
+					if (levelWidth > windowWidth || levelHeight > windowHeight) {
+						camera.x = std::max(0, std::min(player.GetPosX() + player.SpriteWidth / 2 - windowWidth / 2, levelWidth - camera.w));
+						camera.y = std::max(0, std::min(player.GetPosY() + player.SpriteHeight / 2 - windowHeight / 2, levelHeight - camera.h));
+					} else {
+						camera.x = 0;
+						camera.y = 0;
+					}*/
+
 
 					//player.Update(deltaTime);
 
@@ -1285,8 +1650,8 @@ int main(int argc, char* args[])
 						if (SDL_IntersectRect(&box->m_FOV, &camera, &intersectedBox)) {
 							// Adjust box position relative to camera
 							SDL_Rect renderBox = {
-								box->m_FOV.x - camera.x + MapoffsetX,
-								box->m_FOV.y - camera.y + MapoffsetY,
+								box->m_FOV.x - camera.x,
+								box->m_FOV.y - camera.y,
 								box->m_FOV.w,
 								box->m_FOV.h 
 							};
@@ -1351,8 +1716,8 @@ int main(int argc, char* args[])
 						// RENDER BASIC CHECK BOX
 						SDL_Rect checkb = player.m_CheckBox;
 						SDL_Rect rendercheckBox = {
-							checkb.x - camera.x + MapoffsetX,
-							checkb.y - camera.y + MapoffsetY,
+							checkb.x - camera.x,
+							checkb.y - camera.y,
 							checkb.w,
 							checkb.h
 						};
@@ -1376,8 +1741,19 @@ int main(int argc, char* args[])
 					}
 
 
+					//printf("Final MapoffsetX: %d, MapoffsetY: %d\n", MapoffsetX, MapoffsetY);
+					//printf("Final scaledWidth: %d, scaledHeight: %d\n", scaledWidth, scaledHeight);
+
 					// END OF OVERWORLD RENDERING 
-					player.render(camera.x + MapoffsetX, camera.y + MapoffsetY); // last thing to be rendered is the player so it's above everything else.
+					//player.render(camera.x + MapoffsetX, camera.y + MapoffsetY); // last thing to be rendered is the player so it's above everything else.
+
+					if (levelWidth > windowWidth || levelHeight > windowHeight) {
+						player.render(camera.x + MapoffsetX, camera.y + MapoffsetY); // Use camera for larger maps
+					} else {
+						player.render(MapoffsetX, MapoffsetY); // Use offsets for smaller maps
+					}
+
+
 					SDL_RenderDrawRect(gRenderer, &renderBox); // render players collision box above player.
 
 
@@ -1392,20 +1768,25 @@ int main(int argc, char* args[])
 					if (gameState.textAvailable) {
 						renderDialogue(gRenderer, gFont);
 						player.currentState = State::Idle;
+						player.reset({float(player.GetPosX()), float(player.GetPosY())}); // reset the player position to the current position, so it doesn't move while dialogue is active.
 					}
 					else if (gameState.OpenedMenu) {
 						renderMenuSideBySide(gRenderer, gFont);
 						player.currentState = State::Idle;
+						player.reset({ float(player.GetPosX()), float(player.GetPosY()) });
 
 					}
 					else if (gameState.inMenu) {
 						//renderMenuSideBySide(gRenderer, gFont);
 						MS_renderMenu(gRenderer, gFont);
 						player.currentState = State::Idle;
+						player.reset({ float(player.GetPosX()), float(player.GetPosY()) });
 					}
 
 					if (gameState.checkFlag) {
 						bool someone = false;
+						player.currentState = State::Idle;
+						player.reset({ float(player.GetPosX()), float(player.GetPosY()) });
 						for (const auto& entity : Entities) {
 							if (SDL_HasIntersection(&player.m_CheckBox, &entity->m_Collider)) { // &entity->m_Collider
 								printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
@@ -1419,6 +1800,12 @@ int main(int argc, char* args[])
 						if (!someone) {
 							gameState.Text.clear();
 							gameState.Text.push_back("Who are you talking to..?");
+							gameState.textIndex = 0;
+							gameState.currentCharIndex = 1; // offset because i need a char to start the animation.
+							gameState.textTimer = 0.0f;
+							gameState.textAnimating = true;
+							gameState.currentDisplayText = gameState.Text[0][0];// "";
+							gameState.shouldAnimateText = true;  // This is dialogue, so animate it
 							gameState.textAvailable = true;
 						}
 						gameState.checkFlag = false;
@@ -1440,11 +1827,13 @@ int main(int argc, char* args[])
 					gTextTexture.loadFromRenderedText(bruh, { 0xFF, 0xFF, 0xFF, 0xFF });
 					gTextTexture.render(0, 0);
 
+					// Enemy will now render itself like a man
+					gameState.enemy->Update(deltaTime, SCREEN_HEIGHT, SCREEN_WIDTH);
+
+					
+
 					// Get this from Enemy ID.
-					LTexture EnemySprite;
-					EnemySprite.loadFromFile("data/box_fuck_u_ari_1.png");
-					SDL_Rect rect = { 0,0,128,128 };
-					EnemySprite.render((SCREEN_WIDTH/2)-128, (SCREEN_HEIGHT/2)-128*2, &rect);
+					//gameState.enemy->m_EnemyFightSpriteSheet->render((SCREEN_WIDTH/2)-128, (SCREEN_HEIGHT/2)-128*2, &rect);
 
 
 					FS_HandleInput(gRenderer, gFont, e);

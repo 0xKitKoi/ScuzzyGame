@@ -11,11 +11,13 @@ enum MenuState {
     MAIN_MENU,
     INVENTORY_MENU,
     ITEM_OPTIONS_MENU,
-    STATS_MENU
+    STATS_MENU,
+	RESPONSE
 };
 
 // Declare your current menu state globally, if needed
 extern MenuState currentMenu;
+extern MenuState lastMenuState;
 //extern int selectedIndex;
 
 // Function declarations for rendering and input handling

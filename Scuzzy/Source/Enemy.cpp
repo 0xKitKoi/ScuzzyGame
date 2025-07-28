@@ -3,6 +3,7 @@
 #include "Source/Math.hpp"
 #include <stdio.h>
 #include "Source/GameState.hpp"
+#include "Source/FightSystem.hpp"
 
 
 extern float lerp(float x, float y, float t);
@@ -65,16 +66,57 @@ void Enemy::Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
             m_Entity->m_PosY = out.y;
 
             if (SDL_HasIntersection(&m_Entity->m_Collider, &PlayerPos)) {
-                gameState.inFight = true;
+                
                 gameState.enemyID = m_EnemyID;
                 gameState.enemy = this;
                 gameState.FightStarted = true;
                 gameState.Plot = 0;
+				FS_InitFight();
+                this->alive = false;
             }
 	}
     else {
 		m_Entity->moving = false;
 	}
+}
+
+
+/// <summary>
+/// IN FIGHT UPDATE TODO: give position to render at
+/// </summary>
+/// <param name="deltaT">float Delta time</param>
+/// <param name="screenheight">int</param>
+/// <param name="screenwidth">int</param>
+void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
+	if (gameState.fightState == FightState::ENEMY_DIALOGUE) {
+		//SDL_Rect enemysprite = this->m_EnemySpriteClips[0];
+        
+        //this->m_Entity->getCurrentFrame();
+
+
+        lastFrameTime += deltaT * 1000.0f;
+        if (lastFrameTime >= frameDuration) {
+            currentFrameCount = (currentFrameCount + 1) % this->m_Entity->FRAME_COUNT;
+            lastFrameTime = 0;
+        }
+
+        //enemysprite = m_EnemySpriteClips[currentFrameCount]; // render the sprite at index of animation
+        //this->m_Entity->getTex()->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_Entity->getCurrentFrame());
+        this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
+
+	}
+    else {
+		//this->m_Entity->getTex()->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_Entity->getCurrentFrame());
+        this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
+    }
+    //if (gameState.fightState == FightState::ENEMY_TURN) {
+    //    //
+    //    gameState.enemy->HP -= gameState.enemy->m_AttackDamage; // Example of attacking the player
+    //    if (gameState.enemy->HP <= 0) {
+    //        gameState.wonFight = true; // Player wins
+    //        gameState.inFight = false; // End fight
+    //    }
+    //}
 }
 
 void Enemy::move(Vector2f targetPos) {

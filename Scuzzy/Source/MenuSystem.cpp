@@ -3,6 +3,7 @@
 #include "Source/MenuSystem.hpp"
 #include "Source/GameState.hpp"
 #include "Source/Enums.hpp"
+#include "Source/Helper.hpp"
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <stdio.h>
@@ -19,25 +20,26 @@
 
 // Define the current menu state and selected index
 MenuState currentMenu = MAIN_MENU;
+MenuState lastMenuState = MAIN_MENU; // To keep track of the last menu state
 int MS_selectedIndex = 0;
 int subMenuSelectionIndex = 0;
 std::vector<std::string> MAIN_MENU_Options = { "Check", "Items", "Stats" };
 
 
-std::string GetItemnameFromIndex(int index) {
-    switch (index) {
-    case 0:
-        return "Test Item 1";
-        break;
-    case 1:
-        return "Test Item 2";
-        break;
-    default:
-        //printf("\n [!] ERROR: Could not get Item name at selection index: %d", index);
-        return "ERROR";
-        break;
-    }
-}
+//std::string GetItemnameFromIndex(int index) {
+//    switch (index) {
+//    case 0:
+//        return "Test Item 1";
+//        break;
+//    case 1:
+//        return "Test Item 2";
+//        break;
+//    default:
+//        printf("\n [!] ERROR: Could not get Item name at selection index: %d", index);
+//        return "ERROR";
+//        break;
+//    }
+//}
 
 
 void MS_renderTextBox(SDL_Renderer* renderer) {
@@ -122,7 +124,7 @@ void renderMenuGrid(SDL_Renderer* renderer, TTF_Font* font, std::vector<std::str
     }
 }
 
-
+// i got this grid, and i need to get the item id from the selection. the selection index is different from the item ID.
 int handleMenuInputGrid(SDL_Event event, std::vector<std::string>* options) {
     if (event.type == SDL_KEYDOWN) {
         int numOptions = std::min(static_cast<int>(options->size()), 12); // Cap to 12 options
@@ -175,7 +177,7 @@ int handleMenuInputGrid(SDL_Event event, std::vector<std::string>* options) {
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x && currentMenu != MAIN_MENU) {
         //gameState.inMenu = false;
 		// skip over this, erroneous
-        return 0;
+        return 0; // who fucking wrote this shit LMFAOOOOOO
     }
     else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x && currentMenu == MAIN_MENU) {
         gameState.inMenu = false;
@@ -183,7 +185,9 @@ int handleMenuInputGrid(SDL_Event event, std::vector<std::string>* options) {
 		return 0;
     }
     else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x) {
+        lastMenuState = currentMenu; // Save the last menu state
         currentMenu = MAIN_MENU;
+		
         MS_selectedIndex = 0;
         return 0;
     }
@@ -191,8 +195,49 @@ int handleMenuInputGrid(SDL_Event event, std::vector<std::string>* options) {
 }
 
 
+void renderResponse(SDL_Renderer* renderer, TTF_Font* font) {
+    // Get screen dimensions
+    int screenWidth, screenHeight;
+    SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
 
+    // Render the text box at the bottom of the screen
+    MS_renderTextBox(renderer);
 
+    // Calculate text rendering position
+    int boxWidth = screenWidth * 0.9;
+    int xOffset = screenWidth * 0.05 + 30;  // Start slightly inside the text box
+    int yOffset = screenHeight - 275;       // Place the text inside the box
+	MS_renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, {255, 255, 255});
+}
+
+void handleResponse(SDL_Event event) {
+    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z || event.key.keysym.sym == SDLK_x) {
+        /*if (gameState.shouldAnimateText && gameState.textAnimating) {
+            // If text is still animating, show the full text immediately
+            gameState.currentDisplayText = gameState.Text[gameState.textIndex];
+            gameState.textAnimating = false;
+        }
+        else
+        if (gameState.textIndex < gameState.Text.size() - 1) {
+            // Move to next line and start animating if needed
+            gameState.textIndex++;
+            if (gameState.shouldAnimateText) {
+                gameState.currentCharIndex = 0;
+                gameState.textTimer = 0.0f;
+                gameState.textAnimating = true;
+                gameState.currentDisplayText = "";
+            }
+        }
+        else */ 
+            // Response finished
+            gameState.textIndex = 0;
+            gameState.Text.clear();
+            gameState.textAvailable = false;
+            gameState.textAnimating = false;
+            currentMenu = lastMenuState; // go back
+        
+    }
+}
 
 
 
@@ -216,6 +261,9 @@ void MS_renderMenu(SDL_Renderer* renderer, TTF_Font* font) {
         break;
     case STATS_MENU:
         renderStatsMenu(renderer, font);
+        break;
+	case RESPONSE:
+		renderResponse(renderer, font);
         break;
     }
 }
@@ -249,6 +297,9 @@ void MS_handleMenuInput(SDL_Event event) {
     else if (currentMenu == STATS_MENU) {
         handleStatsMenu(event);
     }
+	else if (currentMenu == RESPONSE) {
+		handleResponse(event);
+	}
 }
 
 void renderMainMenu(SDL_Renderer* renderer, TTF_Font* font) {
@@ -264,11 +315,12 @@ void renderInventoryMenu(SDL_Renderer* renderer, TTF_Font* font) {
 
     std::vector<std::string> options;
     int screenWidth, screenHeight;
-    SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+    //SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+	SDL_GetWindowSize(SDL_GetWindowFromID(1), &screenWidth, &screenHeight); // Get the window size
 
 
     int xOffset = screenWidth * 0.05 + 10;  // Start slightly inside the text box
-    int yOffset = screenHeight/2 - 275;       // Place the text inside the box
+    int yOffset = screenHeight - 275;       // Place the text inside the box
 
     int boxWidth = screenWidth * 0.9;  // 90% of the screen width
     int boxHeight = 300;               // Fixed height for the text box
@@ -289,7 +341,7 @@ void renderInventoryMenu(SDL_Renderer* renderer, TTF_Font* font) {
 
 
     if (gameState.Inventory.empty()) {
-        //MS_renderTextBox(renderer);
+        MS_renderTextBox(renderer);
         // TODO: puyt the damn text in a textbox plsss
         MS_renderText(renderer, font, "* You don't have any items.", xOffset, yOffset, { 255, 255, 255 });
         //currentMenu = MAIN_MENU;
@@ -301,9 +353,10 @@ void renderInventoryMenu(SDL_Renderer* renderer, TTF_Font* font) {
         //    options.push_back(GetItemnameFromIndex(itemID));
         //}
         for (int i = 0; i < gameState.Inventory.size(); i++) {
-            options.push_back(GetItemnameFromIndex(i));
+            options.push_back(GetItemnameFromIndex(gameState.Inventory[i]));
         }
     }
+        // not used..?
 
         int numOptions = std::min(static_cast<int>(gameState.Inventory.size()), 12); // Cap to 12 options
 
@@ -372,9 +425,14 @@ void renderItemOptionsMenu(SDL_Renderer* renderer, TTF_Font* font) {
     }*/
     //std::string itemName = GetItemnameFromIndex(gameState.Inventory.at(MS_selectedIndex) );
     //std::string itemName = GetIt  emnameFromIndex(gameState.Inventory.at(gameState.selectionIndex));
+
+	// this is wrong, the item ID is not the same as the selection index.
+    // this is currently creating a grid to make a shitty menu for the inventory. so 0 would be the index of the first option. this needs to be remade.
+
+
     std::string itemName;
     if (subMenuSelectionIndex >= 0 && subMenuSelectionIndex < gameState.Inventory.size()) {
-        itemName = GetItemnameFromIndex(gameState.Inventory.at(subMenuSelectionIndex));
+        itemName = GetItemnameFromIndex(gameState.Inventory.at(subMenuSelectionIndex)); // LMFAOOOOOOOOOOOOOO loser 
         // Ive spent weeks over this shitty indexing issue. It's always indexing.
         // turns out I got smart and decided to hardcode the item ID in my save file to be+1 
         // and forgot about it. I did this to compensate for MS_SelectionIndex in the grid input handling func
@@ -404,9 +462,11 @@ void renderItemOptionsMenu(SDL_Renderer* renderer, TTF_Font* font) {
 
 void renderStatsMenu(SDL_Renderer* renderer, TTF_Font* font) {
     std::vector<std::string> options;
-    char buffer[30];
+    char buffer[50];
     //sprintf_s(buffer, "Kills: %d", gameState.kills);
     //
+	sprintf_s(buffer, sizeof(buffer), "Health: %d", gameState.HP);
+    options.push_back(buffer);
     sprintf_s(buffer, sizeof(buffer), "Kills: %d", gameState.kills);
     options.push_back(buffer);
     sprintf_s(buffer, sizeof(buffer), "Money: %d", gameState.money);
@@ -448,7 +508,9 @@ void renderStatsMenu(SDL_Renderer* renderer, TTF_Font* font) {
 void handleMainMenuSelection(SDL_Event event) {
     // Handle input for the main menu
     std::vector<std::string> options = { "Check", "Items", "Stats" };
-
+	if (event.key.repeat != 0) {
+		return; // Ignore repeated key events
+	}
     if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_x && currentMenu != MAIN_MENU) {
         gameState.inMenu = false;
         return;
@@ -466,15 +528,18 @@ void handleMainMenuSelection(SDL_Event event) {
         printf("Attempted to check()! \n");
         gameState.checkFlag = true;
         gameState.inMenu = false;
+		lastMenuState = currentMenu;
         currentMenu = MAIN_MENU;
         break;
 
     case 2:
+        lastMenuState = currentMenu;
         currentMenu = INVENTORY_MENU;
         MS_selectedIndex = 0; // reset selection for next menu;
         break;
 
     case 3:
+        lastMenuState = currentMenu;
         currentMenu = STATS_MENU;
         MS_selectedIndex = 0; // reset
         break;
@@ -492,7 +557,12 @@ void handleInventoryMenuSelection(SDL_Event event) {
     std::vector<std::string> options;
     if (gameState.Inventory.empty()) {
         // no items
-        printf("No items what are we doign here");
+        //printf("No items what are we doign here");
+		if (event.key.keysym.sym == SDLK_x) {
+            lastMenuState = currentMenu;
+			currentMenu = MAIN_MENU;
+			MS_selectedIndex = 0;
+		}
         return;
     }
     for (int i = 0; i < gameState.Inventory.size(); i++) {
@@ -511,6 +581,7 @@ void handleInventoryMenuSelection(SDL_Event event) {
         }
 
         if (event.key.keysym.sym == SDLK_z) {
+            lastMenuState = currentMenu;
             currentMenu = ITEM_OPTIONS_MENU;  // Enter item options
             gameState.selectionIndex = MS_selectedIndex;
             subMenuSelectionIndex = MS_selectedIndex;
@@ -518,6 +589,7 @@ void handleInventoryMenuSelection(SDL_Event event) {
             MS_selectedIndex = 0;
         }
         else if (event.key.keysym.sym == SDLK_x) {
+            lastMenuState = currentMenu;
             currentMenu = MAIN_MENU;  // Back to main menu
             MS_selectedIndex = 0;
         }
@@ -584,13 +656,28 @@ void handleItemOptionsMenuSelection(SDL_Event event) {
         else if (event.key.keysym.sym == SDLK_z) { // Confirm selection
             switch (MS_selectedIndex + 1) {
             case 1: // Use
-                std::cout << "Attempt to use item: " << GetItemnameFromIndex(gameState.selectionIndex) << std::endl;
+                std::cout << "Attempt to use item: " << GetItemnameFromIndex(gameState.Inventory.at( gameState.selectionIndex)) << std::endl;
+				gameState.Text = { "You used " + GetItemnameFromIndex(gameState.Inventory.at(gameState.selectionIndex)) + "." }; // Set response text
+				gameState.textIndex = 0; // Reset text index
+
+				UseItem(gameState.Inventory[gameState.selectionIndex]); // Use the item
+				gameState.Inventory.erase(gameState.Inventory.begin() + gameState.selectionIndex); // Remove the item from inventory
+                lastMenuState = INVENTORY_MENU;
+                currentMenu = RESPONSE;
                 break;
             case 2: // View Info
-                std::cout << "Attempt to View info for: " << GetItemnameFromIndex(gameState.selectionIndex) << std::endl;
+                std::cout << "Attempt to View info for: " << GetItemnameFromIndex(gameState.Inventory.at(gameState.selectionIndex)) << std::endl;
+                gameState.Text = { GetItemDescription(gameState.Inventory.at(gameState.selectionIndex)) }; // Get item description
+				lastMenuState = ITEM_OPTIONS_MENU; // Save last menu state
+				currentMenu = RESPONSE; // Switch to response menu
                 break;
             case 3:
-                std::cout << "Attempt to Throw away item: " << GetItemnameFromIndex(gameState.selectionIndex) << std::endl;
+                std::cout << "Attempt to Throw away item: " << GetItemnameFromIndex(gameState.Inventory.at(gameState.selectionIndex)) << std::endl;
+				gameState.Text = { "You threw away " + GetItemnameFromIndex(gameState.Inventory.at(gameState.selectionIndex)) + "." }; // Set response text
+				gameState.textIndex = 0; // Reset text index
+				gameState.Inventory.erase(gameState.Inventory.begin() + gameState.selectionIndex); // Remove the item from inventory
+				lastMenuState = INVENTORY_MENU; // Save last menu state
+				currentMenu = RESPONSE; // Switch to response menu
                 break;
             default:
                 printf("\n [!] ERROR: handleItemOptionsMenuSelection() selection index: %d", gameState.selectionIndex);
@@ -598,6 +685,7 @@ void handleItemOptionsMenuSelection(SDL_Event event) {
         }
         else if (event.key.keysym.sym == SDLK_x) { // Cancel action
             std::cout << "Returning to inventory." << std::endl;
+            lastMenuState = currentMenu;
             currentMenu = INVENTORY_MENU;
             // Logic to return to the inventory menu
         }
@@ -606,6 +694,7 @@ void handleItemOptionsMenuSelection(SDL_Event event) {
 
 void handleStatsMenu(SDL_Event event) {
     if (event.key.keysym.sym == SDLK_x) {
+        lastMenuState = currentMenu;
         currentMenu = MAIN_MENU;  // Enter item options
     }
 }

@@ -1,8 +1,66 @@
-# currently working on
+# Current TODOs:
 
-# first level
-	# level loading system
-	# Entity object, Update() will have custom check() to load next level.
+# get render logic for earthound battle background 
+
+# Impliment silly meter, and effects from actions
+
+# Refactor Menu System LMAOOO
+    # item usage has been kinda added, errors on rendering multiple items in fight. errors on rendering the correct name of the item when multiple items are in the inventory.
+     /// Done ..? # items are rendered from the selection index, which is wrong.
+
+# level rendering is off for smaller maps, seems like the height is being rendered incorrectly, like it was squished down to fit the screen.
+    # darkalley otherwise seems nice.
+    # MLEM map is not as big as i thought it was.. game thinks its big, but rendered incorrectly. 
+    #
+    # MAP OFFSETS NEED TO BE FIXED 
+    #
+    #
 
 
-# save / load system
+
+# story needs some work
+# CUTSCENES??????
+# adding a second enemy type
+# add NPC [ first NPC is the friend in the alley way ]
+# add the boss fight
+# doodoomart needs to exist
+    # item breaks inside
+    # doodoomart manager makes the player pay for it
+    # doodoomart ONLY accepts payment plans
+    # player is forced into doodoo debt
+    # doodoomart manager is a scam artist
+    # doodoomart only sells the worst items
+    # doodoomart has one good item but it wasnt intended to be sold by the store, and any attempt to buy it will result in the manager forcing the player to buy it for more doodoo debt
+
+# flesh out enemies
+# add more items
+# make inventory system better, implement item usage and saving to a file.
+# Save / Load system
+
+
+
+#Story board Ideas
+     # Game starts with the player and a friend in a alley way
+     # friend dares player to eat the burger found in the garbage
+     # player eats the burger and gets insanely high for the entire rest of the game
+     # the entire world is changed to a dark world vibe. the player is absolutely tripping balls.
+     # 
+     # player is now a doodoo fiend
+     # player cannot go home, only way OUT of of the alley was magically turned into a 'locked' door. turns out the door was a push door the entire time, and the player realises this at the end of the game. 
+     # player is now in a world of doodoo
+     # player meets a NPC who seems to be the friend from the alley way, but is changed into a furry monster type. this person has no memory of the player. 
+     # new friend points the player to a town to get help, because the player seems very sick.
+     # player goes to the town, and finds a doodoomart.
+     
+     # need a reason for the player to go deeper into the doodoo world.
+
+
+     # all other people are now furry monster types
+     # enemies spawn, earthbound battle background types
+     
+     # the objetive of the game is to be silly
+     # fights have a 'silly mode' that is triggered by 'actions'
+     # when at max silly for the fight, when the player wins, a video will play of me beating up the enemy in IRL footage.
+         # EXAMPLE:
+          # first fight is a box, and silly mode at the end of the fight will trigger a video of me absolutely destroying a box in real life, im talking bite marks and torching that bitch
+

@@ -1,4 +1,4 @@
-#include "Source/player.hpp"
+#include "Source/Player.hpp"
 #include "Source/LTexture.hpp"
 #include "Source/Math.hpp"
 #include "Source/GameState.hpp"
@@ -10,19 +10,21 @@
 #include "Source/FightSystem.hpp"
 
 //bool checkCollision(SDL_Rect a, SDL_Rect b);
-const int SCREEN_WIDTH = 1920;
-const int SCREEN_HEIGHT = 1080;
-const int LEVEL_WIDTH = 4000;
-const int LEVEL_HEIGHT = 4000;
+//const int SCREEN_WIDTH = 1920;
+//const int SCREEN_HEIGHT = 1080;
+//const int LEVEL_WIDTH = 4000;
+//const int LEVEL_HEIGHT = 4000;
 extern int levelWidth;
 extern int levelHeight;
 extern int MapoffsetX;
 extern int MapoffsetY;
+extern int screenwidth;
+extern int screenheight;
 
 const int GRID_CELL_SIZE = 100;
-const int GRID_WIDTH = LEVEL_WIDTH / GRID_CELL_SIZE;
-const int GRID_HEIGHT = LEVEL_HEIGHT / GRID_CELL_SIZE;
-extern std::vector<SDL_Rect> grid[GRID_WIDTH][GRID_HEIGHT];
+const int GRID_WIDTH = levelWidth / GRID_CELL_SIZE;
+const int GRID_HEIGHT = levelHeight / GRID_CELL_SIZE;
+//extern std::vector<SDL_Rect> grid[GRID_WIDTH][GRID_HEIGHT];
 extern LTexture gTextTexture;
 
 //extern std::vector<std::shared_ptr<Entity>> Entities;
@@ -317,6 +319,14 @@ Player::Player(Vector2f initPos, std::vector<std::shared_ptr<Entity>>& entityVec
 	}
 }
 
+Player::~Player() {
+	// Destructor
+	// Free the texture if it was loaded
+	printf("Player destructor called.\n");
+	SpriteSheet.free();
+}
+
+
 /// <summary>
 /// Handles Player movement, animations, collision detection.
 /// </summary>
@@ -330,14 +340,23 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	//	currentState = State::Idle;
 	//	return;
 	//}
+	if (gameState.HP <= 0) {
+		// player has died, run death screen and load from save.
+		/*gameState.Text.clear();
+		gameState.Text.push_back("You greened out lil bro, nap time for you.");
+		gameState.textAvailable = true;*/
+		return;
+	}
+
 	if (gameState.inMenu || gameState.inFight || gameState.wonFight) {
-		m_VelX = 0;
-		m_VelY = 0;
-		currentState = State::Idle;
-		keyDownPressed = false;
-		keyUpPressed = false;
-		keyLeftPressed = false;
-		keyRightPressed = false;
+		reset({ float(m_PosX), float(m_PosY) });
+		//m_VelX = 0;
+		//m_VelY = 0;
+		//currentState = State::Idle;
+		//keyDownPressed = false;
+		//keyUpPressed = false;
+		//keyLeftPressed = false;
+		//keyRightPressed = false;
 		gameState.wonFight = false;
 		return;
 	}
@@ -399,6 +418,7 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 
 
 
+
 	for (const auto& entity : AllEntities) {
 		if (SDL_HasIntersection(&m_Collider, &entity->m_Collider )) { // &entity->m_Collider
 			printf(std::to_string(entity->m_EntityID).c_str());
@@ -410,7 +430,7 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	for (const auto& wall : boxes) {
 		if (SDL_HasIntersection(&m_Collider, wall)) {
 			m_PosX = originalX; // Revert position
-			m_Collider.x = m_PosX; // Update collider position
+			
 			break;
 		}
 	}
@@ -418,26 +438,56 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	// Move along Y axis
 	m_PosY += m_VelY * deltaTime;
 	m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };
-
+	//m_Collider.x = m_PosX + 40; // Update collider position
+	//m_Collider.y = m_PosY + 60; // Update collider position
 	// Check for collisions on Y axis
 	for (const auto& wall : boxes) {
 		if (SDL_HasIntersection(&m_Collider, wall)) {
 			m_PosY = originalY; // Revert position
-			m_Collider.y = m_PosY; // Update collider position
+			
 			break;
 		}
 	}
 
 	// Boundary checks (keep player within level bounds)
-	if (m_PosX < 0 || m_PosX + SpriteWidth > levelWidth) { // LEVEL_WIDTH
+	// Account for map offsets in the boundary checks
+	int effectiveLeftBound = 0 + MapoffsetX;
+	int effectiveTopBound = 0 + MapoffsetY;
+	int effectiveRightBound = MapoffsetX +  levelWidth;
+	int effectiveBottomBound = MapoffsetY + levelHeight;
+
+	// Boundary checks - keep player within actual map bounds
+	if (m_PosX < 0 || m_PosX + SpriteWidth > levelWidth) {
+    	m_PosX = originalX;
+	}
+	if (m_PosY < 0 || m_PosY + SpriteHeight > levelHeight) {
+    	m_PosY = originalY;
+	}
+
+
+	/*
+	// Check left/right boundaries
+	if (m_PosX < effectiveLeftBound || m_PosX + SpriteWidth > effectiveRightBound) {
 		m_PosX = originalX; // Revert position if out of bounds
 	}
 
-	if (m_PosY < 0 || m_PosY + SpriteHeight > levelHeight) { // LEVEL_HEIGHT
+	// Check top/bottom boundaries
+	if (m_PosY < effectiveTopBound || m_PosY + SpriteHeight > effectiveBottomBound) {
 		m_PosY = originalY; // Revert position if out of bounds
 	}
-	//m_PosX = m_PosX + MapoffsetX; // TODO: add this to boundary checks.
-	//m_PosY = m_PosY + MapoffsetY;
+	*/
+
+
+	//// Boundary checks (keep player within level bounds)
+	//if (m_PosX < 0 || m_PosX + SpriteWidth > levelWidth) { // LEVEL_WIDTH
+	//	m_PosX = originalX; // Revert position if out of bounds
+	//}
+
+	//if (m_PosY < 0 || m_PosY + SpriteHeight > levelHeight) { // LEVEL_HEIGHT
+	//	m_PosY = originalY; // Revert position if out of bounds
+	//}
+	////m_PosX = m_PosX + MapoffsetX; // TODO: add this to boundary checks.
+	////m_PosY = m_PosY + MapoffsetY;
 
 	m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };
 
@@ -459,26 +509,28 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 /// <param name="e">SDL checks for key presses. We check for the buttons.</param>
 void Player::handleEvent(SDL_Event& e) {
 	if (gameState.inMenu || gameState.inFight) {
-		m_VelX = 0;
-		m_VelY = 0;
-		currentState = State::Idle;
-		keyDownPressed = false;
-		keyUpPressed = false;
-		keyLeftPressed = false;
-		keyRightPressed = false;
+		reset({ float(m_PosX), float(m_PosY) });
+		//m_VelX = 0;
+		//m_VelY = 0;
+		//currentState = State::Idle;
+		//keyDownPressed = false;
+		//keyUpPressed = false;
+		//keyLeftPressed = false;
+		//keyRightPressed = false;
 		
 	}
 	if (!gameState.inFight) {
-		if (gameState.inMenu) {
-			m_VelX = 0;
-			m_VelY = 0;
-			currentState = State::Idle;
-			keyDownPressed = false;
-			keyUpPressed = false;
-			keyLeftPressed = false;
-			keyRightPressed = false;
-			return;
-		}
+		//if (gameState.inMenu) {
+		//	reset({ float(m_PosX), float(m_PosY) });
+		//	//m_VelX = 0;
+		//	//m_VelY = 0;
+		//	//currentState = State::Idle;
+		//	//keyDownPressed = false;
+		//	//keyUpPressed = false;
+		//	//keyLeftPressed = false;
+		//	//keyRightPressed = false;
+		//	return;
+		//}
 
 
 
@@ -558,13 +610,14 @@ void Player::handleEvent(SDL_Event& e) {
 		}
 	}
 	else {
-		m_VelX = 0;
-		m_VelY = 0;
-		currentState = State::Idle;
-		keyDownPressed = false;
-		keyUpPressed = false;
-		keyLeftPressed = false;
-		keyRightPressed = false;
+		//m_VelX = 0;
+		//m_VelY = 0;
+		//currentState = State::Idle;
+		//keyDownPressed = false;
+		//keyUpPressed = false;
+		//keyLeftPressed = false;
+		//keyRightPressed = false;
+		reset({ float(m_PosX), float(m_PosY) });
 		
 
 		// IN FIGHT MOVEMENT AND SPRITE STATE AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -663,6 +716,27 @@ void Player::handleEvent(SDL_Event& e) {
 	}
 }
 
+
+
+void Player::reset(Vector2f initPos) {
+	m_PosX = initPos.x;
+	m_PosY = initPos.y;
+	currentState = State::Idle;
+	//currentDirection = Direction::Down;
+	currentFrame = 0; // animtion frame count.
+	m_VelX = 0;
+	m_VelY = 0;
+	keyDownPressed = false;
+	keyUpPressed = false;
+	keyLeftPressed = false;
+	keyRightPressed = false;
+	//m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };
+	//m_CheckBox = { m_PosX + 30, m_PosY , 60,60 };
+
+
+}
+
+
 /// <summary>
 /// Render's the player. Also handles State of animation like direction. 
 /// </summary>
@@ -724,8 +798,10 @@ void Player::render(int camX, int camY) {
 
 	// hey dickhead tell the Ltexture to render with the rect you have!!!
 	//SpriteSheet.render(m_PosX, m_PosY, &srcRect);
-	SpriteSheet.render(m_PosX - camX, m_PosY - camY, &srcRect);
+	SpriteSheet.render(m_PosX - camX + MapoffsetX, m_PosY - camY + MapoffsetY, &srcRect);
 
+	//m_Collider.x = m_Collider.x - camX + MapoffsetX;
+	//m_Collider.y = m_Collider.y - camY + MapoffsetY;
 }
 
 int Player::GetPosX() {
@@ -734,6 +810,16 @@ int Player::GetPosX() {
 
 int Player::GetPosY() {
 	return m_PosY;
+}
+
+void Player::SetPosX(int X) {
+	m_PosX = X;
+	return;
+}
+
+void Player::SetPosY(int Y) {
+	m_PosY = Y;
+	return; 
 }
 
 SDL_Rect Player::GetCollider() {

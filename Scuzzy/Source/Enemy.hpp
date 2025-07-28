@@ -22,21 +22,29 @@ public:
 	/// <param name="entity">Entity Object.</param>
 	Enemy(std::shared_ptr<Entity> entity) : m_Entity(entity), m_EnemyID(entity->m_EntityID) {}
 	void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos);
+	void Update(float deltaT, int screenhight, int screenwidth);
 	void move(Vector2f targetPos);
 	Vector2f moveEntity(Vector2f pos, float deltaTime, Vector2f target);
 
 	//Entity &m_Entity;
 	std::shared_ptr<Entity> m_Entity;
 	int m_EnemyID = 0;
-	std::string m_EnemyFightSprite = "data/Error.png";
-
+	//std::string m_EnemyFightSprite = "data/Error.png";
+	std::shared_ptr<LTexture> m_EnemyFightSpriteSheet;
+	std::vector<SDL_Rect> m_EnemySpriteClips;
 	std::vector<std::string> m_EnemyDialogue;
 	std::vector<std::string> m_Actions;
 	std::vector<std::string> m_ActionResponse;
+	
 	int m_AttackDamage = 0;
 	bool alive = true;
 	int HP = 5;
 
+
+	int currentFrameCount = 0;
+	Uint32 lastFrameTime = 0;
+	Uint32 frameDuration = 100; // Time each frame is displayed (milliseconds)
+	int FRAME_COUNT; // number of frames in animation.
 	
 };
 
