@@ -40,6 +40,9 @@ int levelHeight = 4000;
 int screenwidth = 0;
 int screenheight = 0;
 int MapoffsetX = 0, MapoffsetY = 0;
+// Calculate centering offsets
+int center_offset_x = 0;
+int center_offset_y = 0;
 
 
 
@@ -912,6 +915,113 @@ void handleMenuInputSideBySide(SDL_Event event) {
 
 
 
+// Camera calculation with centering
+void update_camera(int player_x, int player_y, int map_width, int map_height) {
+    // Start with player-centered camera
+    camera.x = player_x - screenwidth / 2;
+    camera.y = player_y - screenheight / 2;
+    
+    // Apply boundaries for maps larger than screen
+    if (map_width > screenwidth) {
+        // Normal camera clamping for wide maps
+        if (camera.x < 0) camera.x = 0;
+        if (camera.x > map_width - screenwidth) {
+            camera.x = map_width - screenwidth;
+        }
+    } else {
+        // Center the map horizontally
+        camera.x = -center_offset_x;
+    }
+    
+    if (map_height > screenheight) {
+        // Normal camera clamping for tall maps
+        if (camera.y < 0) camera.y = 0;
+        if (camera.y > map_height - screenheight) {
+            camera.y = map_height - screenheight;
+        }
+    } else {
+        // Center the map vertically
+        camera.y = -center_offset_y;
+    }
+}
+
+
+
+
+
+
+// Rendering function
+void render_map(SDL_Renderer* renderer , LTexture& map_texture) {
+	int map_width = map_texture.getWidth();
+	int map_height = map_texture.getHeight();
+    SDL_Rect src_rect = {0, 0, map_width, map_height};
+    SDL_Rect dest_rect;
+    
+    if (map_width < screenwidth && map_height < screenheight) {
+        // Map is smaller than screen in both dimensions - center it
+        dest_rect.x = center_offset_x;
+        dest_rect.y = center_offset_y;
+        dest_rect.w = map_width;
+        dest_rect.h = map_height;
+        
+        SDL_RenderCopy(renderer, map_texture.getTexture(), &src_rect, &dest_rect);
+
+    } else {
+        // Map is larger in at least one dimension - use camera
+        if (map_width > screenwidth || map_height > screenheight) {
+            // Calculate what part of the map to show
+            src_rect.x = (camera.x > 0) ? camera.x : 0;
+            src_rect.y = (camera.y > 0) ? camera.y : 0;
+            src_rect.w = (map_width > screenwidth) ? screenwidth : map_width;
+            src_rect.h = (map_height > screenheight) ? screenheight : map_height;
+        }
+        
+        // Destination is screen position with centering offsets
+        dest_rect.x = (map_width < screenwidth) ? center_offset_x : ((camera.x < 0) ? -camera.x : 0);
+        dest_rect.y = (map_height < screenheight) ? center_offset_y : ((camera.y < 0) ? -camera.y : 0);
+        dest_rect.w = src_rect.w;
+        dest_rect.h = src_rect.h;
+        
+        SDL_RenderCopy(renderer, map_texture.getTexture(), &src_rect, &dest_rect);
+    }
+}
+
+// Alternative simpler approach - unified rendering
+void render_map_unified(SDL_Renderer* renderer, LTexture* map_texture) {
+    SDL_Rect src_rect, dest_rect;
+	int map_width = map_texture->getWidth();
+	int map_height = map_texture->getHeight();
+    // Calculate source rectangle (what part of map to draw)
+    if (map_width <= screenwidth) {
+        src_rect.x = 0;
+        src_rect.w = map_width;
+        dest_rect.x = center_offset_x;
+        dest_rect.w = map_width;
+    } else {
+        src_rect.x = camera.x;
+        src_rect.w = screenwidth;
+        dest_rect.x = 0;
+        dest_rect.w = screenwidth;
+    }
+    
+    if (map_height <= screenheight) {
+        src_rect.y = 0;
+        src_rect.h = map_height;
+        dest_rect.y = center_offset_y;
+        dest_rect.h = map_height;
+    } else {
+        src_rect.y = camera.y;
+        src_rect.h = screenheight;
+        dest_rect.y = 0;
+        dest_rect.h = screenheight;
+    }
+    
+    SDL_RenderCopy(renderer, map_texture->getTexture(), &src_rect, &dest_rect);
+}
+
+
+
+
 int main(int argc, char* args[])
 {
 	//srand((unsigned)time(NULL));
@@ -1369,7 +1479,7 @@ int main(int argc, char* args[])
 					//	Map.render(MapoffsetX, MapoffsetY, &camera);
 					//}
 
-
+					/*
 					float scaleX = (float)windowWidth / levelWidth;
 					float scaleY = (float)(windowHeight - (windowHeight * 0.2f)) / levelHeight; // Reserve 20% of the height for padding
 					float scale = std::min(scaleX, scaleY); // Use the smaller scale to maintain aspect ratio
@@ -1379,7 +1489,7 @@ int main(int argc, char* args[])
 					int scaledHeight = levelHeight * scale;
 
 					int horizontalPadding = (windowWidth - scaledWidth) / 2;
-					int verticalPadding = (windowHeight - scaledHeight) / 2;
+					int verticalPadding = ((windowHeight - scaledHeight) / 2 );
 
 					MapoffsetX = horizontalPadding;
 					MapoffsetY = std::max(0, verticalPadding); // Ensure it doesn't go negative
@@ -1392,9 +1502,20 @@ int main(int argc, char* args[])
 
 					printf("MapoffsetX: %d, MapoffsetY: %d\n", MapoffsetX, MapoffsetY);
 					printf("scaledWidth: %d, scaledHeight: %d\n", scaledWidth, scaledHeight);
+					*/
 
+					// If map is smaller than screen, center it
+					if (Map.getWidth() < screenwidth) {
+    					center_offset_x = (screenwidth - Map.getWidth()) / 2;
+					}
 
+					if (Map.getHeight() < screenheight) {
+    					center_offset_y = (screenheight - Map.getHeight()) / 2;
+					}
 
+					update_camera(player.GetPosX(), player.GetPosY(), Map.getWidth(), Map.getHeight());
+					//render_map(gRenderer, Map);
+					render_map_unified(gRenderer, &Map);
 
 
 
@@ -1471,8 +1592,11 @@ int main(int argc, char* args[])
 
 
 					// Center the camera over the player
+					/*
 					camera.w = std::min(levelWidth, windowWidth);  // Don't exceed level size
 					camera.h = std::min(levelHeight, windowHeight);
+					*/
+
 
 					/*
 					// Only apply camera if the map is larger than the screen
@@ -1492,13 +1616,14 @@ int main(int argc, char* args[])
 						camera.y = 0; // No camera movement needed for small maps
 					}*/
 
+					/*
 					if (levelWidth > windowWidth || levelHeight > windowHeight) {
 						camera.x = std::max(0, std::min(player.GetPosX() + player.SpriteWidth / 2 - windowWidth / 2, levelWidth - camera.w));
 						camera.y = std::max(0, std::min(player.GetPosY() + player.SpriteHeight / 2 - windowHeight / 2, levelHeight - camera.h));
 					} else {
 						camera.x = 0;
 						camera.y = 0;
-					}
+					}*/
 
 
 					//player.Update(deltaTime);
@@ -1616,8 +1741,8 @@ int main(int argc, char* args[])
 					}
 
 
-					printf("Final MapoffsetX: %d, MapoffsetY: %d\n", MapoffsetX, MapoffsetY);
-					printf("Final scaledWidth: %d, scaledHeight: %d\n", scaledWidth, scaledHeight);
+					//printf("Final MapoffsetX: %d, MapoffsetY: %d\n", MapoffsetX, MapoffsetY);
+					//printf("Final scaledWidth: %d, scaledHeight: %d\n", scaledWidth, scaledHeight);
 
 					// END OF OVERWORLD RENDERING 
 					//player.render(camera.x + MapoffsetX, camera.y + MapoffsetY); // last thing to be rendered is the player so it's above everything else.

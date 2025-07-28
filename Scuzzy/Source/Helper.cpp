@@ -93,7 +93,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			entity_cb = { (int)entityPos.x + 25, (int)entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
 			auto Doorentity = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
 			Entities.push_back(Doorentity); // vector of all entities to render.
-			Vector2f outpos(872, 570);
+			Vector2f outpos(500, 370);
 			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity, "Level1", outpos);
 			doornpc->m_Entity = Doorentity;
 			Doorentity->setNPC(doornpc);
