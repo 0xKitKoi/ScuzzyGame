@@ -9,9 +9,9 @@
 #include <vector>
 #include "TestNPC.cpp" // i didnt know u can include a cpp file 
 
-extern std::vector<std::shared_ptr<Entity>> Entities;
-extern std::vector<SDL_Rect*> collisionBoxes;
-extern std::vector<SDL_Rect> clips;
+extern std::vector<std::shared_ptr<Entity>> Entities; // All entities in the level.
+extern std::vector<SDL_Rect*> collisionBoxes; // map collision boxes, bounds the player.
+extern std::vector<SDL_Rect> clips; // this is the sprite sheet mappings for the entities.
 
 extern std::shared_ptr<LTexture> getTexture(const std::string& filename);
 
@@ -34,6 +34,44 @@ int LevelIDFromName(std::string name) {
 }
 
 
+
+std::shared_ptr<Entity> createEnemyEntity(
+    const Vector2f& pos, // World Space Position
+	SDL_Rect entityRect, // size of sprite
+	const SDL_Rect collisionBox,
+    const std::string& overworldTexturePath,
+	const std::string& fightTexturePath,
+    int worldAnimationFrameCount, // Number of frames in the animation. this should match the sprite sheet clips vector.
+	int fightAnimationFrameCount, 
+    const std::vector<SDL_Rect>& worldSpriteSheetClips, // Vector of SDL_Rect for sprite sheet mappings
+	const std::vector<SDL_Rect>& fightSpriteSheetClips, // Vector of SDL_Rect for sprite sheet mappings
+    const std::vector<std::string>& dialogue, // Dialogue for the enemy
+    const std::vector<std::string>& actions, // Actions presented to the player
+    const std::vector<std::string>& responses, // Responses to the player's actions
+    int attackDamage, // Damage dealt by the enemy
+	int ID = 0 // Entity ID for the enemy
+	)
+{
+    auto entity = std::make_shared<Entity>(pos, collisionBox, entityRect, getTexture(overworldTexturePath), worldAnimationFrameCount, worldSpriteSheetClips, ID);
+
+    auto enemy = std::make_shared<Enemy>(entity);
+    enemy->m_AttackDamage = attackDamage;
+    enemy->m_EnemyDialogue = dialogue;
+    enemy->m_Actions = actions;
+    enemy->m_ActionResponse = responses;
+    enemy->m_EnemyFightSpriteSheet = getTexture(fightTexturePath);
+    enemy->m_EnemySpriteClips = fightSpriteSheetClips;
+    enemy->FRAME_COUNT = fightAnimationFrameCount; 
+
+    entity->setEnemy(enemy); // binds the enemy obj to the entity obj
+	// ( this is so the game can find the entity the enemy belongs to )
+    
+	return entity;
+}
+
+
+
+
 Vector2f LoadLevel(std::string Room, LTexture* Map) {
 	Entities.clear();
 	collisionBoxes.clear();
@@ -49,6 +87,39 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 		}
 		else {
 
+			auto enemy = createEnemyEntity(
+				// Vector2f entityPos(950, 390);
+				{950,390},
+				{0,0,128,128},
+				// SDL_Rect entity_cb = { entityPos.x + 25, entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
+				{ 950 + 25, 390 + 25, 128 - 45, 128 - 55 }, // custom collision box per enemy
+				// entity->m_Enemy->m_EnemyFightSpriteSheet  = getTexture("data/box_fuck_u_ari_1.png");
+				"data/box_fuck_u_ari_1.png",
+				"data/box_fuck_u_ari_1.png",
+				// entity->m_Enemy->FRAME_COUNT = 2;
+				2,
+				2,
+				// sprite sheet clippings, default is 128x128 but can be different:
+				{{0,0,128,128}, {128,0,128,128}, {128*2,0,128,128}, {128*3,0,128,128}},
+				{{0,0,128,128}, {128,0,128,128}, {128*2,0,128,128}, {128*3,0,128,128}},
+				// entity->m_Enemy->m_EnemyDialogue = { "The Box Full of \"Fuck You\" Appeared!", "The Box of fuck you said ... \"Fuck you\"", "You opened the box. There was \"fuck you\" inside." };
+				// entity->m_Enemy->m_Actions = { "info", "sit", "kick.?" };
+				// entity->m_Enemy->m_ActionResponse = { "STATUS: .. its a box..?", "You sat on the box, it left a dent in it.", "WHAM! you left a big dent in its fleshy cardboard." };
+				{ "The Box Full of \"Fuck You\" Appeared!", "The Box of fuck you said ... \"Fuck you\"", "You opened the box. There was \"fuck you\" inside." },
+				{ "info", "sit", "kick.?" },
+				{ "STATUS: .. its a box..?", "You sat on the box, it left a dent in it.", "WHAM! you left a big dent in its fleshy cardboard." },
+				// child->m_AttackDamage = 1;
+				2,
+				// Entity and Enemy ID for lookups
+				44
+			);
+			Entities.push_back(enemy);
+			collisionBoxes.push_back(&enemy->m_Collider);
+			
+			
+
+			/*
+
 			// Load first entity , Enemy !
 			Vector2f entityPos(950, 390);
 			SDL_Rect entityRect = { 0,0,128,128 };
@@ -62,6 +133,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			clips.push_back(tmp);
 			SDL_Rect entity_cb = { entityPos.x + 25, entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
 			std::vector<std::string> enemydialogue = { "The Box Full of \"Fuck You\" Appeared!", "The Box of fuck you said ... \"Fuck you\"", "You opened the box. There was \"fuck you\" inside." };
+			
 			auto entity = std::make_shared<Entity>(entityPos, entity_cb, entityRect, getTexture("data/box_fuck_u_ari_1.png"), 2, clips, 44);
 			
 			// create the enemy and bind it to the entity
@@ -79,9 +151,26 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			Entities.push_back(entity); // vector of all entities to render.
 			collisionBoxes.push_back(&entity->m_Collider);
 
+			*/
 
 
+			auto doorEntity = std::make_shared<Entity>(
+				Vector2f{400,300},
+				SDL_Rect{ 400 + 25, 300 + 25, 128 - 45, 128 - 55 },
+				SDL_Rect{0,0,128,128},
+				getTexture("data/door.png"),
+				2,
+				std::vector<SDL_Rect>{ SDL_Rect{0,0,128,128}, SDL_Rect{128,0,128,128} },
+				69
+			);
+			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(doorEntity, "Level1", Vector2f{500, 370});
+			doornpc->m_Entity = doorEntity;
+			doorEntity->setNPC(doornpc);
 
+			Entities.push_back(doorEntity); // vector of all entities to render.
+			collisionBoxes.push_back(&doorEntity->m_Collider);
+
+			/*
 			// DOOR TEST
 			clips.clear();
 			Vector2f doorPos(400, 300);
@@ -90,15 +179,19 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			clips.push_back(tmp);
 			tmp = { 128,0,128,128 };
 			clips.push_back(tmp);
-			entity_cb = { (int)entityPos.x + 25, (int)entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
+			entity_cb = { (int)doorPos.x + 25, (int)doorPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
+
 			auto Doorentity = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
 			Entities.push_back(Doorentity); // vector of all entities to render.
+			
 			Vector2f outpos(500, 370);
 			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity, "Level1", outpos);
 			doornpc->m_Entity = Doorentity;
 			Doorentity->setNPC(doornpc);
 			collisionBoxes.push_back(&Doorentity->m_Collider);
+			*/
 
+			/*
 			// first NPC! 
 			Vector2f signpos(1000, 1000);
 			SDL_Rect signRect = { 0,0,128,128 };
@@ -113,10 +206,47 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			signentity->setNPC(signnpc);
 
 			collisionBoxes.push_back(&signentity->m_Collider);
+			*/
+
+			auto signentity = std::make_shared<Entity> (
+				Vector2f{1000, 1000}, // Position
+				SDL_Rect{1000 + 25, 1000 + 25, 128 - 45, 128 - 55}, // Collision Box
+				SDL_Rect{0,0,128,128}, // Frame Rect
+				getTexture("data/hintsign.png"), // Texture
+				1, // Frame Count
+				std::vector<SDL_Rect>{SDL_Rect{0,0,128,128}}, // Sprite Sheet Clips
+				2 // Entity ID
+			);
+			std::vector<std::string> dialogue = { "Hello, I'm a fucking sign. ufck you" };
+			std::shared_ptr<NPC> signnpc = std::make_shared<SIGNNPC>(dialogue, signentity);
+			signentity->setNPC(signnpc);
+			
+			Entities.push_back(signentity);
+			collisionBoxes.push_back(&signentity->m_Collider);
 
 
 
+			auto doodoomartBoxEntity = createEnemyEntity(
+				Vector2f{3000, 390}, // Position
+				SDL_Rect{0,0,128,128}, // Entity Rect
+				SDL_Rect{3000 + 25, 390 + 25, 128 - 45, 128 - 55}, // Collision Box
+				"data/DooDooMart_StorageBox-Sheet.png", // Overworld Texture Path
+				"data/DooDooMart_StorageBox-Sheet.png", // Fight Texture Path
+				5, // World Animation Frame Count
+				5, // Fight Animation Frame Count
+				{{0,0,128,128}, {128,0,128,128}, {128*2,0,128,128}, {128*3,0,128,128}, {128*4,0,128,128}}, // World Sprite Sheet Clips
+				{{0,0,128,128}, {128,0,128,128}, {128*2,0,128,128}, {128*3,0,128,128}, {128*4,0,128,128}}, // Fight Sprite Sheet Clips
+				{"The DOODOOMART Box ran at you!", "The DooDoo Mart Box has a buncha doodoo init", "The doodoomart box gave you a negative coupon. you are now in even more doodoo debt."}, // Dialogue
+				{"info", "dissassemble", "turn into shitbox"}, // Actions
+				{"STATUS: .. its a box..?", "You flattened the box. It took Heavy Damage", "my actual pc"}, // Responses
+				3, // Attack Damage
+				58 // Entity ID
+			);
+			Entities.push_back(doodoomartBoxEntity); // Add to Entities vector
+			collisionBoxes.push_back(&doodoomartBoxEntity->m_Collider); // Add to collision boxes
 
+			/*
+			SDL_Rect tmp;
 			// TEST OF doodoomart box enemy
 			Vector2f entityPos2(3000, 390);
 			SDL_Rect entityRect2 = { 0,0,128,128 };
@@ -133,7 +263,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			clips.push_back(tmp);
 			tmp = { 128 * 5 ,0,128,128 };
 			clips.push_back(tmp);
-			entity_cb = { (int)entityPos2.x + 25, (int)entityPos2.y + 25, entityRect2.w - 45, entityRect2.h - 55 }; // custom per entity but whatever
+			SDL_Rect entity_cb = { (int)entityPos2.x + 25, (int)entityPos2.y + 25, entityRect2.w - 45, entityRect2.h - 55 }; // custom per entity but whatever
 			std::vector<std::string> enemydialogue2 = { "The DOODOOMART Box ran at you!", "The DooDoo Mart Box has a buncha doodoo init", "The doodoomart box gave you a negative coupon. you are now in even more doodoo debt." };
 			auto entity2 = std::make_shared<Entity>(entityPos2, entity_cb, entityRect2, getTexture("data/DooDooMart_StorageBox-Sheet.png"), 5, clips, 58);
 			std::shared_ptr<Enemy> child2 = std::make_shared<Enemy>(entity2);
@@ -149,11 +279,13 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 			Entities.push_back(entity2); // vector of all entities to render.
 			collisionBoxes.push_back(&entity2->m_Collider);
+			
+			*/
 
 
 			clips.clear();
 			clips.push_back({ 0,0,128,128 });
-			auto barrel = std::make_shared<Entity>(Vector2f(2322, 258), SDL_Rect{ 0,0,128,128 }, SDL_Rect{ 0,0,128,128 }, getTexture("data/barrel_nuclear.png"), 1, clips, 1);
+			auto barrel = std::make_shared<Entity>(Vector2f(2322, 258), SDL_Rect{ 0,0,128,128 }, SDL_Rect{ 0,0,128,128 }, getTexture("data/barrel_nuclear.png"), 1, std::vector<SDL_Rect>{SDL_Rect{ 0,0,128,128 }}, 1);
 			Entities.push_back(barrel);
 
 

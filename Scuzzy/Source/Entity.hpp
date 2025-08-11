@@ -33,7 +33,17 @@ public:
 	/// <param name="framecount">Number of frames in animation.</param>
 	/// <param name="Clips">std::vector<SDL_Rect> sprite sheet clippings.</param>
 	/// <param name="EntityID">int, Entity ID number for sprite / Dialougue Connections.</param>
-	Entity(Vector2f p_pos, SDL_Rect collisionBox, SDL_Rect FrameRect, std::shared_ptr<LTexture> p_tex, int framecount, std::vector<SDL_Rect> Clips, int EntityID);
+	//Entity(Vector2f p_pos, SDL_Rect collisionBox, SDL_Rect FrameRect, std::shared_ptr<LTexture> p_tex, int framecount, std::vector<SDL_Rect> Clips, int EntityID);
+	Entity(
+        Vector2f p_pos,
+        SDL_Rect CollisionBox = {0,0,128,128},
+        SDL_Rect FrameRect = {0,0,128,128},
+        std::shared_ptr<LTexture> p_tex = nullptr,
+        int framecount = 1,
+        std::vector<SDL_Rect> Clips = {},
+        int EntityID = 0
+    );
+
 
 	float getAngle()
 	{
