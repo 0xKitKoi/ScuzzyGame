@@ -5,6 +5,8 @@
 
 #include "Source/Entity.hpp"
 #include "Source/Math.hpp"
+#include "Source/LTexture.hpp"
+#include "Source/Projectile.hpp"
 
 
 //extern class Entity;
@@ -40,11 +42,14 @@ public:
 	bool alive = true;
 	int HP = 5;
 
+	int projectileType = 0; // what type of projectile this enemy uses.
+	std::shared_ptr <Projectile> m_EnemyProjectile = nullptr;
+
 
 	int currentFrameCount = 0;
 	Uint32 lastFrameTime = 0;
 	Uint32 frameDuration = 100; // Time each frame is displayed (milliseconds)
-	int FRAME_COUNT; // number of frames in animation.
+	int FRAME_COUNT = 0; // number of frames in animation.
 	
 };
 

@@ -355,8 +355,10 @@ void HandleEnemyTurnState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
     // Regular enemy logic
     if (action == 1) {
         // Player dodges
-        fightText = "You dodged the attack!";
-        gameState.fightState = FightState::RESULT_DIALOGUE;
+
+		gameState.fightState = FightState::DODGE_MECHANIC;
+        //fightText = "You dodged the attack!";
+        //gameState.fightState = FightState::RESULT_DIALOGUE;
     }
     else if (action >= 4 && action <= 6) {
         // Enemy speaks dialogue
@@ -372,7 +374,8 @@ void HandleEnemyTurnState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
     }
     else {
         // Player takes damage
-        gameState.HP -= gameState.enemy->m_AttackDamage;
+        //gameState.fightState = FightState::DODGE_MECHANIC;
+        //gameState.HP -= gameState.enemy->m_AttackDamage;
         fightText = "You took " + std::to_string(gameState.enemy->m_AttackDamage) + " damage!\n";
 
         if (gameState.HP <= 0) {
@@ -384,7 +387,8 @@ void HandleEnemyTurnState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
 			HandleFightEndState(renderer, font, event);
         }
         else {
-            gameState.fightState = FightState::RESULT_DIALOGUE;
+            gameState.fightState = FightState::DODGE_MECHANIC;
+            //gameState.fightState = FightState::RESULT_DIALOGUE;
         }
     }
 }
@@ -428,6 +432,43 @@ void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event
   //  }
 }
 
+void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
+    // render fight
+    // get attack from enemy
+    // attack
+    // end turn on timer..?
+	printf("DODGE MECHANIC HERE\n");
+    // how do i impliment attacks? i need projectiles and rules for them.
+    // projectile class..? custom update function per projectile..?
+    // also I like deltarune's TP mechanic, I think near misses are really cool and unexplored
+	// tension meter but for attacking or effectiveness of attacks?
+	// tension meter that builds up as you dodge attacks, when full your next attack does more damage?
+	// tension meter that helps you get access to actions?
+	// silly mode needs to be acheived in actions, and locking them behind tension meter is kinda cool. 
+    // ROLLING HP METER line earthbound too. 
+    if (!gameState.fightTurnTimer.isStarted()) {
+        gameState.fightTurnTimer.start();
+		gameState.lastTurnTime = SDL_GetTicks();
+		printf("DODGE TIME STARTED\n");
+    }
+    else {
+        if (SDL_GetTicks() - gameState.lastTurnTime >= gameState.turnTimeLimit) {
+            // time's up, end turn
+            gameState.fightTurnTimer.stop();
+            //gameState.fightState = FightState::ENEMY_TURN;
+
+			gameState.fightState = FightState::RESULT_DIALOGUE;
+			printf("DODGE TIME UP, ENEMY TURN\n");
+		}
+        else {
+			// still the enemy's turn, update projectiles and handle player position.
+			printf("DODGE TIME ONGOING!\n");
+        }
+    }
+}
+
+
+
 // Main fight system input handler
 void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     // Always display HP regardless of state
@@ -462,6 +503,9 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     case FightState::ENEMY_TURN:
         HandleEnemyTurnState(renderer, font, event);
         break;
+	case FightState::DODGE_MECHANIC:
+        HandleDodgeingMechanic(renderer, font, event);
+		break;
 
     case FightState::ENEMY_DIALOGUE:
         HandleEnemyDialogueState(renderer, font, event);

@@ -117,6 +117,14 @@ void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
     //        gameState.inFight = false; // End fight
     //    }
     //}
+    if (gameState.fightState == FightState::DODGE_MECHANIC) {
+        // Update enemy projectile(s) ..?
+        if (m_EnemyProjectile) {
+            m_EnemyProjectile->Update(deltaT, gameState.fightPlayerPos);
+            // Check for collision with player or going off-screen
+            // (Collision detection code would go here)
+        }
+	}
 }
 
 void Enemy::move(Vector2f targetPos) {

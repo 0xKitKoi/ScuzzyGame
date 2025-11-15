@@ -9,6 +9,7 @@ enum class FightState {
     PLAYER_ITEMS_MENU,   // Player selecting an item
     PLAYER_ACTION_RESULT, // Showing result of player's action
     ENEMY_TURN,         // Enemy deciding and taking action
+	DODGE_MECHANIC,    // Enemy attack dodge mechanic
     ENEMY_DIALOGUE,     // Enemy speaking dialogue
     RESULT_DIALOGUE,    // Showing results of an action
     FIGHT_END           // Fight is over (win/lose)

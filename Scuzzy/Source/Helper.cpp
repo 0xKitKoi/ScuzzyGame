@@ -76,6 +76,8 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			entity->m_Enemy->m_EnemySpriteClips = clips;
 			entity->m_Enemy->FRAME_COUNT = 2;
 
+			//entity->m_Enemy->m_EnemyProjectile = std::make_shared<Projectile>(getTexture("data/boolet.png"), {0,0,0,0}, {0,0}, {0,0}, 1);
+
 			Entities.push_back(entity); // vector of all entities to render.
 			collisionBoxes.push_back(&entity->m_Collider);
 
@@ -93,7 +95,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			entity_cb = { (int)entityPos.x + 25, (int)entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
 			auto Doorentity = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
 			Entities.push_back(Doorentity); // vector of all entities to render.
-			Vector2f outpos(500, 370);
+			Vector2f outpos(800, 370);
 			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity, "Level1", outpos);
 			doornpc->m_Entity = Doorentity;
 			Doorentity->setNPC(doornpc);
@@ -142,10 +144,10 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			entity2->m_Enemy->m_EnemyDialogue = enemydialogue2;
 			entity2->m_Enemy->m_Actions = { "info", "dissassemble", "turn into shitbox" };
 			entity2->m_Enemy->m_ActionResponse = { "STATUS: .. its a box..?", "You flattened the box. It took Heavy Damage", "my actual pc" };
-			entity->m_Enemy->m_EnemyFightSpriteSheet = getTexture("data/DooDooMart_StorageBox-Sheet.png");
+			entity2->m_Enemy->m_EnemyFightSpriteSheet = getTexture("data/DooDooMart_StorageBox-Sheet.png");
 			//entity->m_Enemy->m_EnemySpriteClips = { {0,0,32,32}, {32*1,0,32,32}, {32 * 2,0,32,32}, {32 * 3,0,32,32} };
-			entity->m_Enemy->m_EnemySpriteClips = clips;
-			entity->m_Enemy->FRAME_COUNT = 5;
+			entity2->m_Enemy->m_EnemySpriteClips = clips;
+			entity2->m_Enemy->FRAME_COUNT = 5;
 
 			Entities.push_back(entity2); // vector of all entities to render.
 			collisionBoxes.push_back(&entity2->m_Collider);

@@ -1592,7 +1592,8 @@ int main(int argc, char* args[])
 					printf("MapoffsetX: %d, MapoffsetY: %d\n", MapoffsetX, MapoffsetY);
 					printf("scaledWidth: %d, scaledHeight: %d\n", scaledWidth, scaledHeight);
 					*/
-
+					center_offset_x = 0;
+					center_offset_y = 0;
 					// If map is smaller than screen, center it
 					if (Map.getWidth() < screenwidth) {
     					center_offset_x = (screenwidth - Map.getWidth()) / 2;
@@ -1601,7 +1602,12 @@ int main(int argc, char* args[])
 					if (Map.getHeight() < screenheight) {
     					center_offset_y = (screenheight - Map.getHeight()) / 2;
 					}
-
+					gameState.MapoffsetX = center_offset_x;
+					gameState.MapoffsetY = center_offset_y;
+					gameState.levelHeight = Map.getHeight();
+					gameState.levelWidth = Map.getWidth();
+					//MapoffsetX = center_offset_x;
+					//MapoffsetY = center_offset_y;
 					update_camera(player.GetPosX(), player.GetPosY(), Map.getWidth(), Map.getHeight());
 					//render_map(gRenderer, Map);
 					render_map_unified(gRenderer, &Map);

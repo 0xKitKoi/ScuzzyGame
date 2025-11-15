@@ -1,8 +1,9 @@
 #include "Source/NPC.hpp"
 #include "Source/Enemy.hpp"
-#include <Source/Entity.hpp>
-#include <Source/Player.hpp>
+#include "Source/Entity.hpp"
+#include "Source/Player.hpp"
 #include "Source/Enums.hpp"
+#include "Source/Timer.hpp"
 #include <memory>
 
 //enum class FightState {
@@ -35,6 +36,15 @@ struct GameState {
     bool dead = false;
 
     Vector2f DOOR_OUT_POS = {0,0};
+	int MapoffsetX = 0; // i hatteee uuu whyyy
+	int MapoffsetY = 0;
+	int levelWidth = 0;
+	int levelHeight = 0;
+
+	Vector2f fightPlayerPos = { 0,0 };
+	Timer fightTurnTimer;
+	Uint32 turnTimeLimit = 5000; // 5 seconds per turn
+	Uint32 lastTurnTime = 0;
 
     // Flags
 	FightState fightState;

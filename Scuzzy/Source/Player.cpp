@@ -14,16 +14,16 @@
 //const int SCREEN_HEIGHT = 1080;
 //const int LEVEL_WIDTH = 4000;
 //const int LEVEL_HEIGHT = 4000;
-extern int levelWidth;
-extern int levelHeight;
-extern int MapoffsetX;
-extern int MapoffsetY;
+//extern int levelWidth;
+//extern int levelHeight;
+//extern int MapoffsetX;
+//extern int MapoffsetY;
 extern int screenwidth;
 extern int screenheight;
 
 const int GRID_CELL_SIZE = 100;
-const int GRID_WIDTH = levelWidth / GRID_CELL_SIZE;
-const int GRID_HEIGHT = levelHeight / GRID_CELL_SIZE;
+const int GRID_WIDTH = gameState.levelWidth / GRID_CELL_SIZE;
+const int GRID_HEIGHT = gameState.levelHeight / GRID_CELL_SIZE;
 //extern std::vector<SDL_Rect> grid[GRID_WIDTH][GRID_HEIGHT];
 extern LTexture gTextTexture;
 
@@ -451,31 +451,32 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 
 	// Boundary checks (keep player within level bounds)
 	// Account for map offsets in the boundary checks
-	int effectiveLeftBound = 0 + MapoffsetX;
-	int effectiveTopBound = 0 + MapoffsetY;
-	int effectiveRightBound = MapoffsetX +  levelWidth;
-	int effectiveBottomBound = MapoffsetY + levelHeight;
-
-	// Boundary checks - keep player within actual map bounds
-	if (m_PosX < 0 || m_PosX + SpriteWidth > levelWidth) {
-    	m_PosX = originalX;
-	}
-	if (m_PosY < 0 || m_PosY + SpriteHeight > levelHeight) {
-    	m_PosY = originalY;
-	}
-
+	int effectiveLeftBound = 0 + gameState.MapoffsetX;
+	int effectiveTopBound = 0 + gameState.MapoffsetY;
+	int effectiveRightBound = gameState.levelWidth + gameState.MapoffsetX ;
+	int effectiveBottomBound = gameState.levelHeight + gameState.MapoffsetY;
 
 	/*
+	// Boundary checks - keep player within actual map bounds
+	if (m_PosX < 0 || m_PosX + SpriteWidth > gameState.levelWidth) {
+    	m_PosX = originalX;
+	}
+	if (m_PosY < 0 || m_PosY + SpriteHeight > gameState.levelHeight) {
+    	m_PosY = originalY;
+	}
+	*/
+
+	
 	// Check left/right boundaries
-	if (m_PosX < effectiveLeftBound || m_PosX + SpriteWidth > effectiveRightBound) {
+	if (m_PosX < 0 || m_PosX < effectiveLeftBound || m_PosX + SpriteWidth > effectiveRightBound) {
 		m_PosX = originalX; // Revert position if out of bounds
 	}
 
 	// Check top/bottom boundaries
-	if (m_PosY < effectiveTopBound || m_PosY + SpriteHeight > effectiveBottomBound) {
+	if (m_PosY < 0 || m_PosY < effectiveTopBound || m_PosY + SpriteHeight > effectiveBottomBound) {
 		m_PosY = originalY; // Revert position if out of bounds
 	}
-	*/
+	
 
 
 	//// Boundary checks (keep player within level bounds)
@@ -798,7 +799,7 @@ void Player::render(int camX, int camY) {
 
 	// hey dickhead tell the Ltexture to render with the rect you have!!!
 	//SpriteSheet.render(m_PosX, m_PosY, &srcRect);
-	SpriteSheet.render(m_PosX - camX + MapoffsetX, m_PosY - camY + MapoffsetY, &srcRect);
+	SpriteSheet.render(m_PosX - camX /* + MapoffsetX*/, m_PosY - camY /* + MapoffsetY*/, &srcRect);
 
 	//m_Collider.x = m_Collider.x - camX + MapoffsetX;
 	//m_Collider.y = m_Collider.y - camY + MapoffsetY;
