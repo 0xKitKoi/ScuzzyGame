@@ -1153,6 +1153,9 @@ int main(int argc, char* args[])
 			//std::unique_ptr<Player> player = std::make_unique<Player>(playerinitpos, Entities);
 			Player player(playerinitpos, Entities);
 			gameState.player = &player;
+			LTexture heart;
+			heart.loadFromFile("data/HeartSpriteSheet.png");
+			player.m_FightSpriteSheet = heart;
 
 			
 			/*
@@ -1189,6 +1192,8 @@ int main(int argc, char* args[])
 			Uint32 currentTime = 0; // Current frame time
 			float deltaTime = 0.0f; // Time elapsed between frames
 
+			gameState.screenheight = screenheight;
+			gameState.screenwidth = screenwidth;
 
 			Uint32 InitialTime = SDL_GetTicks();
 			int frame = 0;
@@ -1220,7 +1225,7 @@ int main(int argc, char* args[])
 				capTimer.start();
 
 
-
+				gameState.deltaTime = deltaTime;
 
 				
 
@@ -1372,30 +1377,25 @@ int main(int argc, char* args[])
 								/*main(argc, args);*/ // lmfao dont call main in main lesson learned
 							}
 					}
-
-					else if (gameState.textAvailable) {
-						handleDialogue(e);
-					}
-					
-					else if (gameState.inMenu) {
-						//handleMenuInput(e);
-						//handleMenuInputSideBySide(e);
-						MS_renderMenu(gRenderer, gFont);
-						MS_handleMenuInput(e);
-
-					}
-
-					else if (gameState.inFight) {
-						// handle fight input..?
-						FS_HandleInput(gRenderer, gFont, e);
-						//continue;
-
-					}
 					else {
-						player.handleEvent(e);
-					}
-					
+						if (gameState.textAvailable) {
+							handleDialogue(e);
+						}
 
+						if (gameState.inMenu) {
+							//handleMenuInput(e);
+							//handleMenuInputSideBySide(e);
+							MS_renderMenu(gRenderer, gFont);
+							MS_handleMenuInput(e);
+
+						}
+
+						if (gameState.inFight) {
+
+							FS_HandleInput(gRenderer, gFont, e); // Give control to FightSystem
+						}
+						player.handleEvent(e, deltaTime); // player heart controls
+					}
 				}
 
 				//Calculate and correct fps
@@ -1417,6 +1417,7 @@ int main(int argc, char* args[])
 				currentTime = SDL_GetTicks();
 				deltaTime = (currentTime - previousTime) / 1000.0f; // Convert to seconds
 				previousTime = currentTime;
+				gameState.deltaTime = deltaTime;
 
 
 				// Starting Point!
@@ -1623,7 +1624,7 @@ int main(int argc, char* args[])
 
 					// Pass the filtered collision boxes to the player
 					//player.Update(surroundingBoxes, deltaTime);
-
+					//player.handleEvent(e); // player heart controls
 					player.Update(collisionBoxes, deltaTime);
 
 					//SDL_RenderDrawRect(gRenderer, &player.GetColliderAddress());
@@ -1929,10 +1930,35 @@ int main(int argc, char* args[])
 
 					// Get this from Enemy ID.
 					//gameState.enemy->m_EnemyFightSpriteSheet->render((SCREEN_WIDTH/2)-128, (SCREEN_HEIGHT/2)-128*2, &rect);
-
-
-					FS_HandleInput(gRenderer, gFont, e);
+					//std::vector <SDL_Rect *> boundaries;
+					//SDL_Rect test = { 0, 0, SCREEN_WIDTH, 100 };
+					//boundaries.push_back(&test); // top TEST BOUNDARY
+					// so i cant call these here, it HAS to be where SDL Polls for events to populate e. checks. 
+					//player.handleEvent(e); // player heart controls
+					//FS_HandleInput(gRenderer, gFont, e); // Give control to FightSystem
+					//
+					//
+					// NO it dies have to be here as well as in the event polling loop to catch all events. otherwise the heart is not rendered..? wtfff
+					// the application loop right now is this:
+					/*
+					main()
+						while not quit
+							while poll event
+								handle event for player
+								handle event for fightsystem
+							if not in fight
+								render overworld, etc
+							else
+								HERE!
+								update enemy
+								update player input func ?
+								hand over to Fight System State Machine ? (SDL_Event e is an argument)
+								render fight system
 					
+					*/ 					
+
+					player.handleEvent(e, deltaTime);
+					FS_HandleInput(gRenderer, gFont, e); // Give control to FightSystem
 
 					// Player gets first move. dialogue box with options. turn based. 
 

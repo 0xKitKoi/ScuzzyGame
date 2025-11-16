@@ -52,6 +52,8 @@ void Enemy::Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
 
     /// TODO fix enemy collisions !!!!!!!
     if (!alive) { return; }
+	//if (gameState.inFight) { return; }
+	if (gameState.FightStarted) { return; }
 
 	// move to the player if player is in POV box. once touch player, set game state to fight mode.
 	if (SDL_HasIntersection(&m_Entity->m_FOV, &PlayerPos)) {
@@ -66,10 +68,11 @@ void Enemy::Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
             m_Entity->m_PosY = out.y;
 
             if (SDL_HasIntersection(&m_Entity->m_Collider, &PlayerPos)) {
-                
+				printf("Enemy has reached the player! Starting fight...\n");
                 gameState.enemyID = m_EnemyID;
                 gameState.enemy = this;
                 gameState.FightStarted = true;
+                gameState.player->m_HeartPos = { float(gameState.screenwidth) / 2.0f - 32.0f, float(gameState.screenheight) / 2.0f - 32.0f };
                 gameState.Plot = 0;
 				FS_InitFight();
                 this->alive = false;

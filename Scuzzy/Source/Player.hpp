@@ -30,7 +30,7 @@ public:
 	//void Update(const std::vector<SDL_Rect>& walls, float deltaTime);
 	void Update(std::vector<SDL_Rect*>& walls, float deltaTime);
 
-	void handleEvent(SDL_Event& e);
+	void handleEvent(SDL_Event& e, float deltaTime);
 	//void move(const std::vector<SDL_Rect>& walls, float deltaTime);
 	//void move(std::vector<SDL_Rect> grid[40][40]);
 	void render(int camX, int camY);
@@ -59,11 +59,17 @@ public:
 	SDL_Rect m_CheckBox;
 
 
+	LTexture m_FightSpriteSheet;
+	Vector2f m_HeartPos; // = { float(screenWidth) / 2.0f - 32.0f, float(screenheight) / 2.0f - 32.0f };
+	Vector2f m_HeartVelocity;
+	SDL_Rect m_HeartClips[2] = { SDL_Rect{0,0,32,32}, SDL_Rect{0,32,32,32} };
 	LTexture CurrentSprite; // need to access for fading.
-private:
-	
+
+
 	int m_PosX, m_PosY;
 	int m_VelX, m_VelY;
+private:
+	
 	SDL_Rect m_Collider;
 	//LTexture CurrentSprite;
 	LTexture SpriteSheet;

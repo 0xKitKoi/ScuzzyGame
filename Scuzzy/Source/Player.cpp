@@ -2,6 +2,7 @@
 #include "Source/LTexture.hpp"
 #include "Source/Math.hpp"
 #include "Source/GameState.hpp"
+extern GameState gameState;
 #include <vector>
 #include <stdio.h>
 #include <Source/Entity.hpp>
@@ -361,13 +362,6 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 		return;
 	}
 
-	// Advance animation frames
-	lastFrameTime += deltaTime * 1000.0f;
-	if (lastFrameTime >= frameDuration) {
-		currentFrame = (currentFrame + 1) % FRAME_COUNT;
-		lastFrameTime = 0;
-	}
-
 
 	// check box updating.
 	if (currentDirection == Direction::Up) {
@@ -508,8 +502,8 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 /// Handles user input. Currently only handles movement. 
 /// </summary>
 /// <param name="e">SDL checks for key presses. We check for the buttons.</param>
-void Player::handleEvent(SDL_Event& e) {
-	if (gameState.inMenu || gameState.inFight) {
+void Player::handleEvent(SDL_Event& e, float deltaTime) {
+	if (gameState.inMenu || gameState.FightStarted) {
 		reset({ float(m_PosX), float(m_PosY) });
 		//m_VelX = 0;
 		//m_VelY = 0;
@@ -520,6 +514,14 @@ void Player::handleEvent(SDL_Event& e) {
 		//keyRightPressed = false;
 		
 	}
+
+	// Advance animation frames
+	lastFrameTime += deltaTime * 1000.0f;
+	if (lastFrameTime >= frameDuration) {
+		currentFrame = (currentFrame + 1) % FRAME_COUNT;
+		lastFrameTime = 0;
+	}
+
 	if (!gameState.inFight) {
 		//if (gameState.inMenu) {
 		//	reset({ float(m_PosX), float(m_PosY) });
@@ -610,7 +612,12 @@ void Player::handleEvent(SDL_Event& e) {
 			currentState = State::Idle;
 		}
 	}
-	else {
+	else { // IN FIGHT MODE
+		if (gameState.fightState != FightState::DODGE_MECHANIC) { 
+			m_FightSpriteSheet.render(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[currentFrame]);
+			return; 
+		}
+
 		//m_VelX = 0;
 		//m_VelY = 0;
 		//currentState = State::Idle;
@@ -618,7 +625,7 @@ void Player::handleEvent(SDL_Event& e) {
 		//keyUpPressed = false;
 		//keyLeftPressed = false;
 		//keyRightPressed = false;
-		reset({ float(m_PosX), float(m_PosY) });
+		//reset({ float(m_PosX), float(m_PosY) });
 		
 
 		// IN FIGHT MOVEMENT AND SPRITE STATE AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -634,34 +641,32 @@ void Player::handleEvent(SDL_Event& e) {
 		
 		*/
 
-		FS_HandleInput(gRenderer, gFont, e);
-
+		//FS_HandleInput(gRenderer, gFont, e);
 
 
 		if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {
 			// Adjust the velocity and update direction/state
 			switch (e.key.keysym.sym) {
 			case SDLK_UP:
-
-				//m_VelY -= MaxVelocity;
+				m_HeartVelocity.y -= MaxVelocity;
 				keyUpPressed = true;
 				//currentState = State::Walking;
 				//currentDirection = Direction::Up;
 				break;
 			case SDLK_DOWN:
-				//m_VelY += MaxVelocity;
+				m_HeartVelocity.y += MaxVelocity;
 				keyDownPressed = true;
 				//currentState = State::Walking;
 				//currentDirection = Direction::Down;
 				break;
 			case SDLK_LEFT:
-				//m_VelX -= MaxVelocity;
+				m_HeartVelocity.x -= MaxVelocity;
 				keyLeftPressed = true;
 				//currentState = State::Walking;
 				//currentDirection = Direction::Left;
 				break;
 			case SDLK_RIGHT:
-				//m_VelX += MaxVelocity;
+				m_HeartVelocity.x += MaxVelocity;
 				keyRightPressed = true;
 				//currentState = State::Walking;
 				//currentDirection = Direction::Right;
@@ -674,45 +679,50 @@ void Player::handleEvent(SDL_Event& e) {
 			// Adjust the velocity and update key states
 			switch (e.key.keysym.sym) {
 			case SDLK_UP:
-				//m_VelY += MaxVelocity;
+				m_HeartVelocity.y += MaxVelocity;
 				keyUpPressed = false;
 				break;
 			case SDLK_DOWN:
-				//m_VelY -= MaxVelocity;
+				m_HeartVelocity.y -= MaxVelocity;
 				keyDownPressed = false;
 				break;
 			case SDLK_LEFT:
-				//m_VelX += MaxVelocity;
+				m_HeartVelocity.x += MaxVelocity;
 				keyLeftPressed = false;
 				break;
 			case SDLK_RIGHT:
-				//m_VelX -= MaxVelocity;
+				m_HeartVelocity.x -= MaxVelocity;
 				keyRightPressed = false;
 				break;
 			}
 		}
-
-		// Determine the current state based on which keys are still pressed
-		if (keyUpPressed || keyDownPressed || keyLeftPressed || keyRightPressed) {
-			//currentState = State::Walking;
-
-			// Update direction based on the most recent active key
-			if (keyUpPressed) {
-				//currentDirection = Direction::Up;
-			}
-			else if (keyDownPressed) {
-				//currentDirection = Direction::Down;
-			}
-			else if (keyLeftPressed) {
-				//currentDirection = Direction::Left;
-			}
-			else if (keyRightPressed) {
-				//currentDirection = Direction::Right;
-			}
+		// Clamp Velocity.
+		if (m_HeartVelocity.x > MaxVelocity) {
+			m_HeartVelocity.x = MaxVelocity;
 		}
-		else {
-			//currentState = State::Idle;
+		if (m_HeartVelocity.x < -MaxVelocity) {
+			m_HeartVelocity.x = -MaxVelocity;
 		}
+		if (m_HeartVelocity.y > MaxVelocity) {
+			m_HeartVelocity.y = MaxVelocity;
+		}
+		if (m_HeartVelocity.y < -MaxVelocity) {
+			m_HeartVelocity.y = -MaxVelocity;
+		}
+		m_HeartPos.x += m_HeartVelocity.x * deltaTime;
+		m_HeartPos.y += m_HeartVelocity.y * deltaTime;
+		// print heat pos, velocity and deltatime
+		printf("Heart pos: (%f, %f) | Velocity: (%d, %d) | DeltaTime: %f", m_HeartPos.x, m_HeartPos.y, m_VelX, m_VelY, deltaTime );
+
+
+		//printf("Heart Pos: (%f,%f)\n", m_HeartPos.x, m_HeartPos.y);
+		//printf("Velocity: (%d,%d)\n", m_VelX, m_VelY);
+		if (currentFrame % 2 == 0)
+			m_FightSpriteSheet.render(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[0]);
+		else
+			m_FightSpriteSheet.render(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[1]);
+
+		//FS_HandleInput(gRenderer, gFont, e);
 
 	}
 }
@@ -731,6 +741,8 @@ void Player::reset(Vector2f initPos) {
 	keyUpPressed = false;
 	keyLeftPressed = false;
 	keyRightPressed = false;
+	//m_HeartPos = { float(m_PosX), float(m_PosY) };
+	//m_HeartPos = { float(screenwidth) / 2.0f - 32.0f, float(screenheight) / 2.0f - 32.0f };
 	//m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };
 	//m_CheckBox = { m_PosX + 30, m_PosY , 60,60 };
 
@@ -744,6 +756,14 @@ void Player::reset(Vector2f initPos) {
 /// <param name="camX">Camera Position.</param>
 /// <param name="camY">Camera Position.</param>
 void Player::render(int camX, int camY) {
+	// Advance animation frames
+	lastFrameTime += gameState.deltaTime * 1000.0f;
+	if (lastFrameTime >= frameDuration) {
+		currentFrame = (currentFrame + 1) % FRAME_COUNT;
+		lastFrameTime = 0;
+	}
+
+
 	SDL_Rect srcRect;
 	if (currentState == State::Idle && currentDirection == Direction::Down) {
 		srcRect = DownWalking[0];

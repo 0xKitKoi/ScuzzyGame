@@ -417,6 +417,10 @@ void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event
 	if (!gameState.dead) {
         gameState.Text = { "You won! FUCKJ " };
         gameState.textAvailable = true;
+		gameState.FightStarted = false;
+		gameState.player->m_HeartVelocity = { 0,0 };
+		gameState.player->m_VelX = 0; // stop fucking moving 
+		gameState.player->m_VelY = 0;
 	}
 	else {
         //gameState.Text = { "You lost the fight!" };
@@ -450,11 +454,14 @@ void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event ev
         gameState.fightTurnTimer.start();
 		gameState.lastTurnTime = SDL_GetTicks();
 		printf("DODGE TIME STARTED\n");
+		// i want this line on fight start and only on fight start
+		//gameState.player->m_HeartPos = { float(gameState.screenwidth / 2), float(gameState.screenheight / 2) }; // reset position
     }
     else {
         if (SDL_GetTicks() - gameState.lastTurnTime >= gameState.turnTimeLimit) {
             // time's up, end turn
             gameState.fightTurnTimer.stop();
+            gameState.player->m_HeartVelocity = { 0,0 }; // stop fucking moving
             //gameState.fightState = FightState::ENEMY_TURN;
 
 			gameState.fightState = FightState::RESULT_DIALOGUE;
@@ -471,6 +478,9 @@ void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event ev
 
 // Main fight system input handler
 void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
+	//gameState.player->m_HeartVelocity = { 0,0 }; // stop fucking moving
+	//gameState.player->m_HeartPos = { 200.0f, 400.0f }; // reset position
+
     // Always display HP regardless of state
     std::string HP = "HP: " + std::to_string(gameState.HP);
     FS_renderText(renderer, font, HP, 200, 700, { 237, 28, 36 });
@@ -531,6 +541,9 @@ void FS_InitFight() {
     gameState.inFight = true;
     gameState.wonFight = false;
     gameState.inMenu = false;
+    // i want this line on fight start and only on fight start
+    gameState.player->m_HeartPos = { float(gameState.screenwidth / 2), float(gameState.screenheight / 2) }; // reset position
+	gameState.player->m_HeartVelocity = { 0,0 }; // stop fucking moving
 
     // Set initial state
     gameState.fightState = FightState::INTRO;

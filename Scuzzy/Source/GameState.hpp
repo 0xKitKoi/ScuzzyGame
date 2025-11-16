@@ -28,6 +28,7 @@ struct GameState {
 
 	//std::shared_ptr<Player> player = nullptr;
 	Player* player = nullptr;
+    float deltaTime;
 
     std::string room;
     int money = 0;
@@ -40,6 +41,8 @@ struct GameState {
 	int MapoffsetY = 0;
 	int levelWidth = 0;
 	int levelHeight = 0;
+	int screenwidth = 0;
+	int screenheight = 0;
 
 	Vector2f fightPlayerPos = { 0,0 };
 	Timer fightTurnTimer;
