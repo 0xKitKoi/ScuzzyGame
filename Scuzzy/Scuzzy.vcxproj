@@ -124,6 +124,7 @@ xcopy /Q /E /Y /I $(SolutionDir)\Scuzzy\data ..\bin\Release\data</Command>
     <ClInclude Include="Source\Timer.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Enemies.cpp" />
     <ClCompile Include="Source\Enemy.cpp" />
     <ClCompile Include="Source\Entity.cpp" />
     <ClCompile Include="Source\FightSystem.cpp" />

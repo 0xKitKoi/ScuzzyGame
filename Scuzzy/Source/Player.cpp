@@ -503,7 +503,7 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 /// </summary>
 /// <param name="e">SDL checks for key presses. We check for the buttons.</param>
 void Player::handleEvent(SDL_Event& e, float deltaTime) {
-	if (gameState.inMenu || gameState.FightStarted) {
+	if (gameState.inMenu && gameState.FightStarted) {
 		reset({ float(m_PosX), float(m_PosY) });
 		//m_VelX = 0;
 		//m_VelY = 0;
@@ -516,10 +516,16 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 	}
 
 	// Advance animation frames
+	//lastFrameTime += deltaTime * 1000.0f;
+	//if (lastFrameTime >= frameDuration) {
+	//	currentFrame = (currentFrame + 1) % /*FRAME_COUNT*/ 5;
+	//	lastFrameTime = 0;
+	//}
+	// Advance animation frames
 	lastFrameTime += deltaTime * 1000.0f;
-	if (lastFrameTime >= frameDuration) {
-		currentFrame = (currentFrame + 1) % FRAME_COUNT;
-		lastFrameTime = 0;
+	while (lastFrameTime >= frameDuration) {
+		currentFrame = (currentFrame + 1) % 4;
+		lastFrameTime -= frameDuration;  // Subtract instead of setting to 0
 	}
 
 	if (!gameState.inFight) {
@@ -712,16 +718,19 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 		m_HeartPos.x += m_HeartVelocity.x * deltaTime;
 		m_HeartPos.y += m_HeartVelocity.y * deltaTime;
 		// print heat pos, velocity and deltatime
-		printf("Heart pos: (%f, %f) | Velocity: (%d, %d) | DeltaTime: %f", m_HeartPos.x, m_HeartPos.y, m_VelX, m_VelY, deltaTime );
+		//printf("Heart pos: (%f, %f) | Velocity: (%d, %d) | DeltaTime: %f", m_HeartPos.x, m_HeartPos.y, m_VelX, m_VelY, deltaTime );
 
 
 		//printf("Heart Pos: (%f,%f)\n", m_HeartPos.x, m_HeartPos.y);
 		//printf("Velocity: (%d,%d)\n", m_VelX, m_VelY);
-		if (currentFrame % 2 == 0)
+		/*
+		if (currentFrame % 4 == 0)
 			m_FightSpriteSheet.render(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[0]);
 		else
 			m_FightSpriteSheet.render(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[1]);
-
+		*/
+		m_FightSpriteSheet.render(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[currentFrame]);
+		printf("currentFrame: %d\n", currentFrame);
 		//FS_HandleInput(gRenderer, gFont, e);
 
 	}
@@ -730,6 +739,7 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 
 
 void Player::reset(Vector2f initPos) {
+	printf("Player::reset called.\n");
 	m_PosX = initPos.x;
 	m_PosY = initPos.y;
 	currentState = State::Idle;

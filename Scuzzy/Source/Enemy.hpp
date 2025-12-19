@@ -25,6 +25,9 @@ public:
 	Enemy(std::shared_ptr<Entity> entity) : m_Entity(entity), m_EnemyID(entity->m_EntityID) {}
 	void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos);
 	void Update(float deltaT, int screenhight, int screenwidth);
+
+	virtual std::string FightActionResponse(int actionIndex);
+
 	void move(Vector2f targetPos);
 	Vector2f moveEntity(Vector2f pos, float deltaTime, Vector2f target);
 

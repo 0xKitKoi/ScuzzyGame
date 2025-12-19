@@ -88,10 +88,13 @@ void FS_renderText(SDL_Renderer* renderer, TTF_Font* font, std::string text, SDL
 // State handler functions
 void HandleIntroState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     // Display initial enemy dialogue
-    FS_renderText(renderer, font, gameState.enemy->m_EnemyDialogue[gameState.Plot], { 255, 255, 255 });
+	FS_renderText(renderer, font, gameState.enemy->m_EnemyDialogue[gameState.Plot], { 255, 255, 255 }); // indexing by gameState.Plot might cause issues if out of bounds
+	// maybe since I know this is the Intro state I can hardcode it to 0?
+	// maybe I should leave this for now so I know when this breaks, that I correctly set the Plot index elsewhere.
 
     // Press Z to advance
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
+        // after the player sees the intro text, select the first action.
         gameState.Plot++;
         gameState.fightState = FightState::PLAYER_TURN_MENU;
         selection = 0; // Reset selection for menu
@@ -109,6 +112,10 @@ void HandlePlayerTurnMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event
     FS_renderTextBox(renderer);
 
     // Define menu options
+    if (gameState.SillyMeter >= 5) {
+        gameState.SillyMode = true;
+        //
+    }
     std::vector<std::string> fightMenu = { "Fight", "Actions", "Items" };
 
     // Render menu options
@@ -172,6 +179,9 @@ void HandlePlayerTurnMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event
 }
 
 void HandlePlayerActionsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
+	// this is the menu for the actions the player can pick in a fight. 
+    // They come from the enemy that started the fight. 
+
     FS_renderTextBox(renderer);
 
     // Get actions for current enemy
@@ -200,8 +210,11 @@ void HandlePlayerActionsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Ev
         }
         else if (event.key.keysym.sym == SDLK_z) {
             // Set text based on selected action
+			// The enemy will effect the gameState based on the action chosen here.
+
             if (selection < gameState.enemy->m_ActionResponse.size()) {
-                fightText = gameState.enemy->m_ActionResponse[selection];
+				fightText = gameState.enemy->FightActionResponse(selection); // side effects handled inside the function
+				//fightText = gameState.enemy->m_ActionResponse[selection]; // this is replaced by the above line for silly mode support
                 gameState.fightState = FightState::PLAYER_ACTION_RESULT;
                 gameState.turnCount++;
                 selection = 0; // Set to Actions option
@@ -469,7 +482,8 @@ void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event ev
 		}
         else {
 			// still the enemy's turn, update projectiles and handle player position.
-			printf("DODGE TIME ONGOING!\n");
+			//printf("DODGE TIME ONGOING!\n");
+            printf("");
         }
     }
 }

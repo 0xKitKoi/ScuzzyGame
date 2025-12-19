@@ -130,6 +130,17 @@ void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
 	}
 }
 
+std::string Enemy::FightActionResponse(int actionIndex) {
+    printf("BASE Enemy::FightActionResponse called with actionIndex: %d\n", actionIndex);
+	// by default, return the action response at the given index.
+    if (actionIndex < 0 || actionIndex >= m_ActionResponse.size()) {
+        return "Invalid action.";
+    }
+    return m_ActionResponse[actionIndex];
+}
+
+
+
 void Enemy::move(Vector2f targetPos) {
 	//Vector2f prev = m_Entity.getPos();
 

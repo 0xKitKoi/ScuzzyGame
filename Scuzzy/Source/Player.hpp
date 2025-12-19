@@ -46,7 +46,7 @@ public:
 	Direction currentDirection;
 	int currentFrame;
 	Uint32 lastFrameTime = 0;
-	Uint32 frameDuration = 100; // Time each frame is displayed (milliseconds)
+	Uint32 frameDuration = 500; // 100 // Time each frame is displayed (milliseconds)
 
 
 	static const int SpriteHeight = 128;
@@ -62,7 +62,7 @@ public:
 	LTexture m_FightSpriteSheet;
 	Vector2f m_HeartPos; // = { float(screenWidth) / 2.0f - 32.0f, float(screenheight) / 2.0f - 32.0f };
 	Vector2f m_HeartVelocity;
-	SDL_Rect m_HeartClips[2] = { SDL_Rect{0,0,32,32}, SDL_Rect{0,32,32,32} };
+	SDL_Rect m_HeartClips[4] = { SDL_Rect{0,0,32,32}, SDL_Rect{32,0,32,32}, SDL_Rect{32 * 2, 0, 32, 32}, SDL_Rect{0,32,32,32} };
 	LTexture CurrentSprite; // need to access for fading.
 
 

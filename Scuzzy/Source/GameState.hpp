@@ -52,7 +52,10 @@ struct GameState {
     // Flags
 	FightState fightState;
     bool DebugMode = true; // Debug mode for testing
-    
+
+	bool SillyMode = false;
+    int SillyMeter = 0;
+
 	bool LoadingScreen = false; // Loading screen for room transitions
 	bool DoneLoading = false;
     bool fade = true;
