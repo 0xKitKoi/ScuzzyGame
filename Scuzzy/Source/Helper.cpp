@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 #include "TestNPC.cpp" // i didnt know u can include a cpp file 
-#include "Source/Enemies.cpp"
+#include "Source/Enemies.hpp"
 
 extern std::vector<std::shared_ptr<Entity>> Entities;
 extern std::vector<SDL_Rect*> collisionBoxes;

@@ -56,4 +56,16 @@ public:
 	
 };
 
+/*
+class BoxOfFuckYou : public Enemy {
+public:
+	BoxOfFuckYou(std::shared_ptr<Entity> entity) : Enemy(entity)
+};
+
+class DooDooMartBox : public Enemy {
+public:
+	DooDooMartBox(std::shared_ptr<Entity> entity) : Enemy(entity) 
+};*/
+
+
 #endif // ENEMY_H
