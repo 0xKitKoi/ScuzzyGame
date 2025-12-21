@@ -487,7 +487,8 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };
 
 	// Debug.
-	SDL_Color textColor = { 0, 0, 0 };
+	//SDL_Color textColor = { 0, 0, 0 };
+	SDL_Color textColor = { 0xFF, 0xFF, 0xFF, 0xFF };
 	char buffer[200];
 	snprintf(buffer, sizeof(buffer), "DELTA: %f\n Velocity X: %d, \nVelocity Y: %d\nPOS: (%d,%d)\nCOLLIDER POS: (%d,%d)\nCHECKBOX: (%d,%d)", deltaTime, m_VelX, m_VelY, m_PosX, m_PosY, m_Collider.x, m_Collider.y, m_CheckBox.x, m_CheckBox.y);
 	std::string str = buffer;

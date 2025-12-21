@@ -19,7 +19,7 @@
 #include "Source/GameState.hpp"
 #include "Source/MenuSystem.hpp"
 #include "Source/FightSystem.hpp"
-#include "Source/TestNPC.cpp"
+#include "Source/TestNPC.hpp"
 #include "Helper.hpp"
 
 
@@ -103,7 +103,8 @@ std::vector<SDL_Rect> grid[GRID_WIDTH][GRID_HEIGHT];
 std::vector<SDL_Rect*> collisionBoxes; // global because passing into funcs sounds horrible.
 
 // Black text color for use with gTextTexture;
-SDL_Color textColor = { 0, 0, 0 };
+//SDL_Color textColor = { 0, 0, 0 };
+SDL_Color textColor = { 255, 0, 0 };
 
 float lerp(float x, float y, float t) {
 	return x * (1.f - t) + y * t;
@@ -1921,6 +1922,7 @@ int main(int argc, char* args[])
 					std::string bruh;
 					bruh.append(std::to_string(gameState.enemyID));
 					gTextTexture.loadFromRenderedText(bruh, { 0xFF, 0xFF, 0xFF, 0xFF });
+					//gTextTexture.loadFromRenderedText(bruh, { 0x00, 0x00, 0x00, 0x00 });
 					gTextTexture.render(0, 0);
 
 					// Enemy will now render itself like a man

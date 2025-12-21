@@ -130,11 +130,15 @@ void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
 	}
 }
 
+/// @brief This returns text based off of an action chosen by the player in a fight. This should be overwritten with custom behavior for each special enemy.
+/// @param actionIndex Index of enemy->m_actions the action chosen by the player in a fight.
+/// @return A string to tell the player their actions have done something special.
 std::string Enemy::FightActionResponse(int actionIndex) {
-    printf("BASE Enemy::FightActionResponse called with actionIndex: %d\n", actionIndex);
+    printf("[!] BASE Enemy::FightActionResponse called with actionIndex: %d\n", actionIndex);
+    printf("[!] I don't have any custom behavior! returning default response.\n");
 	// by default, return the action response at the given index.
     if (actionIndex < 0 || actionIndex >= m_ActionResponse.size()) {
-        return "Invalid action.";
+        return "[!] Invalid action. actionIndex out of range. How did you even do this?";
     }
     return m_ActionResponse[actionIndex];
 }

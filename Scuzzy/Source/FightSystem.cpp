@@ -435,9 +435,12 @@ void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event
 		gameState.player->m_VelX = 0; // stop fucking moving 
 		gameState.player->m_VelY = 0;
 	}
-	else {
+	//else {
         //gameState.Text = { "You lost the fight!" };
-	}
+	//}
+
+
+
 	//gameState.textAvailable = true;
 
   //  FS_renderText(renderer, font, fightText, { 255, 255, 255 });
