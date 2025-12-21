@@ -731,7 +731,8 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 			m_FightSpriteSheet.render(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[1]);
 		*/
 		m_FightSpriteSheet.render(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[currentFrame]);
-		printf("currentFrame: %d\n", currentFrame);
+		if (gameState.DebugMode)
+			printf("currentFrame: %d\n", currentFrame);
 		//FS_HandleInput(gRenderer, gFont, e);
 
 	}

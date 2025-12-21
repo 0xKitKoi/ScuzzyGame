@@ -123,9 +123,11 @@ void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
     if (gameState.fightState == FightState::DODGE_MECHANIC) {
         // Update enemy projectile(s) ..?
         if (m_EnemyProjectile) {
-            m_EnemyProjectile->Update(deltaT, gameState.fightPlayerPos);
+            //m_EnemyProjectile->Update(deltaT, gameState.fightPlayerPos);
+            m_EnemyProjectile->Update(deltaT, gameState.player->m_HeartPos);
             // Check for collision with player or going off-screen
             // (Collision detection code would go here)
+            m_EnemyProjectile->m_SpriteSheet->render(int(m_EnemyProjectile->m_Position.x), int(m_EnemyProjectile->m_Position.y) /*, &m_EnemyProjectile->m_SpriteClip*/ ); 
         }
 	}
 }

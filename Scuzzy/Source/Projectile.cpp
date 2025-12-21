@@ -11,6 +11,7 @@ void Projectile::Update(float deltaT, Vector2f PlayerPos) { // DEFAULT UPDATE FU
 	// when this is called the first time, store the target position into m_TargetPosition and lerp towards that.
 	printf("Projectile Update Called\n");
 	if (!m_Active) {
+		// this is the first update call, set target position.
 		m_TargetPosition.x = PlayerPos.x;
 		m_TargetPosition.y = PlayerPos.y;
 		m_Active = true;
@@ -28,6 +29,9 @@ void Projectile::Update(float deltaT, Vector2f PlayerPos) { // DEFAULT UPDATE FU
 		// Move the entity in the direction of the target based on speed and deltaTime
 		m_Position.x += dx * m_Velocity.x * deltaT;
 		m_Position.y += dy * m_Velocity.y * deltaT;
+		printf("Projectile Position: (%f, %f)\n", m_Position.x, m_Position.y);
+		printf("Target Position: (%f, %f)\n", m_TargetPosition.x, m_TargetPosition.y);
+
 	}
 	
 	//m_Position.x += m_Velocity.x * deltaT;

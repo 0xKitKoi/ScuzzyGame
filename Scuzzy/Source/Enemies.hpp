@@ -1,6 +1,7 @@
 #include "Source/Entity.hpp"
 #include "Source/Enemy.hpp"
 #include "Source/GameState.hpp"
+#include "Source/Projectile.hpp"
 
 extern std::shared_ptr<LTexture> getTexture(const std::string& filename);
 
@@ -26,6 +27,8 @@ public:
 		m_EnemySpriteClips =  { { 0,0,128,128 }, { 128,0,128,128 }, { 128 * 2,0,128,128 }, { 128 * 3,0,128,128 } };
 
 		FRAME_COUNT = 2;
+
+		m_EnemyProjectile = std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1);
 	}
 
 	std::string FightActionResponse(int actionIndex) override {
