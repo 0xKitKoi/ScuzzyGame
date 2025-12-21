@@ -29,6 +29,10 @@ public:
 		FRAME_COUNT = 2;
 
 		m_EnemyProjectile = std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1);
+		m_projectileCount = 10;
+		for (int i = 0; i < m_projectileCount; i++) {
+			m_EnemyProjectiles.push_back(std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1));
+		}
 	}
 
 	std::string FightActionResponse(int actionIndex) override {

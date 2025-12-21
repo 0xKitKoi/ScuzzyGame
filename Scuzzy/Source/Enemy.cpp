@@ -7,7 +7,7 @@
 
 
 extern float lerp(float x, float y, float t);
-
+extern std::shared_ptr<LTexture> getTexture(const std::string& filename);
 
 //Enemy::Enemy(Entity& p ) : m_Entity(p) {}
 //Enemy::Enemy(std::shared_ptr<Entity> entity) : m_Entity(entity) {}
@@ -76,6 +76,10 @@ void Enemy::Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
                 gameState.Plot = 0;
 				FS_InitFight();
                 this->alive = false;
+                // init the projectiles
+                for (int i = 0; i < m_projectileCount; i++) {
+			        m_EnemyProjectiles.push_back(std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1));
+		        }
             }
 	}
     else {
@@ -122,14 +126,15 @@ void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
     //}
     if (gameState.fightState == FightState::DODGE_MECHANIC) {
         // Update enemy projectile(s) ..?
-        if (m_EnemyProjectile) {
-            //m_EnemyProjectile->Update(deltaT, gameState.fightPlayerPos);
-            m_EnemyProjectile->Update(deltaT, gameState.player->m_HeartPos);
-            // Check for collision with player or going off-screen
-            // (Collision detection code would go here)
-            m_EnemyProjectile->m_SpriteSheet->render(int(m_EnemyProjectile->m_Position.x), int(m_EnemyProjectile->m_Position.y) /*, &m_EnemyProjectile->m_SpriteClip*/ ); 
+        for (int i = 0; i < m_projectileCount; i++) {
+            if (m_EnemyProjectiles[i]) {
+                m_EnemyProjectiles[i]->Update(deltaT, gameState.player->m_HeartPos);
+                // Check for collision with player or going off-screen
+                // (Collision detection code would go here)
+                m_EnemyProjectiles[i]->m_SpriteSheet->render(int(m_EnemyProjectiles[i]->m_Position.x), int(m_EnemyProjectiles[i]->m_Position.y) /*, &m_EnemyProjectile->m_SpriteClip*/ ); 
+            }
         }
-	}
+    }
 }
 
 /// @brief This returns text based off of an action chosen by the player in a fight. This should be overwritten with custom behavior for each special enemy.
