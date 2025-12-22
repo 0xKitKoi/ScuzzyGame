@@ -38,3 +38,5 @@ void Projectile::Update(float deltaT, Vector2f PlayerPos) { // DEFAULT UPDATE FU
 	//m_Position.y += m_Velocity.y * deltaT;
 
 }
+
+

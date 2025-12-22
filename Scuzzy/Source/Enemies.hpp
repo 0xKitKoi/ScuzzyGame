@@ -30,9 +30,11 @@ public:
 
 		m_EnemyProjectile = std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1);
 		m_projectileCount = 10;
+		/*
 		for (int i = 0; i < m_projectileCount; i++) {
 			m_EnemyProjectiles.push_back(std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1));
 		}
+		*/
 	}
 
 	std::string FightActionResponse(int actionIndex) override {
@@ -74,6 +76,10 @@ public:
 		m_EnemySpriteClips = { { 0,0,128,128 }, { 128,0,128,128 }, { 128 * 2,0,128,128 }, { 128 * 3,0,128,128 }, { 128 * 4 ,0,128,128 }, { 128 * 5 ,0,128,128 } };
 
 		FRAME_COUNT = 5;
+
+		m_EnemyProjectile = std::make_shared<Projectile>(getTexture("data/box.png"), SDL_Rect{0,0,20,20}, Vector2f(0,0), Vector2f(200,200), 1);
+		m_projectileCount = 10;
+
 	}
 
 	std::string FightActionResponse(int actionIndex) override {
@@ -94,5 +100,8 @@ public:
 		}
 		return m_ActionResponse[actionIndex];
 	}
+
+
+
 };
 

@@ -4,13 +4,21 @@
 #include <stdio.h>
 #include "Source/GameState.hpp"
 #include "Source/FightSystem.hpp"
+#include <random>
 
 
 extern float lerp(float x, float y, float t);
-extern std::shared_ptr<LTexture> getTexture(const std::string& filename);
+extern std::shared_ptr<LTexture> getTexture(const std::string& filename);   
 
 //Enemy::Enemy(Entity& p ) : m_Entity(p) {}
 //Enemy::Enemy(std::shared_ptr<Entity> entity) : m_Entity(entity) {}
+
+int randomInt(int min, int max) {
+    static std::mt19937 gen(std::random_device{}());
+    std::uniform_int_distribution<int> dist(min, max);
+    return dist(gen);
+}
+
 
 
 float duration = 2.0f;
@@ -76,9 +84,18 @@ void Enemy::Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
                 gameState.Plot = 0;
 				FS_InitFight();
                 this->alive = false;
+                std::random_device rd;
+                std::mt19937 gen(rd());
+                
+
                 // init the projectiles
                 for (int i = 0; i < m_projectileCount; i++) {
-			        m_EnemyProjectiles.push_back(std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1));
+			        //m_EnemyProjectiles.push_back(std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1));
+                    // using the m_EnemyProjectile as a template, create new projectiles
+                    float subx = float(randomInt(0, gameState.screenwidth));
+                    float suby = float(randomInt(0, gameState.screenheight));
+                    m_EnemyProjectiles.push_back(std::make_shared<Projectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f( subx, suby ), Vector2f(200,200), 1));
+                    // randomize vector2f(x,y) position:
 		        }
             }
 	}
@@ -133,7 +150,7 @@ void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
                 // (Collision detection code would go here)
                 m_EnemyProjectiles[i]->m_SpriteSheet->render(int(m_EnemyProjectiles[i]->m_Position.x), int(m_EnemyProjectiles[i]->m_Position.y) /*, &m_EnemyProjectile->m_SpriteClip*/ ); 
             }
-        }
+        }   
     }
 }
 
@@ -150,6 +167,22 @@ std::string Enemy::FightActionResponse(int actionIndex) {
     return m_ActionResponse[actionIndex];
 }
 
+
+void Enemy::ResetProjectiles() {
+    m_EnemyProjectiles.clear();
+                        // init the projectiles
+        for (int i = 0; i < m_projectileCount; i++) {
+		    //m_EnemyProjectiles.push_back(std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1));
+            // using the m_EnemyProjectile as a template, create new projectiles
+            float subx = float(randomInt(0, gameState.screenwidth));
+            float suby = float(randomInt(0, gameState.screenheight));
+            m_EnemyProjectiles.push_back(std::make_shared<Projectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f( subx, suby ), Vector2f(200,200), 1));
+            // randomize vector2f(x,y) position:
+        }
+        float subx = float(randomInt(0, gameState.screenwidth));
+        float suby = float(randomInt(0, gameState.screenheight));
+        m_EnemyProjectiles[0] = std::make_shared<HomingProjectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f(subx, suby), Vector2f(200, 200), 1);
+}
 
 
 void Enemy::move(Vector2f targetPos) {

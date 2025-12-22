@@ -5,6 +5,8 @@
 #include "Source/Entity.hpp"
 #include "Source/Math.hpp"
 
+extern float lerp(float x, float y, float t);
+
 class Projectile {
 public:
 	// we need projectiles. each projectile has a position, speed, direction, sprite, and damage value.
@@ -31,4 +33,20 @@ public:
 	virtual void Update(float deltaT, Vector2f PlayerPos);
 	
 };
+
+
+class HomingProjectile : public Projectile {
+public:
+    float m_TurnSpeed = 5.0f;
+
+    using Projectile::Projectile;
+
+    void Update(float deltaT, Vector2f playerPos) override {
+        Vector2f direction = (playerPos - m_Position).Normalized();
+        m_Velocity = lerp(m_Velocity, direction * m_Velocity.Length(), m_TurnSpeed * deltaT);
+        m_Position += m_Velocity * deltaT;
+    }
+};
+
+
 #endif
