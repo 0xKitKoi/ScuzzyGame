@@ -9,6 +9,7 @@
 #include <vector>
 #include "TestNPC.hpp" // i didnt know u can include a cpp file 
 #include "Source/Enemies.hpp"
+#include <random>
 
 extern std::vector<std::shared_ptr<Entity>> Entities;
 extern std::vector<SDL_Rect*> collisionBoxes;

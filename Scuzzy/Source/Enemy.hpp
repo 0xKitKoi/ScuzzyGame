@@ -26,7 +26,7 @@ public:
 	void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos);
 	void Update(float deltaT, int screenhight, int screenwidth);
 
-	void ResetProjectiles();
+	virtual void ResetProjectiles();
 
 	virtual std::string FightActionResponse(int actionIndex);
 

@@ -48,5 +48,17 @@ public:
     }
 };
 
+class FallingProjectile : public Projectile {
+public:
+	float m_Gravity = 9.8f;
+	using Projectile::Projectile;
+	void Update(float deltaT, Vector2f playerPos) override {
+		m_Velocity.y += m_Gravity * deltaT;
+		m_Position += m_Velocity * deltaT;
+		// lerp x position towards player x pos
+		m_Position.x = lerp(m_Position.x, playerPos.x, 0.1f * deltaT); // gottem
+	}
+};
+
 
 #endif

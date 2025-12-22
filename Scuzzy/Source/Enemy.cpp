@@ -117,11 +117,19 @@ void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
         
         //this->m_Entity->getCurrentFrame();
 
-
+        /*
+        // Advance animation frames
+	lastFrameTime += deltaTime * 1000.0f;
+	while (lastFrameTime >= frameDuration) {
+		currentFrame = (currentFrame + 1) % 4;
+		lastFrameTime -= frameDuration;  // Subtract instead of setting to 0
+	}
+        */
         lastFrameTime += deltaT * 1000.0f;
-        if (lastFrameTime >= frameDuration) {
-            currentFrameCount = (currentFrameCount + 1) % this->m_Entity->FRAME_COUNT;
-            lastFrameTime = 0;
+        while (lastFrameTime >= frameDuration) {
+            currentFrameCount = (currentFrameCount + 1) % /*this->m_Entity->FRAME_COUNT*/ 4;
+            //lastFrameTime = 0;
+            lastFrameTime -= frameDuration;
         }
 
         //enemysprite = m_EnemySpriteClips[currentFrameCount]; // render the sprite at index of animation

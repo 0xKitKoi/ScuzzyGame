@@ -3,7 +3,16 @@
 #include "Source/GameState.hpp"
 #include "Source/Projectile.hpp"
 
+#include <random>
+
 extern std::shared_ptr<LTexture> getTexture(const std::string& filename);
+
+/*int randomInt(int min, int max) {
+    static std::mt19937 gen(std::random_device{}());
+    std::uniform_int_distribution<int> dist(min, max);
+    return dist(gen);
+}*/
+extern int randomInt(int min, int max);
 
 
 // Polymorphism time bitches
@@ -26,7 +35,7 @@ public:
 
 		m_EnemySpriteClips =  { { 0,0,128,128 }, { 128,0,128,128 }, { 128 * 2,0,128,128 }, { 128 * 3,0,128,128 } };
 
-		FRAME_COUNT = 2;
+		FRAME_COUNT = 4;
 
 		m_EnemyProjectile = std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1);
 		m_projectileCount = 10;
@@ -77,7 +86,7 @@ public:
 
 		FRAME_COUNT = 5;
 
-		m_EnemyProjectile = std::make_shared<Projectile>(getTexture("data/box.png"), SDL_Rect{0,0,20,20}, Vector2f(0,0), Vector2f(200,200), 1);
+		m_EnemyProjectile = std::make_shared<FallingProjectile>(getTexture("data/box.png"), SDL_Rect{0,0,20,20}, Vector2f(0,0), Vector2f(200,200), 1);
 		m_projectileCount = 10;
 
 	}
@@ -101,7 +110,21 @@ public:
 		return m_ActionResponse[actionIndex];
 	}
 
-
+	void ResetProjectiles() override {
+    	m_EnemyProjectiles.clear();
+                        // init the projectiles
+        for (int i = 0; i < m_projectileCount; i++) {
+		    //m_EnemyProjectiles.push_back(std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1));
+            // using the m_EnemyProjectile as a template, create new projectiles
+            float subx = float(randomInt(0, gameState.screenwidth));
+            float suby = float(randomInt(0, gameState.screenheight));
+            m_EnemyProjectiles.push_back(std::make_shared<FallingProjectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f( subx, suby ), Vector2f(200,200), 1));
+            // randomize vector2f(x,y) position:
+        }
+        float subx = float(randomInt(0, gameState.screenwidth));
+        float suby = float(randomInt(0, gameState.screenheight));
+        m_EnemyProjectiles[0] = std::make_shared<HomingProjectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f(subx, suby), Vector2f(200, 200), 1);
+	}
 
 };
 
