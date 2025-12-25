@@ -48,7 +48,7 @@ public:
 	int HP = 5;
 
 	int projectileType = 0; // what type of projectile this enemy uses.
-	std::shared_ptr <Projectile> m_EnemyProjectile = nullptr;
+	std::shared_ptr<Projectile> m_EnemyProjectile = nullptr;
 	int m_projectileCount = 10;
 	std::vector<std::shared_ptr<Projectile>> m_EnemyProjectiles;
 

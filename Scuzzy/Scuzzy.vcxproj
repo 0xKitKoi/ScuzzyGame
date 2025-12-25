@@ -124,7 +124,6 @@ xcopy /Q /E /Y /I $(SolutionDir)\Scuzzy\data ..\bin\Release\data</Command>
     <ClInclude Include="Source\Timer.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Enemies.cpp" />
     <ClCompile Include="Source\Enemy.cpp" />
     <ClCompile Include="Source\Entity.cpp" />
     <ClCompile Include="Source\FightSystem.cpp" />
@@ -135,7 +134,6 @@ xcopy /Q /E /Y /I $(SolutionDir)\Scuzzy\data ..\bin\Release\data</Command>
     <ClCompile Include="Source\NPC.cpp" />
     <ClCompile Include="Source\Player.cpp" />
     <ClCompile Include="Source\Projectile.cpp" />
-    <ClCompile Include="Source\TestNPC.cpp" />
     <ClCompile Include="Source\TextBox.cpp" />
     <ClCompile Include="Source\Timer.cpp" />
     <ClCompile Include="Source\main.cpp" />

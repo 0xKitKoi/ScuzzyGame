@@ -9,6 +9,7 @@ extern GameState gameState;
 #include <Source/NPC.hpp>
 
 #include "Source/FightSystem.hpp"
+#include "Source/GameState.hpp"
 
 //bool checkCollision(SDL_Rect a, SDL_Rect b);
 //const int SCREEN_WIDTH = 1920;
@@ -59,7 +60,7 @@ Player::Player(Vector2f initPos, std::vector<std::shared_ptr<Entity>>& entityVec
 	m_CheckBox.y = m_PosY;
 	m_CheckBox.h = SpriteHeight;
 	m_CheckBox.w = SpriteWidth;
-
+	m_HeartCollider = { screenwidth /2, screenheight/2, 32, 32 };
 
 	m_VelX = 0;
 	m_VelY = 0;
@@ -656,6 +657,10 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 			switch (e.key.keysym.sym) {
 			case SDLK_UP:
 				m_HeartVelocity.y -= MaxVelocity;
+				// update heart hitbox
+				//m_HeartCollider.y = int(m_HeartPos.y) + 16;
+
+
 				keyUpPressed = true;
 				//currentState = State::Walking;
 				//currentDirection = Direction::Up;
@@ -663,18 +668,21 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 			case SDLK_DOWN:
 				m_HeartVelocity.y += MaxVelocity;
 				keyDownPressed = true;
+				//m_HeartCollider.y = int(m_HeartPos.y) - 16;
 				//currentState = State::Walking;
 				//currentDirection = Direction::Down;
 				break;
 			case SDLK_LEFT:
 				m_HeartVelocity.x -= MaxVelocity;
 				keyLeftPressed = true;
+				//m_HeartCollider.x = int(m_HeartPos.x) - 16;
 				//currentState = State::Walking;
 				//currentDirection = Direction::Left;
 				break;
 			case SDLK_RIGHT:
 				m_HeartVelocity.x += MaxVelocity;
 				keyRightPressed = true;
+				//m_HeartCollider.x = int(m_HeartPos.x) + 16;
 				//currentState = State::Walking;
 				//currentDirection = Direction::Right;
 				break;
@@ -730,7 +738,11 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 		else
 			m_FightSpriteSheet.render(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[1]);
 		*/
+
+		m_HeartCollider = { int(m_HeartPos.x) +8, int(m_HeartPos.y) +8, 15, 15 };
+
 		m_FightSpriteSheet.render(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[currentFrame]);
+		SDL_RenderDrawRect(gRenderer, &m_HeartCollider); // draw heart hitbox for debugging
 		if (gameState.DebugMode)
 			printf("currentFrame: %d\n", currentFrame);
 		//FS_HandleInput(gRenderer, gFont, e);
@@ -753,6 +765,7 @@ void Player::reset(Vector2f initPos) {
 	keyUpPressed = false;
 	keyLeftPressed = false;
 	keyRightPressed = false;
+	m_HeartCollider = { int(m_HeartPos.x) + 16, int(m_HeartPos.y) + 16, 20, 20 };
 	//m_HeartPos = { float(m_PosX), float(m_PosY) };
 	//m_HeartPos = { float(screenwidth) / 2.0f - 32.0f, float(screenheight) / 2.0f - 32.0f };
 	//m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };

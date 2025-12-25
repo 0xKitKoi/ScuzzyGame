@@ -473,7 +473,7 @@ void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event ev
         gameState.enemy->ResetProjectiles();
 		// i want this line on fight start and only on fight start
 		//gameState.player->m_HeartPos = { float(gameState.screenwidth / 2), float(gameState.screenheight / 2) }; // reset position
-        gameState.enemy->m_EnemyProjectile->m_Active = false; // reset projectile state
+        gameState.enemy->m_EnemyProjectile->m_Init = true; // reset projectile state
     }
     else {
         if (SDL_GetTicks() - gameState.lastTurnTime >= gameState.turnTimeLimit) {

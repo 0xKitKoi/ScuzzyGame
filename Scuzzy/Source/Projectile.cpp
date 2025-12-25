@@ -1,5 +1,6 @@
-#include "Source/Projectile.hpp"
+
 #include "Source/GameState.hpp"
+#include "Source/Projectile.hpp"
 
 extern float lerp(float x, float y, float t);
 
@@ -11,10 +12,14 @@ void Projectile::Update(float deltaT, Vector2f PlayerPos) { // DEFAULT UPDATE FU
 	// when this is called the first time, store the target position into m_TargetPosition and lerp towards that.
 	printf("Projectile Update Called\n");
 	if (!m_Active) {
+		return; // do nothing if not active
+	}
+
+	if (m_Init) {
 		// this is the first update call, set target position.
 		m_TargetPosition.x = PlayerPos.x;
 		m_TargetPosition.y = PlayerPos.y;
-		m_Active = true;
+		m_Init = false;
 	}
 	else {
 		// check if we are close enough to target position to stop.
@@ -31,6 +36,12 @@ void Projectile::Update(float deltaT, Vector2f PlayerPos) { // DEFAULT UPDATE FU
 		m_Position.y += dy * m_Velocity.y * deltaT;
 		printf("Projectile Position: (%f, %f)\n", m_Position.x, m_Position.y);
 		printf("Target Position: (%f, %f)\n", m_TargetPosition.x, m_TargetPosition.y);
+
+		if (SDL_HasIntersection(&m_Collider, &gameState.player->m_HeartCollider)) {
+			// deal damage to player
+			gameState.HP -= m_Damage;
+			m_Active = false; // deactivate on hit
+		}
 
 	}
 	

@@ -64,6 +64,7 @@ public:
 	Vector2f m_HeartVelocity;
 	SDL_Rect m_HeartClips[4] = { SDL_Rect{0,0,32,32}, SDL_Rect{32,0,32,32}, SDL_Rect{32 * 2, 0, 32, 32}, SDL_Rect{0,32,32,32} };
 	LTexture CurrentSprite; // need to access for fading.
+	SDL_Rect m_HeartCollider;
 
 
 	int m_PosX, m_PosY;

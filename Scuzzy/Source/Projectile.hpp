@@ -4,21 +4,26 @@
 
 #include "Source/Entity.hpp"
 #include "Source/Math.hpp"
+#include "Source/GameState.hpp"
+//extern GameState gameState;
 
 extern float lerp(float x, float y, float t);
+
 
 class Projectile {
 public:
 	// we need projectiles. each projectile has a position, speed, direction, sprite, and damage value.
 	// they also need to be updated each frame, and should have a custom update function depending on type of projectile.
 	// I want collisions to be handled by the player, since near misses will be added to a tension meter.
-	bool m_Active = false;
+	bool m_Active = true;
+	bool m_Init = true;
 	//LTexture* m_SpriteSheet;
 	std::shared_ptr<LTexture> m_SpriteSheet;
 	SDL_Rect m_SpriteClip;
 	Vector2f m_Position;
 	Vector2f m_TargetPosition;
 	Vector2f m_Velocity;
+	SDL_Rect m_Collider;
 	int m_Damage;
 
 	/// @brief Constructor
@@ -45,6 +50,12 @@ public:
         Vector2f direction = (playerPos - m_Position).Normalized();
         m_Velocity = lerp(m_Velocity, direction * m_Velocity.Length(), m_TurnSpeed * deltaT);
         m_Position += m_Velocity * deltaT;
+		m_Collider = { int(m_Position.x), int(m_Position.y), m_SpriteClip.w, m_SpriteClip.h };
+		if (SDL_HasIntersection(&m_Collider, &gameState.player->m_HeartCollider) ) {
+			// deal damage to player
+			gameState.HP -= m_Damage;
+			m_Active = false; // deactivate on hit
+		}
     }
 };
 
