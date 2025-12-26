@@ -766,6 +766,8 @@ void Player::reset(Vector2f initPos) {
 	keyLeftPressed = false;
 	keyRightPressed = false;
 	m_HeartCollider = { int(m_HeartPos.x) + 16, int(m_HeartPos.y) + 16, 20, 20 };
+	gameState.dead = false;
+	//gameState.HP = 10;
 	//m_HeartPos = { float(m_PosX), float(m_PosY) };
 	//m_HeartPos = { float(screenwidth) / 2.0f - 32.0f, float(screenheight) / 2.0f - 32.0f };
 	//m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };

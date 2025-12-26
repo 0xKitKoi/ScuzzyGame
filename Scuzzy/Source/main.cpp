@@ -294,6 +294,7 @@ void GameStart() {
 	gameState.money = SaveData.money;
 	gameState.textAvailable = false;
 	gameState.dead = false;
+	//gameState.CurrentSave = SaveData;
 	//gameState.HP = 10;
 
 	LoadLevel(gameState.room, &Map);
@@ -388,6 +389,7 @@ int LoadSave() {
             }
         }
         saveFile.close();
+		//gameState.CurrentSave = SaveData;
         return 1; // Success
     }
     else {
@@ -1374,6 +1376,7 @@ int main(int argc, char* args[])
 								gameState.textAvailable = false;
 								levelHeight = Map.getHeight(); // needed to make sure death upon smaller maps doesnt break rendering loop
 								levelWidth = Map.getWidth();
+								gameState.HP = 10;
 
 								/*main(argc, args);*/ // lmfao dont call main in main lesson learned
 							}

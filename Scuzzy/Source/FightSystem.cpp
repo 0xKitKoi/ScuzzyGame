@@ -300,6 +300,7 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
             //}
 
             selection = 2; // Set to Items option
+			gameState.fightState = FightState::PLAYER_ACTION_RESULT;
         }
 
   //      // mutiple items would probably break this. EDIT: thought so.
@@ -365,6 +366,7 @@ void HandleEnemyTurnState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
         return;
     }
 
+    /*
     // Regular enemy logic
     if (action == 1) {
         // Player dodges
@@ -373,7 +375,7 @@ void HandleEnemyTurnState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
         //fightText = "You dodged the attack!";
         //gameState.fightState = FightState::RESULT_DIALOGUE;
     }
-    else if (action >= 4 && action <= 6) {
+    else*/ if (action >= 4 && action <= 6) {
         // Enemy speaks dialogue
         if (gameState.enemy->m_EnemyDialogue.size() > 0) {
             int dialogueIndex = chance(gameState.enemy->m_EnemyDialogue.size() - 1);
@@ -426,8 +428,10 @@ void HandleResultDialogueState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event
 void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     gameState.inFight = false;
     gameState.wonFight = !gameState.dead;
-	gameState.Text.clear();
+	gameState.FightStarted = false;
+	
 	if (!gameState.dead) {
+        gameState.Text.clear();
         gameState.Text = { "You won! FUCKJ " };
         gameState.textAvailable = true;
 		gameState.FightStarted = false;
@@ -435,9 +439,11 @@ void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event
 		gameState.player->m_VelX = 0; // stop fucking moving 
 		gameState.player->m_VelY = 0;
 	}
-	//else {
+	else {
         //gameState.Text = { "You lost the fight!" };
-	//}
+        // game state has been notified of death. 
+		return;
+	}
 
 
 

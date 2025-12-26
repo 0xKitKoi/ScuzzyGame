@@ -24,6 +24,9 @@
 #define GAME_STATE_H
 
 struct GameState {
+
+	//saveData CurrentSave;
+
     //std::vector<std::shared_ptr<Entity>> Entities;
 
 	//std::shared_ptr<Player> player = nullptr;
@@ -100,6 +103,15 @@ struct GameState {
 
 // Declare the global GameState instance as extern
 extern GameState gameState;
+
+//struct saveData {
+//    Vector2f pos;
+//    std::string room;
+//    std::vector<int> items;
+//    int kills = 0;
+//    int money = 0;
+//	//int HP = 10;
+//} SaveData;
 
 
 #endif // GAME_STATE_H
