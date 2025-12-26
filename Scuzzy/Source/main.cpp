@@ -1386,19 +1386,22 @@ int main(int argc, char* args[])
 							handleDialogue(e);
 						}
 
-						if (gameState.inMenu) {
+						else if (gameState.inMenu) {
 							//handleMenuInput(e);
 							//handleMenuInputSideBySide(e);
 							MS_renderMenu(gRenderer, gFont);
 							MS_handleMenuInput(e);
+							gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
 
 						}
 
-						if (gameState.inFight) {
+						else if (gameState.inFight) {
 
 							FS_HandleInput(gRenderer, gFont, e); // Give control to FightSystem
 						}
-						player.handleEvent(e, deltaTime); // player heart controls
+						else {
+							player.handleEvent(e, deltaTime); // player heart controls
+						}
 					}
 				}
 

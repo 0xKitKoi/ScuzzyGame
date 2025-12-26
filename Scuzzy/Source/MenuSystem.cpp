@@ -513,6 +513,7 @@ void handleMainMenuSelection(SDL_Event event) {
 	}
     if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_x && currentMenu != MAIN_MENU) {
         gameState.inMenu = false;
+        gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
         return;
     }
 
