@@ -473,13 +473,13 @@ void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event ev
 	// silly mode needs to be acheived in actions, and locking them behind tension meter is kinda cool. 
     // ROLLING HP METER line earthbound too. 
     if (!gameState.fightTurnTimer.isStarted()) {
-        gameState.fightTurnTimer.start();
+        gameState.fightTurnTimer.start();   
 		gameState.lastTurnTime = SDL_GetTicks();
 		printf("DODGE TIME STARTED\n");
         gameState.enemy->ResetProjectiles();
 		// i want this line on fight start and only on fight start
 		//gameState.player->m_HeartPos = { float(gameState.screenwidth / 2), float(gameState.screenheight / 2) }; // reset position
-        gameState.enemy->m_EnemyProjectile->m_Init = true; // reset projectile state
+        //gameState.enemy->m_EnemyProjectile->m_Init = true; // reset projectile state
     }
     else {
         if (SDL_GetTicks() - gameState.lastTurnTime >= gameState.turnTimeLimit) {
@@ -489,7 +489,7 @@ void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event ev
             //gameState.fightState = FightState::ENEMY_TURN;
 
 			gameState.fightState = FightState::RESULT_DIALOGUE;
-			printf("DODGE TIME UP, ENEMY TURN\n");
+			printf("DODGE TIMER UP! FightState  is now Result_Dialogue\n");
 		}
         else {
 			// still the enemy's turn, update projectiles and handle player position.

@@ -177,14 +177,17 @@ std::string Enemy::FightActionResponse(int actionIndex) {
 
 
 void Enemy::ResetProjectiles() {
-    m_EnemyProjectiles.clear();
-                        // init the projectiles
+    //m_EnemyProjectiles.clear();
+        // init the projectiles
         for (int i = 0; i < m_projectileCount; i++) {
 		    //m_EnemyProjectiles.push_back(std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1));
             // using the m_EnemyProjectile as a template, create new projectiles
             float subx = float(randomInt(0, gameState.screenwidth));
             float suby = float(randomInt(0, gameState.screenheight));
-            m_EnemyProjectiles.push_back(std::make_shared<Projectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f( subx, suby ), Vector2f(200,200), 1));
+            //m_EnemyProjectiles.push_back(std::make_shared<m_EnemyProjectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f( subx, suby ), Vector2f(200,200), 1));
+            m_EnemyProjectiles.at(i)->m_Position = Vector2f( subx, suby );
+            m_EnemyProjectiles.at(i)->m_Init = true;
+            m_EnemyProjectiles.at(i)->m_Active = true;
             // randomize vector2f(x,y) position:
         }
         float subx = float(randomInt(0, gameState.screenwidth));

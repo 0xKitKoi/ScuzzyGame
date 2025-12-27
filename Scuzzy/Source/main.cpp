@@ -1394,14 +1394,16 @@ int main(int argc, char* args[])
 							gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
 
 						}
-
+						
 						else if (gameState.inFight) {
 
 							FS_HandleInput(gRenderer, gFont, e); // Give control to FightSystem
-						}
-						else {
 							player.handleEvent(e, deltaTime); // player heart controls
 						}
+						else {
+							player.handleEvent(e, deltaTime); // normal overworld controls
+						}
+						
 					}
 				}
 

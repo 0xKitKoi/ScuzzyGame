@@ -10,7 +10,7 @@ extern float lerp(float x, float y, float t);
 void Projectile::Update(float deltaT, Vector2f PlayerPos) { // DEFAULT UPDATE FUNCTION[ LERP TO PLAYER POSITION]
 	// using playerpos, get a target position (that the player WAS in when this is called) and lerp towards it. player should be able to dodge this.
 	// when this is called the first time, store the target position into m_TargetPosition and lerp towards that.
-	printf("Projectile Update Called\n");
+	printf("BASE CLASS Projectile Update Called\n");
 	if (!m_Active) {
 		return; // do nothing if not active
 	}

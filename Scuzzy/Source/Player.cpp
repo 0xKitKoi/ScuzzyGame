@@ -505,8 +505,10 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 /// </summary>
 /// <param name="e">SDL checks for key presses. We check for the buttons.</param>
 void Player::handleEvent(SDL_Event& e, float deltaTime) {
-	if (gameState.inMenu && gameState.FightStarted) {
+	/*
+	if (gameState.inMenu || gameState.FightStarted) {
 		reset({ float(m_PosX), float(m_PosY) });
+		//printf("Resetting player position due to menu during fight start.\n");
 		//m_VelX = 0;
 		//m_VelY = 0;
 		//currentState = State::Idle;
@@ -515,7 +517,7 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 		//keyLeftPressed = false;
 		//keyRightPressed = false;
 		
-	}
+	}*/
 
 	// Advance animation frames
 	//lastFrameTime += deltaTime * 1000.0f;
@@ -621,7 +623,8 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 		}
 	}
 	else { // IN FIGHT MODE
-		if (gameState.fightState != FightState::DODGE_MECHANIC) { 
+		if (gameState.fightState != FightState::DODGE_MECHANIC) {
+			//printf("Not in dodge mechanic, skipping heart controls.\n");
 			m_FightSpriteSheet.render(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[currentFrame]);
 			return; 
 		}

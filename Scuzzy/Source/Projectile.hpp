@@ -47,14 +47,27 @@ public:
     using Projectile::Projectile;
 
     void Update(float deltaT, Vector2f playerPos) override {
-        Vector2f direction = (playerPos - m_Position).Normalized();
-        m_Velocity = lerp(m_Velocity, direction * m_Velocity.Length(), m_TurnSpeed * deltaT);
-        m_Position += m_Velocity * deltaT;
-		m_Collider = { int(m_Position.x), int(m_Position.y), m_SpriteClip.w, m_SpriteClip.h };
-		if (SDL_HasIntersection(&m_Collider, &gameState.player->m_HeartCollider) ) {
-			// deal damage to player
-			gameState.HP -= m_Damage;
-			m_Active = false; // deactivate on hit
+		if (!m_Active) {
+			return; // do nothing if not active
+		}
+
+		if (m_Init) {
+			// this is the first update call, set target position.
+			m_TargetPosition.x = playerPos.x;
+			m_TargetPosition.y = playerPos.y;
+			m_Init = false;
+		}
+		else {
+
+        	Vector2f direction = (playerPos - m_Position).Normalized();
+        	m_Velocity = lerp(m_Velocity, direction * m_Velocity.Length(), m_TurnSpeed * deltaT);
+        	m_Position += m_Velocity * deltaT;
+			m_Collider = { int(m_Position.x), int(m_Position.y), m_SpriteClip.w, m_SpriteClip.h };
+			if (SDL_HasIntersection(&m_Collider, &gameState.player->m_HeartCollider) ) {
+				// deal damage to player
+				gameState.HP -= m_Damage;
+				m_Active = false; // deactivate on hit
+			}
 		}
     }
 };
