@@ -39,7 +39,6 @@ public:
 			gameState.shouldAnimateText = true;  // This is dialogue, so animate it
 			gameState.textAvailable = true;
 
-
 		}
 	}
 	/*

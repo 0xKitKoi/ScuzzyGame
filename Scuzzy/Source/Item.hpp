@@ -7,8 +7,8 @@
 class GameState; // Forward declaration
 
 /// <summary>
-/// Manipulates the GameState Object based on ID. 
-/// Caller is responsible for deleting the item from inventory.
+/// Items Can affect the GameState when used.
+/// Caller is responsible for deleting the item from inventory. This should happen in the Menu System. 
 /// </summary>
 class Item {
 public:

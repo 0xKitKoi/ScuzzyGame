@@ -295,7 +295,7 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
 			//gameState.Inventory[selection]->Use(); // Use the selected item
             gameState.Inventory[selection]->Use();
             gameState.Inventory.erase(gameState.Inventory.begin() + selection);
-            
+
             //selection = 2; // Set to Items option
 
 			// Remove item from inventory
@@ -395,9 +395,11 @@ void HandleEnemyTurnState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
         // Player takes damage
         //gameState.fightState = FightState::DODGE_MECHANIC;
         //gameState.HP -= gameState.enemy->m_AttackDamage;
-        fightText = "You took " + std::to_string(gameState.enemy->m_AttackDamage) + " damage!\n";
-
-        if (gameState.HP <= 0) {
+        //fightText = "You took " + std::to_string(gameState.enemy->m_AttackDamage) + " damage!\n";
+        if (gameState.SillyMode) { fightText = "You goofy ass trogladite..."; }
+        else { fightText = gameState.enemy->FightActionResponse(0); }
+        
+        if (gameState.HP <= 0) { // this is the only way the player can die right now.
             gameState.HP = 0;
             fightText += "You were defeated!";
             FS_renderText(renderer, font, fightText, { 255, 255, 255 });

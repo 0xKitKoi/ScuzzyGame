@@ -807,6 +807,12 @@ std::vector<std::string> dialogue = {
 };*/
 void handleDialogue(SDL_Event event) {
 
+	// ok this could be the sign NPC or the Merchant.
+	if (gameState.callbackNPC != nullptr) {
+		// this is not the sign NPC.
+	}
+
+
 	if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
 		if (gameState.shouldAnimateText && gameState.textAnimating) {
 			// If text is still animating, show the full text immediately
@@ -1386,7 +1392,20 @@ int main(int argc, char* args[])
 					}
 					else {
 						if (gameState.textAvailable) {
-							handleDialogue(e);
+							// either text or an NPC!
+							if (gameState.callbackNPC != nullptr) {
+								// This is an NPC dialogue.
+								//gameState.callbackNPC->handleDialogue(e);
+								// render and handle the dialogue options.
+								// menu side by side
+								renderMenuSideBySide(gRenderer, gFont);
+								handleMenuInputSideBySide(e);
+								
+							}
+							else {
+								handleDialogue(e);
+							}
+							
 						}
 
 						else if (gameState.inMenu) {

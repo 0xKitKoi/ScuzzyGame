@@ -90,6 +90,8 @@ struct GameState {
     std::vector<std::string> Text;
     int textIndex = 0;
     
+    NPC* currentNPC = nullptr;
+
     // Text animation state
     std::string currentDisplayText;  // The text currently being displayed
     int currentCharIndex = 0;        // Current character index in the animation
