@@ -153,9 +153,13 @@ void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
         // Update enemy projectile(s) ..?
         for (int i = 0; i < m_projectileCount; i++) {
             if (m_EnemyProjectiles[i]) {
+
                 m_EnemyProjectiles[i]->Update(deltaT, gameState.player->m_HeartPos);
                 // Check for collision with player or going off-screen
                 // (Collision detection code would go here)
+                if (!m_EnemyProjectiles[i]->m_Active) {
+                    continue; // skip inactive projectiles
+                }
                 m_EnemyProjectiles[i]->m_SpriteSheet->render(int(m_EnemyProjectiles[i]->m_Position.x), int(m_EnemyProjectiles[i]->m_Position.y) /*, &m_EnemyProjectile->m_SpriteClip*/ ); 
             }
         }   

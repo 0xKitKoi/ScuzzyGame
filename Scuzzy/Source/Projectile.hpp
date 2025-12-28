@@ -77,10 +77,26 @@ public:
 	float m_Gravity = 9.8f;
 	using Projectile::Projectile;
 	void Update(float deltaT, Vector2f playerPos) override {
+		if (!m_Active) {
+			return; // do nothing if not active
+		}
+
+		if (m_Init) {
+			// this is the first update call, set target position.
+			m_TargetPosition.x = playerPos.x;
+			m_TargetPosition.y = playerPos.y;
+			m_Init = false;
+		}
 		m_Velocity.y += m_Gravity * deltaT;
 		m_Position += m_Velocity * deltaT;
 		// lerp x position towards player x pos
 		m_Position.x = lerp(m_Position.x, playerPos.x, 0.1f * deltaT); // gottem
+		m_Collider = SDL_Rect{ int(m_Position.x), int(m_Position.y), m_SpriteClip.w, m_SpriteClip.h };
+		if (SDL_HasIntersection(&m_Collider, &gameState.player->m_HeartCollider) ) {
+			// deal damage to player
+			gameState.HP -= m_Damage;
+			m_Active = false; // deactivate on hit
+		}
 	}
 };
 

@@ -34,10 +34,12 @@ void Projectile::Update(float deltaT, Vector2f PlayerPos) { // DEFAULT UPDATE FU
 		// Move the entity in the direction of the target based on speed and deltaTime
 		m_Position.x += dx * m_Velocity.x * deltaT;
 		m_Position.y += dy * m_Velocity.y * deltaT;
+		m_Collider = SDL_Rect{ int(m_Position.x), int(m_Position.y), m_SpriteClip.w, m_SpriteClip.h };
 		printf("Projectile Position: (%f, %f)\n", m_Position.x, m_Position.y);
 		printf("Target Position: (%f, %f)\n", m_TargetPosition.x, m_TargetPosition.y);
 
 		if (SDL_HasIntersection(&m_Collider, &gameState.player->m_HeartCollider)) {
+			printf("Projectile hit the player!\n");
 			// deal damage to player
 			gameState.HP -= m_Damage;
 			m_Active = false; // deactivate on hit
