@@ -289,7 +289,8 @@ void GameStart() {
 	playerinitpos = SaveData.pos;
 	CheckBox = { (int)playerinitpos.x,(int)playerinitpos.y, 20,20};
 	gameState.room = SaveData.room;
-	gameState.Inventory = SaveData.items;
+	//gameState.Inventory = PopulateInventory(SaveData.items);
+	PopulateInventory(SaveData.items);
 	gameState.kills = SaveData.kills;
 	gameState.money = SaveData.money;
 	gameState.textAvailable = false;
@@ -313,12 +314,14 @@ void SaveGame(int x, int y) {
 		SaveData.pos.x = x;
 		SaveData.pos.y = y;
 		SaveData.room = gameState.room;
-		SaveData.items = gameState.Inventory;
+		//SaveData.items = gameState.Inventory;
+		SaveInventory(SaveData.items);
 		saveFile << SaveData.pos.x << " " << SaveData.pos.y << "\n";
 		saveFile << SaveData.room << "\n";
 		saveFile << SaveData.kills << "\n";
 		saveFile << SaveData.money << "\n";
 		saveFile << gameState.HP << "\n";
+		
 		saveFile << SaveData.items.size();
 		if (SaveData.items.size() > 0) {
 			for (int i = 0; i < SaveData.items.size(); i++) {

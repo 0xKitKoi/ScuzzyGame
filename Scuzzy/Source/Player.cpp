@@ -756,7 +756,7 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 
 
 void Player::reset(Vector2f initPos) {
-	printf("Player::reset called.\n");
+	//printf("Player::reset called.\n");
 	m_PosX = initPos.x;
 	m_PosY = initPos.y;
 	currentState = State::Idle;

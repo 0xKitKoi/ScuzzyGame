@@ -6,6 +6,7 @@
 #include <string>
 #include <random>
 #include "Source/GameState.hpp"
+#include "Source/Item.hpp"
 
 
 // Modern random number generator
@@ -240,7 +241,8 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
 	if (gameState.Inventory.size() > 0) {
 		itemMenu.clear();
         for (int i = 0; i < gameState.Inventory.size(); i++) {
-            itemMenu.push_back(GetItemnameFromIndex(gameState.Inventory[i]));
+            //itemMenu.push_back(GetItemnameFromIndex(gameState.Inventory[i]));
+            itemMenu.push_back(gameState.Inventory[i]->m_ItemName);
         }
 	}
 	int numOptions = itemMenu.size();
@@ -289,14 +291,16 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
 
             //gameState.fightState = FightState::PLAYER_TURN_MENU;
 			fightText = "You used the ";
-			fightText += GetItemnameFromIndex(gameState.Inventory[selection]);
-			UseItem(gameState.Inventory[selection]); // Use the selected item
+			fightText += gameState.Inventory[selection]->m_ItemName;
+			//gameState.Inventory[selection]->Use(); // Use the selected item
+            gameState.Inventory[selection]->Use();
+            gameState.Inventory.erase(gameState.Inventory.begin() + selection);
             
             //selection = 2; // Set to Items option
 
 			// Remove item from inventory
             //if (gameState.Inventory.size() > 0) {
-                gameState.Inventory.erase(gameState.Inventory.begin() + selection);
+            //    gameState.Inventory.erase(gameState.Inventory.begin() + selection);
             //}
 
             selection = 2; // Set to Items option
@@ -463,7 +467,7 @@ void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event ev
     // get attack from enemy
     // attack
     // end turn on timer..?
-	printf("DODGE MECHANIC HERE\n");
+	//printf("DODGE MECHANIC HERE\n");
     // how do i impliment attacks? i need projectiles and rules for them.
     // projectile class..? custom update function per projectile..?
     // also I like deltarune's TP mechanic, I think near misses are really cool and unexplored

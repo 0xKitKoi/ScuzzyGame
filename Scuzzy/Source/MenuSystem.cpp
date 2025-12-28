@@ -353,7 +353,8 @@ void renderInventoryMenu(SDL_Renderer* renderer, TTF_Font* font) {
         //    options.push_back(GetItemnameFromIndex(itemID));
         //}
         for (int i = 0; i < gameState.Inventory.size(); i++) {
-            options.push_back(GetItemnameFromIndex(gameState.Inventory[i]));
+            //options.push_back(GetItemnameFromIndex(gameState.Inventory[i]));
+            options.push_back(gameState.Inventory[i]->m_ItemName);
         }
     }
         // not used..?
@@ -432,15 +433,17 @@ void renderItemOptionsMenu(SDL_Renderer* renderer, TTF_Font* font) {
 
     std::string itemName;
     if (subMenuSelectionIndex >= 0 && subMenuSelectionIndex < gameState.Inventory.size()) {
-        itemName = GetItemnameFromIndex(gameState.Inventory.at(subMenuSelectionIndex)); // LMFAOOOOOOOOOOOOOO loser 
+        itemName = gameState.Inventory.at(subMenuSelectionIndex)->m_ItemName;
+        //itemName = GetItemnameFromIndex(gameState.Inventory.at(subMenuSelectionIndex)); // LMFAOOOOOOOOOOOOOO loser 
         // Ive spent weeks over this shitty indexing issue. It's always indexing.
         // turns out I got smart and decided to hardcode the item ID in my save file to be+1 
         // and forgot about it. I did this to compensate for MS_SelectionIndex in the grid input handling func
         // this has pained me for three weeks. im in so much agony
-    }
+    } /*
     else {
-        itemName = std::to_string(gameState.Inventory.at(subMenuSelectionIndex));
-    }
+        //itemName = std::to_string(gameState.Inventory.at(subMenuSelectionIndex));
+        itemName = gameState.Inventory.at(subMenuSelectionIndex)->m_ItemName; // refactored 
+    }*/
 
     // Render the item name
     //int screenWidth, screenHeight;
@@ -567,7 +570,8 @@ void handleInventoryMenuSelection(SDL_Event event) {
         return;
     }
     for (int i = 0; i < gameState.Inventory.size(); i++) {
-        options.push_back(GetItemnameFromIndex(i));
+        //options.push_back(GetItemnameFromIndex(i));
+        options.push_back(gameState.Inventory[i]->m_ItemName);
     }
     //for (int id : gameState.Inventory) { // WHY IS id FUCKING ONE ON FIRST ITERATION FUCKYOUFUCKYOUFUCKYOUFUCKYOU
     //    options.push_back(GetItemnameFromIndex(id));
@@ -586,7 +590,9 @@ void handleInventoryMenuSelection(SDL_Event event) {
             currentMenu = ITEM_OPTIONS_MENU;  // Enter item options
             gameState.selectionIndex = MS_selectedIndex;
             subMenuSelectionIndex = MS_selectedIndex;
-            printf("Selected item index :   %d", MS_selectedIndex);
+            if (gameState.DebugMode) {
+                printf("\n [!] DEBUG: handleInventoryMenuSelection() selection index: %d", MS_selectedIndex);
+            }
             MS_selectedIndex = 0;
         }
         else if (event.key.keysym.sym == SDLK_x) {
@@ -657,24 +663,38 @@ void handleItemOptionsMenuSelection(SDL_Event event) {
         else if (event.key.keysym.sym == SDLK_z) { // Confirm selection
             switch (MS_selectedIndex + 1) {
             case 1: // Use
-                std::cout << "Attempt to use item: " << GetItemnameFromIndex(gameState.Inventory.at( gameState.selectionIndex)) << std::endl;
-				gameState.Text = { "You used " + GetItemnameFromIndex(gameState.Inventory.at(gameState.selectionIndex)) + "." }; // Set response text
+                //std::cout << "Attempt to use item: " << GetItemnameFromIndex(gameState.Inventory.at( gameState.selectionIndex)) << std::endl;
+                if (gameState.DebugMode) {
+                    printf("\nUsing item: %s", gameState.Inventory.at(gameState.selectionIndex)->m_ItemName.c_str());
+                }
+                
+				gameState.Text = { "You used " + gameState.Inventory.at(gameState.selectionIndex)->m_ItemName + "." }; // Set response text
 				gameState.textIndex = 0; // Reset text index
 
-				UseItem(gameState.Inventory[gameState.selectionIndex]); // Use the item
-				gameState.Inventory.erase(gameState.Inventory.begin() + gameState.selectionIndex); // Remove the item from inventory
+				//UseItem(gameState.Inventory[gameState.selectionIndex]); // Use the item
+                gameState.Inventory.at(gameState.selectionIndex)->Use(); // refactored to use item class method
+                gameState.Inventory.erase(gameState.Inventory.begin() + gameState.selectionIndex); // Remove the item from inventory
+				//gameState.Inventory.erase(gameState.Inventory.begin() + gameState.selectionIndex); // Remove the item from inventory
                 lastMenuState = INVENTORY_MENU;
                 currentMenu = RESPONSE;
                 break;
             case 2: // View Info
-                std::cout << "Attempt to View info for: " << GetItemnameFromIndex(gameState.Inventory.at(gameState.selectionIndex)) << std::endl;
-                gameState.Text = { GetItemDescription(gameState.Inventory.at(gameState.selectionIndex)) }; // Get item description
+                //std::cout << "Attempt to View info for: " << GetItemnameFromIndex(gameState.Inventory.at(gameState.selectionIndex)) << std::endl;
+                if (gameState.DebugMode) {
+                    printf("\nViewing info for item: %s", gameState.Inventory.at(gameState.selectionIndex)->m_ItemName.c_str());
+                }
+                //gameState.Text = { GetItemDescription(gameState.Inventory.at(gameState.selectionIndex)) }; // Get item description
+                gameState.Text = { gameState.Inventory.at(gameState.selectionIndex)->m_ItemDescription }; // refactored to use item class method
 				lastMenuState = ITEM_OPTIONS_MENU; // Save last menu state
 				currentMenu = RESPONSE; // Switch to response menu
                 break;
             case 3:
-                std::cout << "Attempt to Throw away item: " << GetItemnameFromIndex(gameState.Inventory.at(gameState.selectionIndex)) << std::endl;
-				gameState.Text = { "You threw away " + GetItemnameFromIndex(gameState.Inventory.at(gameState.selectionIndex)) + "." }; // Set response text
+                //std::cout << "Attempt to Throw away item: " << GetItemnameFromIndex(gameState.Inventory.at(gameState.selectionIndex)) << std::endl;
+                if (gameState.DebugMode) {
+                    printf("\nThrowing away item: %s", gameState.Inventory.at(gameState.selectionIndex)->m_ItemName.c_str());
+                }
+				//gameState.Text = { "You threw away " + GetItemnameFromIndex(gameState.Inventory.at(gameState.selectionIndex)) + "." }; // Set response text
+                gameState.Text = { "You threw away " + gameState.Inventory.at(gameState.selectionIndex)->m_ItemName + "." }; // refactored to use item class method
 				gameState.textIndex = 0; // Reset text index
 				gameState.Inventory.erase(gameState.Inventory.begin() + gameState.selectionIndex); // Remove the item from inventory
 				lastMenuState = INVENTORY_MENU; // Save last menu state
@@ -685,7 +705,9 @@ void handleItemOptionsMenuSelection(SDL_Event event) {
             }
         }
         else if (event.key.keysym.sym == SDLK_x) { // Cancel action
-            std::cout << "Returning to inventory." << std::endl;
+            if (gameState.DebugMode) {
+                printf("\nCancelling item option selection, returning to inventory.");
+            }
             lastMenuState = currentMenu;
             currentMenu = INVENTORY_MENU;
             // Logic to return to the inventory menu

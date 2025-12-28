@@ -9,6 +9,9 @@
 #include <vector>
 #include "TestNPC.hpp" // i didnt know u can include a cpp file 
 #include "Source/Enemies.hpp"
+#include "Source/GameState.hpp"
+#include "Source/Item.hpp"
+
 #include <random>
 
 extern std::vector<std::shared_ptr<Entity>> Entities;
@@ -357,7 +360,7 @@ std::string GetItemDescription(int ID) {
 	switch (ID) {
 	case 0:
 		return "A test item that heals you for 10 HP.";
-		break;
+		break;	
 	case 1:
 		return "A test item that gives you 5 money.";
 		break;
@@ -366,3 +369,32 @@ std::string GetItemDescription(int ID) {
 		break;
 	}
 }
+
+void PopulateInventory(std::vector<int> itemIDs) {
+	for (int id : itemIDs) {
+		std::shared_ptr<Item> newItem;
+		switch (id) {
+		case 0:
+			printf("Loaded Healing Item into inventory.\n");
+			newItem = std::make_shared<BandAid>();
+			break;
+		case 1:
+			printf("Loaded Key Item into inventory.\n");
+			newItem = std::make_shared<Key>();
+			break;
+		default:
+			printf("Unknown item ID %d in save data.\n", id);
+			newItem = std::make_shared<Item>();
+			break;
+		}
+		
+		gameState.Inventory.push_back(newItem);
+	}
+}
+
+void SaveInventory(std::vector<int>& outItemIDs) {
+	outItemIDs.clear();
+	for (const auto& item : gameState.Inventory) {
+		outItemIDs.push_back(item->m_ItemID);
+	}
+}	

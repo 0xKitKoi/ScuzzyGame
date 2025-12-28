@@ -4,6 +4,7 @@
 #include "Source/Player.hpp"
 #include "Source/Enums.hpp"
 #include "Source/Timer.hpp"
+#include "Source/Item.hpp"
 #include <memory>
 
 //enum class FightState {
@@ -54,7 +55,7 @@ struct GameState {
 
     // Flags
 	FightState fightState;
-    bool DebugMode = true; // Debug mode for testing
+    bool DebugMode = false; // Debug mode for testing
 
 	bool SillyMode = false;
     int SillyMeter = 0;
@@ -97,7 +98,8 @@ struct GameState {
     bool textAnimating = false;      // Whether text is currently animating
     bool shouldAnimateText = false;  // Whether the current text should be animated (dialogue vs menu)
     
-    std::vector<int> Inventory;
+    //std::vector<int> Inventory;
+    std::vector<std::shared_ptr<Item>> Inventory;
 
 };
 
