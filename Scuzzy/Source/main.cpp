@@ -814,6 +814,11 @@ void handleDialogue(SDL_Event event) {
 
 
 	if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
+		// If we don't have any valid text, cancel the dialog state
+		if (gameState.Text.empty() || gameState.textIndex < 0 || static_cast<size_t>(gameState.textIndex) >= gameState.Text.size()) {
+			gameState.textAvailable = false;
+			return;
+		}
 		if (gameState.shouldAnimateText && gameState.textAnimating) {
 			// If text is still animating, show the full text immediately
 			gameState.currentDisplayText = gameState.Text[gameState.textIndex];
@@ -852,15 +857,21 @@ void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) {
 	int xOffset = screenWidth * 0.05 + 20;  // Small margin inside the box
 	int yOffset = screenHeight - 275;       // Positioning inside the text box
 
+	// Ensure we have valid text to display
+	if (gameState.Text.empty() || gameState.textIndex < 0 || static_cast<size_t>(gameState.textIndex) >= gameState.Text.size()) {
+		// Nothing to render
+		return;
+	}
+
 	// If the current line exists, update and render it
-	if (gameState.currentCharIndex < gameState.Text[gameState.textIndex].size()) {
+	if (gameState.currentCharIndex < gameState.Text.at(gameState.textIndex).size()) {
 		// Update text animation if needed
 		if (gameState.shouldAnimateText && gameState.textAnimating) {
 			gameState.textTimer += 1.0f / 60.0f;//60.0f; // Assuming 60 FPS
 			if (gameState.textTimer >= gameState.textSpeed) {
 				gameState.textTimer = 0.0f;
-				if (gameState.currentCharIndex < gameState.Text[gameState.textIndex].length()) {
-					gameState.currentDisplayText += gameState.Text[gameState.textIndex][gameState.currentCharIndex];
+				if (gameState.currentCharIndex < gameState.Text.at(gameState.textIndex).length()) {
+					gameState.currentDisplayText += gameState.Text.at(gameState.textIndex).at(gameState.currentCharIndex);
 					gameState.currentCharIndex++;
 				}
 				else {
@@ -946,6 +957,11 @@ void renderMenuSideBySide(SDL_Renderer* renderer, TTF_Font* font) {
 	//int numOptions = menuOptions.size();
 	int numOptions = gameState.Text.size();
 
+	// Clamp selectedIndex to valid range for these options
+	if (numOptions > 0 && (selectedIndex < 0 || selectedIndex >= numOptions)) {
+		selectedIndex = 0;
+	}
+
 	// Calculate total width of all the text
 	for (const auto& option : gameState.Text) {
 		//totalTextWidth += getTextWidth(font, option);
@@ -979,14 +995,17 @@ void renderMenuSideBySide(SDL_Renderer* renderer, TTF_Font* font) {
 }
 
 void handleMenuInputSideBySide(SDL_Event event) {
+	// If there is no text to show, ignore input
+	if (gameState.Text.empty()) return;
+
 	if (event.type == SDL_KEYDOWN) {
 		if (event.key.keysym.sym == SDLK_LEFT) {
 			// Move left, wrapping around if necessary
-			selectedIndex = (selectedIndex > 0) ? selectedIndex - 1 : menuOptions.size() - 1;
+			selectedIndex = (selectedIndex > 0) ? selectedIndex - 1 : static_cast<int>(gameState.Text.size()) - 1;
 		}
 		else if (event.key.keysym.sym == SDLK_RIGHT) {
 			// Move right, wrapping around if necessary
-			selectedIndex = (selectedIndex < menuOptions.size() - 1) ? selectedIndex + 1 : 0;
+			selectedIndex = (selectedIndex < static_cast<int>(gameState.Text.size()) - 1) ? selectedIndex + 1 : 0;
 		}
 		else if (event.key.keysym.sym == SDLK_z) {
 			// Perform action based on selected option
@@ -1393,7 +1412,9 @@ int main(int argc, char* args[])
 					else {
 						if (gameState.textAvailable) {
 							// either text or an NPC!
-							if (gameState.callbackNPC != nullptr) {
+							/*
+								if (gameState.callbackNPC != nullptr) {
+								printf("Handling NPC dialogue\n");
 								// This is an NPC dialogue.
 								//gameState.callbackNPC->handleDialogue(e);
 								// render and handle the dialogue options.
@@ -1401,6 +1422,12 @@ int main(int argc, char* args[])
 								renderMenuSideBySide(gRenderer, gFont);
 								handleMenuInputSideBySide(e);
 								
+							}
+							*/
+						if (gameState.OpenedMenu) {
+								// this is a menu
+								//renderMenuSideBySide(gRenderer, gFont);
+								handleMenuInputSideBySide(e);
 							}
 							else {
 								handleDialogue(e);
@@ -1931,7 +1958,7 @@ int main(int argc, char* args[])
 							gameState.currentCharIndex = 1; // offset because i need a char to start the animation.
 							gameState.textTimer = 0.0f;
 							gameState.textAnimating = true;
-							gameState.currentDisplayText = gameState.Text[0][0];// "";
+							gameState.currentDisplayText = gameState.Text.at(0).substr(0, 1); // "";
 							gameState.shouldAnimateText = true;  // This is dialogue, so animate it
 							gameState.textAvailable = true;
 						}

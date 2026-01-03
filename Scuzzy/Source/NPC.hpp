@@ -35,7 +35,10 @@ public:
 			gameState.currentCharIndex = 1; // offset because i need a char to start the animation.
 			gameState.textTimer = 0.0f;
 			gameState.textAnimating = true;
-			gameState.currentDisplayText = gameState.Text[0][0];// "";
+			if (!gameState.Text.empty())
+				gameState.currentDisplayText = gameState.Text[0].substr(0, 1);
+			else
+				gameState.currentDisplayText = "";
 			gameState.shouldAnimateText = true;  // This is dialogue, so animate it
 			gameState.textAvailable = true;
 
