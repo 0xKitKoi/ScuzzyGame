@@ -18,6 +18,8 @@ extern std::vector<std::shared_ptr<Entity>> Entities;
 extern std::vector<SDL_Rect*> collisionBoxes;
 extern std::vector<SDL_Rect> clips;
 
+extern Camera camera;
+
 extern std::shared_ptr<LTexture> getTexture(const std::string& filename);
 
 int LevelIDFromName(std::string name) {
@@ -95,7 +97,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			entity_cb = { (int)entityPos.x + 25, (int)entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
 			auto Doorentity = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
 			Entities.push_back(Doorentity); // vector of all entities to render.
-			Vector2f outpos(900, 200);
+			Vector2f outpos(400, 200);
 			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity, "Level1", outpos);
 			doornpc->m_Entity = Doorentity;
 			Doorentity->setNPC(doornpc);
@@ -157,11 +159,11 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 		}
 		else {
 			// DOOR TEST
-			Vector2f entityPos(872, 770);
+			Vector2f entityPos(450, 770);
 			SDL_Rect entityRect = { 0,0,128,128 };
 			SDL_Rect tmp, entity_cb;
 			clips.clear();
-			Vector2f doorPos(872, 770);
+			Vector2f doorPos(472, 770);
 			entityRect = { 0,0,128,128 };
 			tmp = { 0,0,128,128 };
 			clips.push_back(tmp);
@@ -206,7 +208,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 
 			// TEST OF doodoomart box enemy
-			Vector2f entityPos3(950, 500);
+			Vector2f entityPos3(450, 500);
 			SDL_Rect entityRect2 = { 0,0,128,128 };
 			clips.clear();
 			clips = {{ 0,0,128,128 }, { 128,0,128,128 }, { 128 * 2,0,128,128 }, { 128*3 ,0,128,128 }, { 128 * 4 ,0,128,128 }, { 128 * 5 ,0,128,128 }};
@@ -314,6 +316,8 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 	}
 	leveldimentions.x = Map->getHeight();
 	leveldimentions.y = Map->getWidth(); // callers problem to load level dimensions. i aint doing all that.
+	camera.mapWidth = leveldimentions.y;
+	camera.mapHeight = leveldimentions.x;
 	return leveldimentions;
 }
 

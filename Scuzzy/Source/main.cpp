@@ -25,10 +25,15 @@
 
 
 
+
 //Screen dimension constants
 //const int SCREEN_WIDTH = 1920;
 int SCREEN_WIDTH = 0;
 int SCREEN_HEIGHT = 0;
+
+
+Camera camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
+
 //const int SCREEN_HEIGHT = 1080;
 const int SCREEN_FPS = 60;
 const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
@@ -80,7 +85,7 @@ SDL_Rect CheckBox;
 //bool checkCollision(SDL_Rect a, SDL_Rect b);
 
 //The camera area
-SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
+//SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 
 
 //Scene sprites
@@ -169,6 +174,8 @@ bool init()
 			screenheight = (int)displayMode.h;
 			SCREEN_HEIGHT = screenheight;
 			SCREEN_WIDTH = screenwidth;
+			camera.width = SCREEN_WIDTH;
+			camera.height = SCREEN_HEIGHT;
 
 		}
 
@@ -181,8 +188,8 @@ bool init()
 		}
 		else
 		{
-			camera.w = screenwidth;
-			camera.h = screenheight;
+			//camera.w = screenwidth;
+			//camera.h = screenheight;
 			//Initialize PNG loading
 			int imgFlags = IMG_INIT_PNG;
 			if (!(IMG_Init(imgFlags) & imgFlags))
@@ -1249,6 +1256,8 @@ int main(int argc, char* args[])
 			int windowWidth, windowHeight;
 			SDL_GetWindowSize(gWindow, &windowWidth, &windowHeight);
 			printf("Window size: %d x %d\n", windowWidth, windowHeight);
+			camera.width = windowWidth;
+			camera.height = windowHeight;
 
 			while (!quit)
 			{
@@ -1424,7 +1433,7 @@ int main(int argc, char* args[])
 								
 							}
 							*/
-						if (gameState.OpenedMenu) {
+							if (gameState.OpenedMenu) {
 								// this is a menu
 								//renderMenuSideBySide(gRenderer, gFont);
 								handleMenuInputSideBySide(e);
@@ -1515,9 +1524,11 @@ int main(int argc, char* args[])
 
 						int offsetX = 0, offsetY = 0;
 						//Center the camera
-						camera.x = (player.GetPosX() + player.SpriteWidth / 2) - screenwidth / 2;
-						camera.y = (player.GetPosY() + player.SpriteHeight / 2) - screenheight / 2;
+						//camera.x = (player.GetPosX() + player.SpriteWidth / 2) - screenwidth / 2;
+						//camera.y = (player.GetPosY() + player.SpriteHeight / 2) - screenheight / 2;
+						camera.centerOn(player.GetPosX(), player.GetPosY());
 
+						/*
 						//Keep the camera in bounds
 						if (camera.x < 0)
 						{
@@ -1538,7 +1549,9 @@ int main(int argc, char* args[])
 
 						camera.w = std::min(levelWidth, screenwidth);  // Don't exceed level size
 						camera.h = std::min(levelHeight, screenheight);
+						*/
 
+						/*
 						//camera.x = std::max(0, std::min(player.GetPosX() - camera.w / 2, levelWidth - camera.w));
 						//camera.y = std::max(0, std::min(player.GetPosY() - camera.h / 2, levelHeight - camera.h));
 						if (levelWidth > windowWidth || levelHeight > windowHeight) {
@@ -1547,7 +1560,7 @@ int main(int argc, char* args[])
 						} else {
 							camera.x = 0;
 							camera.y = 0;
-						}
+						}*/
 
 						Uint8 a = 0;
 						int count = 255;
@@ -1567,7 +1580,11 @@ int main(int argc, char* args[])
 							}
 							//Render front blended
 							Map.setAlpha(a);
-							Map.render(offsetX, offsetY, &camera);
+							//Map.render(offsetX, offsetY, &camera);
+							SDL_Rect mapScreenPos = camera.worldToScreen({0, 0, Map.getWidth(), Map.getHeight()});
+							SDL_Rect what = {camera.x, camera.y, camera.width, camera.height};
+    						SDL_RenderCopy(gRenderer, Map.getTexture(), &what, &mapScreenPos);
+
 							player.CurrentSprite.setAlpha(a);
 							player.render(camera.x, camera.y); // i need to render the player in the right spot relative to the camera. 
 							SDL_RenderPresent(gRenderer);
@@ -1590,8 +1607,11 @@ int main(int argc, char* args[])
 					SDL_SetRenderDrawColor(gRenderer, 0, 0, 20, 0xFF);
 					SDL_RenderClear(gRenderer);
 					//int offsetX = 0, offsetY = 0;
-
-
+					//camera.centerOn(player.GetPosX(), player.GetPosY());
+					//camera.centerOn(player.GetPosX() - camera.x, player.GetPosY() - camera.y);
+					//camera.centerOn(player.GetPosX(), player.GetPosY());
+					//    camera.centerOn(player.GetPosX() + player.SpriteWidth / 2.0f,
+                    //player.GetPosY() + player.SpriteHeight / 2.0f);
 
 					//if (windowHeight > levelHeight) {
 					//	//MapoffsetX = (windowWidth - levelWidth) / 2;
@@ -1667,9 +1687,44 @@ int main(int argc, char* args[])
 					gameState.levelWidth = Map.getWidth();
 					//MapoffsetX = center_offset_x;
 					//MapoffsetY = center_offset_y;
-					update_camera(player.GetPosX(), player.GetPosY(), Map.getWidth(), Map.getHeight());
+					//////update_camera(player.GetPosX(), player.GetPosY(), Map.getWidth(), Map.getHeight());
 					//render_map(gRenderer, Map);
-					render_map_unified(gRenderer, &Map);
+					//////////////////render_map_unified(gRenderer, &Map);
+
+					// Render map
+    				//SDL_Rect mapScreenPos = camera.worldToScreen({0, 0, Map.getWidth(), Map.getHeight()});
+    				//SDL_RenderCopy(gRenderer, Map.getTexture(), NULL, &mapScreenPos);
+
+
+
+
+					// Which part of the map texture to show (source rectangle)
+					SDL_Rect srcRect = {
+						(int)std::max(0.0f, camera.x),
+						(int)std::max(0.0f, camera.y),
+						std::min(camera.width, Map.getWidth()),
+						std::min(camera.height, Map.getHeight())
+					};
+					
+					// Where to draw it on screen (destination rectangle)
+					SDL_Rect dstRect = {
+						(camera.x < 0) ? (int)-camera.x : 0,  // Offset if map is smaller
+						(camera.y < 0) ? (int)-camera.y : 0,
+						srcRect.w,
+						srcRect.h
+					};
+					
+					SDL_RenderCopy(gRenderer, Map.getTexture(), &srcRect, &dstRect);	
+
+					    printf("Camera: (%.1f, %.1f) | Player: (%d, %d)\n", 
+           camera.x, camera.y, player.m_PosX, player.m_PosY);
+							printf("Map Offset: (%d, %d)\n", center_offset_x, center_offset_y);
+							printf("SrcRect: (%d, %d, %d, %d)\n", srcRect.x, srcRect.y, srcRect.w, srcRect.h);
+							printf("DstRect: (%d, %d, %d, %d)\n", dstRect.x, dstRect.y, dstRect.w, dstRect.h);
+
+
+
+
 
 
 
@@ -1684,6 +1739,9 @@ int main(int argc, char* args[])
 					//player.Update(surroundingBoxes, deltaTime);
 					//player.handleEvent(e); // player heart controls
 					player.Update(collisionBoxes, deltaTime);
+
+
+					
 
 					//SDL_RenderDrawRect(gRenderer, &player.GetColliderAddress());
 					SDL_Rect renderBox = {
@@ -1700,6 +1758,7 @@ int main(int argc, char* args[])
 					//camera.x = (player.GetPosX() + player.SpriteWidth / 2) - screenwidth / 2;
 					//camera.y = (player.GetPosY() + player.SpriteHeight / 2) - screenheight / 2;
 
+					/*
 					//Keep the camera in bounds
 					if (camera.x < 0)
 					{
@@ -1717,6 +1776,7 @@ int main(int argc, char* args[])
 					{
 						camera.y = levelHeight - camera.h;
 					}
+					*/
 
 
 					// TESTING MAP OFFSETS
@@ -1801,11 +1861,12 @@ int main(int argc, char* args[])
 						}
 						// Calculate the intersection between the box and the camera
 						SDL_Rect intersectedBox;
-						if (SDL_IntersectRect(&box->m_FOV, &camera, &intersectedBox)) {
+						SDL_Rect cameraRect = { camera.x, camera.y, camera.width, camera.height };
+						if (SDL_IntersectRect(&box->m_FOV, &cameraRect, &intersectedBox)) {
 							// Adjust box position relative to camera
 							SDL_Rect renderBox = {
-								box->m_FOV.x - camera.x,
-								box->m_FOV.y - camera.y,
+								box->m_FOV.x - cameraRect.x,
+								box->m_FOV.y - cameraRect.y,
 								box->m_FOV.w,
 								box->m_FOV.h 
 							};
@@ -1815,7 +1876,7 @@ int main(int argc, char* args[])
 						}
 					}
 
-					renderCollisionBoxes(gRenderer, camera);
+					renderCollisionBoxes(gRenderer, {camera.x, camera.y, camera.width, camera.height});
 					//SDL_RenderDrawRect(gRenderer, &player.m_CheckBox);
 
 					//player.render(camera.x, camera.y); // moved so player renders above everything else. might have to come back to this.
@@ -1847,7 +1908,8 @@ int main(int argc, char* args[])
 
 						// render collision boxes
 						SDL_Rect intersectedBox;
-						if (SDL_IntersectRect(&Entities.at(i)->m_Collider, &camera, &intersectedBox)) {
+						SDL_Rect cameraRect = { camera.x, camera.y, camera.width, camera.height };
+						if (SDL_IntersectRect(&Entities.at(i)->m_Collider, &cameraRect, &intersectedBox)) {
 							//printf("bruh");
 							// Adjust box position relative to camera
 							SDL_Rect renderBox = {
@@ -1856,6 +1918,8 @@ int main(int argc, char* args[])
 								Entities.at(i)->m_Collider.w,
 								Entities.at(i)->m_Collider.h
 							};
+							// comment this out soon
+							renderBox = camera.worldToScreen(Entities.at(i)->m_Collider);
 
 							// Draw the box
 							SDL_RenderDrawRect(gRenderer, &renderBox);
@@ -1875,6 +1939,7 @@ int main(int argc, char* args[])
 							checkb.w,
 							checkb.h
 						};
+						rendercheckBox = camera.worldToScreen(player.m_CheckBox);
 
 						// Draw the box
 						SDL_RenderDrawRect(gRenderer, &rendercheckBox);
@@ -1901,11 +1966,13 @@ int main(int argc, char* args[])
 					// END OF OVERWORLD RENDERING 
 					//player.render(camera.x + MapoffsetX, camera.y + MapoffsetY); // last thing to be rendered is the player so it's above everything else.
 
+					/*
 					if (levelWidth > windowWidth || levelHeight > windowHeight) {
 						player.render(camera.x + MapoffsetX, camera.y + MapoffsetY); // Use camera for larger maps
 					} else {
 						player.render(MapoffsetX, MapoffsetY); // Use offsets for smaller maps
-					}
+					}*/
+					player.render(camera.x, camera.y); // Use camera for larger maps
 
 
 					SDL_RenderDrawRect(gRenderer, &renderBox); // render players collision box above player.

@@ -56,7 +56,8 @@ Vector2f Enemy::moveEntity(Vector2f pos, float deltaTime, Vector2f target) {
 }
 
 
-void Enemy::Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
+//void Enemy::Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
+void Enemy::Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) {
 
     /// TODO fix enemy collisions !!!!!!!
     if (!alive) { return; }

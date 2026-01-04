@@ -23,6 +23,8 @@ extern GameState gameState;
 extern int screenwidth;
 extern int screenheight;
 
+extern Camera camera;
+
 const int GRID_CELL_SIZE = 100;
 const int GRID_WIDTH = gameState.levelWidth / GRID_CELL_SIZE;
 const int GRID_HEIGHT = gameState.levelHeight / GRID_CELL_SIZE;
@@ -444,12 +446,14 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 		}
 	}
 
+	/*
 	// Boundary checks (keep player within level bounds)
 	// Account for map offsets in the boundary checks
 	int effectiveLeftBound = 0 + gameState.MapoffsetX;
 	int effectiveTopBound = 0 + gameState.MapoffsetY;
 	int effectiveRightBound = gameState.levelWidth + gameState.MapoffsetX ;
 	int effectiveBottomBound = gameState.levelHeight + gameState.MapoffsetY;
+	*/
 
 	/*
 	// Boundary checks - keep player within actual map bounds
@@ -461,17 +465,36 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	}
 	*/
 
-	
+	/*
 	// Check left/right boundaries
 	if (m_PosX < 0 || m_PosX < effectiveLeftBound || m_PosX + SpriteWidth > effectiveRightBound) {
+		printf("Out of bounds X: %d (Effective bounds: %d to %d)\n", m_PosX, effectiveLeftBound, effectiveRightBound);
 		m_PosX = originalX; // Revert position if out of bounds
 	}
 
 	// Check top/bottom boundaries
 	if (m_PosY < 0 || m_PosY < effectiveTopBound || m_PosY + SpriteHeight > effectiveBottomBound) {
+		printf("Out of bounds Y: %d (Effective bounds: %d to %d)\n", m_PosY, effectiveTopBound, effectiveBottomBound);
 		m_PosY = originalY; // Revert position if out of bounds
 	}
-	
+	*/
+
+	// Boundary checks - keep player within actual map bounds (world space)
+	// NO offset needed - player position is already in world coordinates!
+
+	if (m_PosX < 0) {
+		m_PosX = originalX;
+	}
+	if (m_PosX + SpriteWidth > gameState.levelWidth) {
+		m_PosX = originalX;
+	}
+	if (m_PosY < 0) {
+		m_PosY = originalY;
+	}
+	if (m_PosY + SpriteHeight > gameState.levelHeight) {
+		m_PosY = originalY;
+	}
+		
 
 
 	//// Boundary checks (keep player within level bounds)
@@ -497,6 +520,11 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	if (!gTextTexture.loadFromRenderedText(str, textColor)) {
 		printf("Failed to render text texture!\n");
 	}
+
+	camera.centerOn(m_PosX , m_PosY );
+	//camera.centerOn(m_PosX - camera.x, m_PosY - camera.y);
+	    //camera.centerOn(m_PosX + 128 / 2.0f, 
+        //            m_PosY + 128 / 2.0f);
 }
 
 
@@ -849,7 +877,11 @@ void Player::render(int camX, int camY) {
 
 	// hey dickhead tell the Ltexture to render with the rect you have!!!
 	//SpriteSheet.render(m_PosX, m_PosY, &srcRect);
-	SpriteSheet.render(m_PosX - camX /* + MapoffsetX*/, m_PosY - camY /* + MapoffsetY*/, &srcRect);
+	//SpriteSheet.render(m_PosX - camX /* + MapoffsetX*/, m_PosY - camY /* + MapoffsetY*/, &srcRect);
+	SDL_Rect renderQuad = camera.worldToScreen({ float(m_PosX), float(m_PosY), (SpriteWidth), (SpriteHeight) });
+	//SpriteSheet.render(renderQuad.x, renderQuad.y, &srcRect);
+	//SDL_RenderCopy(renderer, SpriteSheet.getTexture(), NULL, &playerScreen);
+	SDL_RenderCopy(gRenderer, SpriteSheet.getTexture(), &srcRect, &renderQuad);
 
 	//m_Collider.x = m_Collider.x - camX + MapoffsetX;
 	//m_Collider.y = m_Collider.y - camY + MapoffsetY;

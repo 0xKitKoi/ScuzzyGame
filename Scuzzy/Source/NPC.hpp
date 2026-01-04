@@ -19,7 +19,8 @@ public:
 	
 
 	//void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos);
-	virtual void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
+	//virtual void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
+	virtual void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) {
 		// detect if player check box collides with NPC hitbox?
 		// Player can detect this, how do I tell the NPC this?
 		if (m_checked) {

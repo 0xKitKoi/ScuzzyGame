@@ -48,7 +48,8 @@ public:
 	void setAngle(float angle);
 
 	std::shared_ptr<LTexture> getTex(); //SDL_Texture* getTex();
-	void Update(float deltaTime, SDL_Rect CameraRect, SDL_Rect PlayerPOS);
+	//void Update(float deltaTime, SDL_Rect CameraRect, SDL_Rect PlayerPOS);
+	void Update(float deltaTime, Camera CameraRect, SDL_Rect PlayerPOS);
 	
 	SDL_Rect getCurrentFrame();
 	

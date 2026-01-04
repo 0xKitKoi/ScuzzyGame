@@ -63,7 +63,8 @@ std::shared_ptr<LTexture> Entity::getTex() //SDL_Texture* Entity::getTex
 /// <param name="deltaTime">Scales movement and animations with time.</param>
 /// <param name="CameraRect">Renders entity based on camera's perspective.</param>
 /// <param name="PlayerPos">Player's position for collision detection. enemy chasing coming soon..?</param>
-void Entity::Update(float deltaTime, SDL_Rect CameraRect, SDL_Rect PlayerPos)
+//void Entity::Update(float deltaTime, SDL_Rect CameraRect, SDL_Rect PlayerPos)
+void Entity::Update(float deltaTime, Camera CameraRect, SDL_Rect PlayerPos)
 {
 	SDL_Rect srcRect;
 
@@ -94,7 +95,10 @@ void Entity::Update(float deltaTime, SDL_Rect CameraRect, SDL_Rect PlayerPos)
 
 	//SDL_RenderDrawRect(gRenderer, &m_Collider);
 	// SpriteSheet.render(m_PosX - camX, m_PosY - camY, &srcRect);
-	m_Texture->render(m_PosX - CameraRect.x, m_PosY - CameraRect.y, &srcRect);
+	//m_Texture->render(m_PosX - CameraRect.x, m_PosY - CameraRect.y, &srcRect);
+	SDL_Rect enemyScreen = CameraRect.worldToScreen({ m_PosX, m_PosY, srcRect.w, srcRect.h });
+    //SDL_RenderCopy(renderer, enemyTexture, NULL, &enemyScreen);
+	m_Texture->render(enemyScreen.x, enemyScreen.y, &srcRect);
 }
 
 

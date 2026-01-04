@@ -8,7 +8,8 @@ public:
         m_Location = Location;
         m_room = room;
     }
-    void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) override {
+    //void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) override {
+    void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override { 
         if (m_checked) {
 			printf("Loading new room: %s\n", m_room.c_str());
             gameState.room = m_room;
@@ -46,7 +47,8 @@ public:
 class SIGNNPC : public NPC {
 public:
     SIGNNPC(const std::vector<std::string> dialogue, std::shared_ptr<Entity> entity) : NPC(entity, dialogue) {}
-    void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) override {
+    //void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) override {
+    void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override {
         if (m_checked) {
             gameState.Text.clear();
             gameState.Text = m_Dialogue;
