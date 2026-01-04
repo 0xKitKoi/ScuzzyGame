@@ -32,7 +32,7 @@ const int GRID_HEIGHT = gameState.levelHeight / GRID_CELL_SIZE;
 extern LTexture gTextTexture;
 
 //extern std::vector<std::shared_ptr<Entity>> Entities;
-
+extern std::vector<SDL_Rect> staticCollisionBoxes;
 
 extern void MS_renderMenu(SDL_Renderer* renderer, TTF_Font* font);
 
@@ -424,10 +424,16 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	}
 
 	// Check for collisions on X axis
-	for (const auto& wall : boxes) {
+	for (const auto& wall : boxes) { // these are from entities that may or may not be moving. Must be pointers.
 		if (SDL_HasIntersection(&m_Collider, wall)) {
 			m_PosX = originalX; // Revert position
 			
+			break;
+		}
+	}
+	for (const auto& wall : staticCollisionBoxes) {
+		if (SDL_HasIntersection(&m_Collider, &wall)) {
+			m_PosX = originalX; // Revert position
 			break;
 		}
 	}
@@ -442,6 +448,12 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 		if (SDL_HasIntersection(&m_Collider, wall)) {
 			m_PosY = originalY; // Revert position
 			
+			break;
+		}
+	}
+	for (const auto& wall : staticCollisionBoxes) {
+		if (SDL_HasIntersection(&m_Collider, &wall)) {
+			m_PosY = originalY; // Revert position
 			break;
 		}
 	}

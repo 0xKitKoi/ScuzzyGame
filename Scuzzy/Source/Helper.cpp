@@ -16,6 +16,7 @@
 
 extern std::vector<std::shared_ptr<Entity>> Entities;
 extern std::vector<SDL_Rect*> collisionBoxes;
+extern std::vector<SDL_Rect> staticCollisionBoxes;
 extern std::vector<SDL_Rect> clips;
 
 extern Camera camera;
@@ -44,6 +45,7 @@ int LevelIDFromName(std::string name) {
 Vector2f LoadLevel(std::string Room, LTexture* Map) {
 	Entities.clear();
 	collisionBoxes.clear();
+	staticCollisionBoxes.clear();
 	
 
 
@@ -67,7 +69,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			clips.push_back(tmp);
 			tmp = { 128 * 3,0,128,128 };
 			clips.push_back(tmp);
-			SDL_Rect entity_cb = { entityPos.x + 25, entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
+			SDL_Rect entity_cb = { int(entityPos.x + 25), int(entityPos.y + 25), int(entityRect.w - 45), int(entityRect.h - 55) }; // custom per entity but whatever
 			std::vector<std::string> enemydialogue = { "The Box Full of \"Fuck You\" Appeared!", "The Box of fuck you said ... \"Fuck you\"", "You opened the box. There was \"fuck you\" inside." };
 			auto entity = std::make_shared<Entity>(entityPos, entity_cb, entityRect, getTexture("data/box_fuck_u_ari_1.png"), 2, clips, 44);
 			
@@ -94,7 +96,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			clips.push_back(tmp);
 			tmp = { 128,0,128,128 };
 			clips.push_back(tmp);
-			entity_cb = { (int)entityPos.x + 25, (int)entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
+			entity_cb = { int(entityPos.x + 25), int(entityPos.y + 25), int(entityRect.w - 45), int(entityRect.h - 55) }; // custom per entity but whatever
 			auto Doorentity = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
 			Entities.push_back(Doorentity); // vector of all entities to render.
 			Vector2f outpos(400, 200);
@@ -111,7 +113,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			auto signTexture = getTexture("data/hintsign.png");
 			clips.clear();
 			clips.push_back({ 0,0,128,128 });
-			SDL_Rect signCB = { signpos.x + 25, signpos.y + 25, signRect.w - 45, signRect.h - 55 };
+			SDL_Rect signCB = { int(signpos.x + 25), int(signpos.y + 25), int(signRect.w - 45), int(signRect.h - 55) };
 			auto signentity = std::make_shared<Entity>(signpos, signCB, signRect, getTexture("data/hintsign.png"), 1, clips, 2);
 			Entities.push_back(signentity);
 			std::vector<std::string> dialogue = { "Hello, I'm a fucking sign. ufck you" };
@@ -129,7 +131,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			clips.clear(); // rects for sprite sheet animation
 			clips = { { 0,0,128,128 }, { 128,0,128,128 }, { 128 * 2,0,128,128 }, { 128 * 3 ,0,128,128 }, { 128 * 4 ,0,128,128 }, { 128 * 5 ,0,128,128 } };
 
-			entity_cb = { (int)entityPos2.x + 25, (int)entityPos2.y + 25, entityRect2.w - 45, entityRect2.h - 55 }; // custom per entity but whatever
+			entity_cb = { int(entityPos2.x + 25), int(entityPos2.y + 25), int(entityRect2.w - 45), int(entityRect2.h - 55) }; // custom per entity but whatever
 
 			// create the entity object
 			auto entity2 = std::make_shared<Entity>(entityPos2, entity_cb, entityRect2, getTexture("data/DooDooMart_StorageBox-Sheet.png"), 5, clips, 58);
@@ -146,6 +148,20 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			auto barrel = std::make_shared<Entity>(Vector2f(2322, 258), SDL_Rect{ 0,0,128,128 }, SDL_Rect{ 0,0,128,128 }, getTexture("data/barrel_nuclear.png"), 1, clips, 1);
 			Entities.push_back(barrel);
 
+
+			// Heres where I want to define custom collision boxes:
+			SDL_Rect leftWall = { 300, 600, 40, 400 };
+			SDL_Rect topWall = { 300, 600, 340, 40 };
+			SDL_Rect rightWall = { 640, 600, 40, 400 };
+			SDL_Rect bottomWall = { 300, 960, 340, 40 };
+				
+				staticCollisionBoxes.push_back(leftWall);
+
+				staticCollisionBoxes.push_back(topWall);
+
+				staticCollisionBoxes.push_back(rightWall);
+
+				staticCollisionBoxes.push_back(bottomWall);
 
 
 		}
@@ -169,7 +185,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			clips.push_back(tmp);
 			tmp = { 128,0,128,128 };
 			clips.push_back(tmp);
-			entity_cb = { (int)entityPos.x + 25, (int)entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
+			entity_cb = { int(entityPos.x + 25), int(entityPos.y + 25), int(entityRect.w - 45), int(entityRect.h - 55) }; // custom per entity but whatever
 			auto Doorentity2 = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
 			Entities.push_back(Doorentity2); // vector of all entities to render.
 			Vector2f outpos(540, 300);//(1000, 960);
@@ -224,7 +240,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			//clips.push_back(tmp);
 			//tmp = { 128 * 5 ,0,128,128 };
 			//clips.push_back(tmp);
-			entity_cb = { (int)entityPos3.x + 25, (int)entityPos3.y + 25, entityRect2.w - 45, entityRect2.h - 55 }; // custom per entity but whatever
+			entity_cb = { int(entityPos3.x + 25), int(entityPos3.y + 25), int(entityRect2.w - 45), int(entityRect2.h - 55) }; // custom per entity but whatever
 			std::vector<std::string> enemydialogue = { "The DOODOOMART Box ran at you!", "The DooDoo Mart Box has a buncha doodoo init", "The doodoomart box gave you a negative coupon. you are now in even more doodoo debt." };
 			auto entity = std::make_shared<Entity>(entityPos3, entity_cb, entityRect2, getTexture("data/DooDooMart_StorageBox-Sheet.png"), 5, clips, 58);
 			//std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity);
@@ -269,7 +285,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			clips.push_back(tmp);
 			tmp = { 128,0,128,128 };
 			clips.push_back(tmp);
-			SDL_Rect entity_cb = { entityPos.x + 25, entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
+			SDL_Rect entity_cb = { int(entityPos.x + 25), int(entityPos.y + 25), int(entityRect.w - 45), int(entityRect.h - 55) }; // custom per entity but whatever
 			auto Doorentity = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
 			Entities.push_back(Doorentity); // vector of all entities to render.
 			Vector2f outpos(960, 960);
@@ -297,7 +313,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			clips.push_back(tmp);
 			tmp = { 128,0,128,128 };
 			clips.push_back(tmp);
-			SDL_Rect entity_cb = { entityPos.x + 25, entityPos.y + 25, entityRect.w - 45, entityRect.h - 55 }; // custom per entity but whatever
+			SDL_Rect entity_cb = { int(entityPos.x + 25), int(entityPos.y + 25), int(entityRect.w - 45), int(entityRect.h - 55) }; // custom per entity but whatever
 			auto Doorentity = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
 			Entities.push_back(Doorentity); // vector of all entities to render.
 			Vector2f outpos(1200, 700);

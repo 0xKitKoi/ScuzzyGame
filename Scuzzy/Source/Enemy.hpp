@@ -23,6 +23,7 @@ public:
 	/// </summary>
 	/// <param name="entity">Entity Object.</param>
 	Enemy(std::shared_ptr<Entity> entity) : m_Entity(entity), m_EnemyID(entity->m_EntityID) {}
+	~Enemy();
 	//void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos);
 	void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos);
 	void Update(float deltaT, int screenhight, int screenwidth);

@@ -205,3 +205,13 @@ void Enemy::move(Vector2f targetPos) {
 	//Vector2f prev = m_Entity.getPos();
 
 }
+
+Enemy::~Enemy() {
+    // cleanup if needed
+    m_ActionResponse.clear();
+    m_Actions.clear();
+    m_EnemyDialogue.clear();
+    m_EnemySpriteClips.clear();
+    m_EnemyProjectiles.clear();
+
+}

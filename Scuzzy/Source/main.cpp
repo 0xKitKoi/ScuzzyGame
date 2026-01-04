@@ -106,6 +106,7 @@ const int GRID_HEIGHT = LEVEL_HEIGHT / GRID_CELL_SIZE;
 std::vector<SDL_Rect> grid[GRID_WIDTH][GRID_HEIGHT];
 
 std::vector<SDL_Rect*> collisionBoxes; // global because passing into funcs sounds horrible.
+std::vector<SDL_Rect> staticCollisionBoxes; // boxes that dont belong to entities, like walls or invisible barriers.
 
 // Black text color for use with gTextTexture;
 //SDL_Color textColor = { 0, 0, 0 };
@@ -255,6 +256,11 @@ void close()
 	SDL_DestroyWindow(gWindow);
 	gWindow = NULL;
 	gRenderer = NULL;
+
+	// clear vectors:
+	Entities.clear();
+	collisionBoxes.clear();
+	staticCollisionBoxes.clear();
 
 	//Quit SDL subsystems
 	TTF_Quit();
@@ -742,6 +748,21 @@ void renderCollisionBoxes(SDL_Renderer* gRenderer, const SDL_Rect& camera) {
 			SDL_RenderDrawRect(gRenderer, &renderBox);
 		}
 	}
+	for (const auto& box : staticCollisionBoxes) {
+		SDL_Rect intersectedBox;
+		if (SDL_IntersectRect(&box, &camera, &intersectedBox)) {
+			// Adjust box position relative to camera
+			SDL_Rect renderBox = {
+				box.x - camera.x,
+				box.y - camera.y,
+				box.w,
+				box.h
+			};
+
+			// Draw the box
+			SDL_RenderDrawRect(gRenderer, &renderBox);
+		}
+	}
 }
 
 
@@ -1217,7 +1238,7 @@ int main(int argc, char* args[])
 
 			//std::vector<SDL_Rect> collisionBoxes;
 
-			initializeCollisionBoxes();
+			//initializeCollisionBoxes();
 			//initializeCollisionGrid();
 
 			//Main loop flag
@@ -1595,7 +1616,7 @@ int main(int argc, char* args[])
 
 					// the new map is loaded, and the player is in the right spot. now stop loading..?
 					gameState.LoadingScreen = false;
-					initializeCollisionBoxes();
+					//initializeCollisionBoxes();
 
 				}
 
@@ -1716,12 +1737,13 @@ int main(int argc, char* args[])
 					
 					SDL_RenderCopy(gRenderer, Map.getTexture(), &srcRect, &dstRect);	
 
+					/*
 					    printf("Camera: (%.1f, %.1f) | Player: (%d, %d)\n", 
            camera.x, camera.y, player.m_PosX, player.m_PosY);
 							printf("Map Offset: (%d, %d)\n", center_offset_x, center_offset_y);
 							printf("SrcRect: (%d, %d, %d, %d)\n", srcRect.x, srcRect.y, srcRect.w, srcRect.h);
 							printf("DstRect: (%d, %d, %d, %d)\n", dstRect.x, dstRect.y, dstRect.w, dstRect.h);
-
+					*/
 
 
 
