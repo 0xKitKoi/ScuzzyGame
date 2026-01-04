@@ -25,7 +25,7 @@ Entity::Entity() :m_Enemy(nullptr), m_NPC(nullptr), FRAME_COUNT(0), currentFrame
 /// <param name="framecount">Number of frames in the animation.</param>
 /// <param name="Clips">Vector of Rects. This is a mapping of the sprite sheet.</param>
 Entity::Entity(Vector2f p_pos, SDL_Rect CollisionBox, SDL_Rect FrameRect, std::shared_ptr<LTexture> p_tex, int framecount, std::vector<SDL_Rect> Clips, int EntityID)
-	: m_Texture(p_tex), currentFrame(FrameRect), m_Enemy(nullptr), m_NPC(nullptr), m_EntityID(EntityID)
+	: m_Texture(p_tex), currentFrame(FrameRect), m_Enemy(nullptr), m_NPC(nullptr),  m_Clips(Clips), m_Collider(CollisionBox), m_EntityID(EntityID)
 {
 	//currentFrame.x = 0;
 	//currentFrame.y = 0;
@@ -38,8 +38,8 @@ Entity::Entity(Vector2f p_pos, SDL_Rect CollisionBox, SDL_Rect FrameRect, std::s
 
 
 	FRAME_COUNT = framecount;
-	m_Clips = Clips;
-	m_Collider = CollisionBox; // { int(p_pos.x),int(p_pos.y),FrameRect.w, FrameRect.h}; // might fucky wucky later LOL
+	//m_Clips = Clips;
+	//m_Collider = CollisionBox; // { int(p_pos.x),int(p_pos.y),FrameRect.w, FrameRect.h}; // might fucky wucky later LOL
 	// Idea behind this is to make a bigger box around the entity.
 	// This will hopefully let the entity detect the player around it.
 	//m_FOV = { -m_Collider.x * 2, -m_Collider.y * 2, m_Collider.x * 2, m_Collider.y * 2 };
@@ -49,6 +49,9 @@ Entity::Entity(Vector2f p_pos, SDL_Rect CollisionBox, SDL_Rect FrameRect, std::s
 
 Entity::~Entity() {
 	// The unique_ptr will automatically delete the child if it exists
+	// clear vectors:
+	m_Clips.clear();
+	m_Texture = nullptr;
 }
 
 std::shared_ptr<LTexture> Entity::getTex() //SDL_Texture* Entity::getTex

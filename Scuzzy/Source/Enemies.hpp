@@ -100,7 +100,7 @@ public:
 		}
 		if (gameState.SillyMeter >= 5) {
 			// I want the actions and responses to change here
-			return "What the fuck!...  is a Chungas? ???!?!?!?! ";
+			return "What the fuck!...  is a Chungas????!?!?!?! ";
 		}
 		// increase silly mode?
 		if (actionIndex == 1) {
