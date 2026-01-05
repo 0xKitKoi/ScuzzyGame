@@ -1898,7 +1898,7 @@ int main(int argc, char* args[])
 						}
 					}
 
-					renderCollisionBoxes(gRenderer, {camera.x, camera.y, camera.width, camera.height});
+					renderCollisionBoxes(gRenderer, {int(camera.x), int(camera.y), camera.width, camera.height});
 					//SDL_RenderDrawRect(gRenderer, &player.m_CheckBox);
 
 					//player.render(camera.x, camera.y); // moved so player renders above everything else. might have to come back to this.
