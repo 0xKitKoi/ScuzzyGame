@@ -22,13 +22,13 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -109,18 +109,21 @@ xcopy /Q /E /Y /I $(SolutionDir)\Scuzzy\data ..\bin\Release\data</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Enemies.hpp" />
     <ClInclude Include="Source\Enemy.hpp" />
     <ClInclude Include="Source\Entity.hpp" />
     <ClInclude Include="Source\Enums.hpp" />
     <ClInclude Include="Source\FightSystem.hpp" />
     <ClInclude Include="Source\GameState.hpp" />
     <ClInclude Include="Source\Helper.hpp" />
+    <ClInclude Include="Source\Item.hpp" />
     <ClInclude Include="Source\LTexture.hpp" />
     <ClInclude Include="Source\Math.hpp" />
     <ClInclude Include="Source\MenuSystem.hpp" />
     <ClInclude Include="Source\NPC.hpp" />
     <ClInclude Include="Source\Player.hpp" />
     <ClInclude Include="Source\Projectile.hpp" />
+    <ClInclude Include="Source\TestNPC.hpp" />
     <ClInclude Include="Source\Timer.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +131,7 @@ xcopy /Q /E /Y /I $(SolutionDir)\Scuzzy\data ..\bin\Release\data</Command>
     <ClCompile Include="Source\Entity.cpp" />
     <ClCompile Include="Source\FightSystem.cpp" />
     <ClCompile Include="Source\Helper.cpp" />
+    <ClCompile Include="Source\Item.cpp" />
     <ClCompile Include="Source\LTexture.cpp" />
     <ClCompile Include="Source\Math.cpp" />
     <ClCompile Include="Source\MenuSystem.cpp" />

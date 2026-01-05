@@ -79,14 +79,14 @@ project "Scuzzy"
       defines { "DEBUG" }
       symbols "On"
       optimize "Off"
-      buildoptions {
-        "-fsanitize=address",
-        "-fno-omit-frame-pointer"
-      }
+      -- buildoptions {
+      --  "-fsanitize=address",
+      --  "-fno-omit-frame-pointer"
+      --}
 
-      linkoptions {
-        "-fsanitize=address"
-      }
+      --linkoptions {
+      --  "-fsanitize=address"
+      --}
 
    filter "configurations:Release"
       defines { "NDEBUG" }

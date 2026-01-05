@@ -890,7 +890,7 @@ void Player::render(int camX, int camY) {
 	// hey dickhead tell the Ltexture to render with the rect you have!!!
 	//SpriteSheet.render(m_PosX, m_PosY, &srcRect);
 	//SpriteSheet.render(m_PosX - camX /* + MapoffsetX*/, m_PosY - camY /* + MapoffsetY*/, &srcRect);
-	SDL_Rect renderQuad = camera.worldToScreen({ float(m_PosX), float(m_PosY), (SpriteWidth), (SpriteHeight) });
+	SDL_Rect renderQuad = camera.worldToScreen({ (m_PosX), (m_PosY), (SpriteWidth), (SpriteHeight) });
 	//SpriteSheet.render(renderQuad.x, renderQuad.y, &srcRect);
 	//SDL_RenderCopy(renderer, SpriteSheet.getTexture(), NULL, &playerScreen);
 	SDL_RenderCopy(gRenderer, SpriteSheet.getTexture(), &srcRect, &renderQuad);
