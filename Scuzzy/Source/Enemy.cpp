@@ -113,7 +113,7 @@ void Enemy::Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) {
 /// <param name="screenheight">int</param>
 /// <param name="screenwidth">int</param>
 void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
-	if (gameState.fightState == FightState::ENEMY_DIALOGUE) {
+	if (gameState.fightState == FightState::ENEMY_DIALOGUE || gameState.fightState == FightState::DODGE_MECHANIC || gameState.fightState == FightState::ENEMY_TURN) {
 		//SDL_Rect enemysprite = this->m_EnemySpriteClips[0];
         
         //this->m_Entity->getCurrentFrame();

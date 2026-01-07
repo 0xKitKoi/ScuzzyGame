@@ -521,6 +521,9 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     std::string enemyHP = "Enemy HP: " + std::to_string(gameState.enemy->HP);
     FS_renderText(renderer, font, enemyHP, 200, 50, { 237, 28, 36 });
 
+	std::string Tension = "Tension: " + std::to_string(gameState.TensionMeter);
+    FS_renderText(renderer, font, Tension, 600, 700, { 255, 255, 0 });
+
     // Handle input and rendering based on current state
     switch (gameState.fightState) {
     case FightState::INTRO:

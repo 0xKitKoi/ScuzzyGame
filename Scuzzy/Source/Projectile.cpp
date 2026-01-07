@@ -46,6 +46,7 @@ void Projectile::Update(float deltaT, Vector2f PlayerPos) { // DEFAULT UPDATE FU
 			// deal damage to player
 			gameState.HP -= m_Damage;
 			m_Active = false; // deactivate on hit
+			m_TensionHit = true;
 		}
 
 	}

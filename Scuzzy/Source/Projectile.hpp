@@ -16,6 +16,7 @@ public:
 	// they also need to be updated each frame, and should have a custom update function depending on type of projectile.
 	// I want collisions to be handled by the player, since near misses will be added to a tension meter.
 	bool m_Active = true;
+	bool m_TensionHit = false;
 	bool m_Init = true;
 	//LTexture* m_SpriteSheet;
 	std::shared_ptr<LTexture> m_SpriteSheet;
@@ -67,6 +68,8 @@ public:
 				// deal damage to player
 				gameState.HP -= m_Damage;
 				m_Active = false; // deactivate on hit
+				gameState.TensionMeter -= 5;
+				m_TensionHit = true;
 			}
 		}
     }
@@ -96,6 +99,8 @@ public:
 			// deal damage to player
 			gameState.HP -= m_Damage;
 			m_Active = false; // deactivate on hit
+			gameState.TensionMeter -= 5;
+			m_TensionHit = true;
 		}
 	}
 };

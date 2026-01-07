@@ -59,6 +59,7 @@ struct GameState {
 
 	bool SillyMode = false;
     int SillyMeter = 0;
+	int TensionMeter = 0;
 
 	bool LoadingScreen = false; // Loading screen for room transitions
 	bool DoneLoading = false;
