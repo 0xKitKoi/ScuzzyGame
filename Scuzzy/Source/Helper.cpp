@@ -58,6 +58,38 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 		}
 		else {
 
+
+			// Dr.Pebba sodacan enemy test
+			Vector2f sodaPos(3841, 314);
+			SDL_Rect sodaRect = { 0, 0, 128, 128 };
+
+			clips.clear();
+			clips.push_back({ 0, 0, 128, 128 });
+
+			SDL_Rect sodaCB = {
+				int(sodaPos.x + 8),
+				int(sodaPos.y + 10),
+				48,
+				44
+			};
+
+			auto sodaCanEntity = std::make_shared<Entity>(
+				sodaPos,
+				sodaCB,
+				sodaRect,
+				getTexture("data/drpebba.png"),
+				1,
+				clips,
+				0
+			);
+
+			std::shared_ptr<Enemy> sodaCanEnemy = std::make_shared<DrPebba>(sodaCanEntity);
+			sodaCanEntity->setEnemy(sodaCanEnemy);
+
+			Entities.push_back(sodaCanEntity);
+			collisionBoxes.push_back(&sodaCanEntity->m_Collider);
+
+
 			// Load first entity , Enemy !
 			Vector2f entityPos(950, 390);
 			SDL_Rect entityRect = { 0,0,128,128 };
@@ -162,7 +194,6 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 				staticCollisionBoxes.push_back(rightWall);
 
 				staticCollisionBoxes.push_back(bottomWall);
-
 
 		}
 

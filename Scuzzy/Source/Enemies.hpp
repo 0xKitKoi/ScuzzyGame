@@ -17,27 +17,28 @@ extern int randomInt(int min, int max);
 
 // Polymorphism time bitches
 
+
 class BoxOfFuckYou : public Enemy {
 public:
 	BoxOfFuckYou(std::shared_ptr<Entity> entity) : Enemy(entity) {
 		m_AttackDamage = 1;
 		m_EnemyDialogue = { "The Box Full of \"Fuck You\" Appeared!",
-			"The Box of fuck you said ... \"Fuck you\"", 
+			"The Box of fuck you said ... \"Fuck you\"",
 			"You opened the box. There was \"fuck you\" inside." };
 
 		m_Actions = { "info", "sit", "kick.?" };
 
 		m_ActionResponse = { "STATUS: .. its a box..?",
-			"You sat on the box, it left a dent in it.", 
+			"You sat on the box, it left a dent in it.",
 			"WHAM! you left a big dent in its fleshy cardboard." };
 
 		m_EnemyFightSpriteSheet = getTexture("data/box_fuck_u_ari_1.png");
 
-		m_EnemySpriteClips =  { { 0,0,128,128 }, { 128,0,128,128 }, { 128 * 2,0,128,128 }, { 128 * 3,0,128,128 } };
+		m_EnemySpriteClips = { { 0,0,128,128 }, { 128,0,128,128 }, { 128 * 2,0,128,128 }, { 128 * 3,0,128,128 } };
 
 		FRAME_COUNT = 4;
 
-		m_EnemyProjectile = std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1);
+		m_EnemyProjectile = std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{ 0,0,10,10 }, Vector2f(0, 0), Vector2f(200, 200), 1);
 		m_projectileCount = 10;
 		/*
 		for (int i = 0; i < m_projectileCount; i++) {
@@ -46,25 +47,7 @@ public:
 		*/
 	}
 
-	std::string FightActionResponse(int actionIndex) override {
-		// by default, return the action response at the given index.
-		if (actionIndex < 0 || actionIndex >= m_ActionResponse.size()) {
-			return "Invalid action.";
-		}
-		if (gameState.SillyMeter >= 5) {
-			// I want the actions and responses to change here
-			return "Custom silly String here! fuck you !!!1! ";
-		}
-		// increase silly mode?
-		if (actionIndex == 1) {
-			printf("Silly mode INCREASED!!!!!!!!!!");
-			gameState.SillyMeter += 5;
-		}
-		return m_ActionResponse[actionIndex];
-	}
 };
-
-
 
 class DooDooMartBox : public Enemy {
 public:
@@ -84,7 +67,7 @@ public:
 
 		m_EnemySpriteClips = { { 0,0,128,128 }, { 128,0,128,128 }, { 128 * 2,0,128,128 }, { 128 * 3,0,128,128 }, { 128 * 4 ,0,128,128 }, { 128 * 5 ,0,128,128 } };
 
-		FRAME_COUNT = 5;
+		FRAME_COUNT = 6;
 
 		m_EnemyProjectile = std::make_shared<FallingProjectile>(getTexture("data/box.png"), SDL_Rect{0,0,20,20}, Vector2f(0,0), Vector2f(200,200), 1);
 		m_projectileCount = 10;
@@ -128,3 +111,65 @@ public:
 
 };
 
+
+class DrPebba : public Enemy {
+public:
+	DrPebba(std::shared_ptr<Entity> entity) : Enemy(entity) {
+		m_AttackDamage = 1;
+		m_EnemyDialogue = { "The aluminum can ran at you!",
+			"The DooDoo Mart Box has a buncha doodoo init",
+			"The doodoomart box gave you a negative coupon. you are now in even more doodoo debt." };
+
+		m_Actions = { "info", "dissassemble", "turn into shitbox" };
+
+		m_ActionResponse = { "STATUS: .. its a box..?",
+			"You flattened the box. It took Heavy Damage",
+			"my actual pc" };
+
+		m_EnemyFightSpriteSheet = getTexture("data/drpebba.png");
+
+		m_EnemySpriteClips = { { 0,0,128,128 } };
+
+		FRAME_COUNT = 1;
+
+		m_EnemyProjectile = std::make_shared<AluminumCanProjectile>(getTexture("data/soda_bullet.png"), SDL_Rect{ 0,0,20,20 }, Vector2f(0, 0), Vector2f(200, 200), 1);
+		m_projectileCount = 25;
+
+	}
+
+	std::string FightActionResponse(int actionIndex) override {
+
+		printf("DooDooMartBox FightActionResponse called with actionIndex: %d\n", actionIndex);
+		// by default, return the action response at the given index.
+		if (actionIndex < 0 || actionIndex >= m_ActionResponse.size()) {
+			return "Invalid action.";
+		}
+		if (gameState.SillyMeter >= 5) {
+			// I want the actions and responses to change here
+			return "What the fuck!...  is a Chungas????!?!?!?! ";
+		}
+		// increase silly mode?
+		if (actionIndex == 1) {
+			printf("Silly mode INCREASED!!!!!!!!!!");
+			gameState.SillyMeter += 5;
+		}
+		return m_ActionResponse[actionIndex];
+	}
+
+	void ResetProjectiles() override {
+		m_EnemyProjectiles.clear();
+		// init the projectiles
+		for (int i = 0; i < m_projectileCount; i++) {
+			//m_EnemyProjectiles.push_back(std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1));
+			// using the m_EnemyProjectile as a template, create new projectiles
+			float subx = float(randomInt(0, gameState.screenwidth));
+			float suby = float(randomInt(0, gameState.screenheight));
+			m_EnemyProjectiles.push_back(std::make_shared<FallingProjectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f(subx, suby), Vector2f(200, 200), 1));
+			// randomize vector2f(x,y) position:
+		}
+		float subx = float(randomInt(0, gameState.screenwidth));
+		float suby = float(randomInt(0, gameState.screenheight));
+		m_EnemyProjectiles[0] = std::make_shared<HomingProjectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f(subx, suby), Vector2f(200, 200), 1);
+	}
+
+};

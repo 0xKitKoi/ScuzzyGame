@@ -63,7 +63,6 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalOptions>-fsanitize=address -fno-omit-frame-pointer %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
@@ -72,7 +71,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\thirdparty\SDL2\lib\x64;..\thirdparty\SDL2_image\lib\x64;..\thirdparty\SDL2_ttf\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>-fsanitize=address %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>IF EXIST $(SolutionDir)\thirdparty\SDL2\lib\x64\SDL2.dll\ (xcopy /Q /E /Y /I $(SolutionDir)\thirdparty\SDL2\lib\x64\SDL2.dll ..\bin\Debug &gt; nul) ELSE (xcopy /Q /Y /I $(SolutionDir)\thirdparty\SDL2\lib\x64\SDL2.dll ..\bin\Debug &gt; nul)
