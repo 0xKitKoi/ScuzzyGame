@@ -132,6 +132,9 @@ void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
             //lastFrameTime = 0;
             lastFrameTime -= frameDuration;
         }
+        if (this->FRAME_COUNT == 1) {
+            currentFrameCount = 0; // stay on first frame if only one frame.
+		}
 
         //enemysprite = m_EnemySpriteClips[currentFrameCount]; // render the sprite at index of animation
         //this->m_Entity->getTex()->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_Entity->getCurrentFrame());

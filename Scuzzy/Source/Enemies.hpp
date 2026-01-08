@@ -47,6 +47,23 @@ public:
 		*/
 	}
 
+	std::string FightActionResponse(int actionIndex) override {
+		// by default, return the action response at the given index.
+		if (actionIndex < 0 || actionIndex >= m_ActionResponse.size()) {
+			return "Invalid action.";
+		}
+		if (gameState.SillyMeter >= 5) {
+			// I want the actions and responses to change here
+			return "Custom silly String here! fuck you !!!1! ";
+		}
+		// increase silly mode?
+		if (actionIndex == 1) {
+			printf("Silly mode INCREASED!!!!!!!!!!");
+			gameState.SillyMeter += 5;
+		}
+		return m_ActionResponse[actionIndex];
+	}
+
 };
 
 class DooDooMartBox : public Enemy {
@@ -128,7 +145,7 @@ public:
 
 		m_EnemyFightSpriteSheet = getTexture("data/drpebba.png");
 
-		m_EnemySpriteClips = { { 0,0,128,128 } };
+		m_EnemySpriteClips = { { 0,0,128,128 } , { 0,0,128,128 } };
 
 		FRAME_COUNT = 1;
 
