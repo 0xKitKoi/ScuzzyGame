@@ -10,6 +10,7 @@ extern GameState gameState;
 
 #include "Source/FightSystem.hpp"
 #include "Source/GameState.hpp"
+#include "Source/Projectile.hpp"
 
 //bool checkCollision(SDL_Rect a, SDL_Rect b);
 //const int SCREEN_WIDTH = 1920;
@@ -567,6 +568,10 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 	//}
 	// Advance animation frames
 	lastFrameTime += deltaTime * 1000.0f;
+	if (!gameState.inFight) {
+		frameDuration = 100;
+	}
+	else { frameDuration = 500; }
 	while (lastFrameTime >= frameDuration) {
 		currentFrame = (currentFrame + 1) % 4;
 		lastFrameTime -= frameDuration;  // Subtract instead of setting to 0
@@ -666,8 +671,39 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 		if (gameState.fightState != FightState::DODGE_MECHANIC) {
 			//printf("Not in dodge mechanic, skipping heart controls.\n");
 			m_FightSpriteSheet.render(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[currentFrame]);
+			//SDL_Color debugColor = { 255, 0, 0, 255 };
+			//SDL_Color tmp;
+			//SDL_GetRenderDrawColor(gRenderer, &tmp.r, &tmp.g, &tmp.b, &tmp.a);
+			//SDL_SetRenderDrawColor(gRenderer, debugColor.r, debugColor.g, debugColor.b, debugColor.a);
+			//m_HeartTensionCollider = { int(m_HeartPos.x) - 8, int(m_HeartPos.y) - 8, m_HeartClips[0].w + 11, m_HeartClips[0].h + 13 };
+			//for (size_t i = 0; i < gameState.enemy->m_EnemyProjectiles.size(); i++) {
+			//	if (SDL_HasIntersection( &gameState.enemy->m_EnemyProjectiles.at(i)->m_Collider, &m_HeartTensionCollider )) {
+			//		SDL_SetRenderDrawColor(gRenderer, 0, 255, 0, 255); // green if colliding
+			//		SDL_RenderDrawRect(gRenderer, &m_HeartTensionCollider); // draw heart tension hitbox for debugging
+			//	}
+			//}
+			////SDL_RenderDrawRect(gRenderer, &m_HeartTensionCollider); // draw heart tension hitbox for debugging
+			//SDL_SetRenderDrawColor(gRenderer, tmp.r, tmp.g, tmp.b, tmp.a);
 			return; 
 		}
+		SDL_Color debugColor = { 255, 0, 0, 255 };
+		SDL_Color tmp;
+		SDL_GetRenderDrawColor(gRenderer, &tmp.r, &tmp.g, &tmp.b, &tmp.a);
+		SDL_SetRenderDrawColor(gRenderer, debugColor.r, debugColor.g, debugColor.b, debugColor.a);
+		m_HeartTensionCollider = { int(m_HeartPos.x) - 8, int(m_HeartPos.y) - 8, m_HeartClips[0].w + 11, m_HeartClips[0].h + 13 };
+		for (size_t i = 0; i < gameState.enemy->m_EnemyProjectiles.size(); i++) {
+			if (SDL_HasIntersection(&gameState.enemy->m_EnemyProjectiles.at(i)->m_Collider, &m_HeartTensionCollider)) {
+				SDL_SetRenderDrawColor(gRenderer, 0, 255, 0, 255); // green if colliding
+				SDL_RenderDrawRect(gRenderer, &m_HeartTensionCollider); // draw heart tension hitbox for debugging
+				if (gameState.enemy->m_EnemyProjectiles.at(i)->m_TensionHit) {
+					continue; // skip if already hit tension box
+				}
+				gameState.TensionMeter += 5; // increase tension meter on hit
+				gameState.enemy->m_EnemyProjectiles.at(i)->m_TensionHit = true; // mark projectile as having hit tension box
+			}
+		}
+		//SDL_RenderDrawRect(gRenderer, &m_HeartTensionCollider); // draw heart tension hitbox for debugging
+		SDL_SetRenderDrawColor(gRenderer, tmp.r, tmp.g, tmp.b, tmp.a);
 
 		//m_VelX = 0;
 		//m_VelY = 0;
