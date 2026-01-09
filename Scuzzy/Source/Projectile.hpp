@@ -68,7 +68,8 @@ public:
 				// deal damage to player
 				gameState.HP -= m_Damage;
 				m_Active = false; // deactivate on hit
-				gameState.TensionMeter -= 5;
+				//gameState.TensionMeter -= 5;
+				gameState.TensionMeter += 5; // cant decide if projectiles should increase or decrease tension on hit
 				m_TensionHit = true;
 			}
 		}
@@ -99,7 +100,8 @@ public:
 			// deal damage to player
 			gameState.HP -= m_Damage;
 			m_Active = false; // deactivate on hit
-			gameState.TensionMeter -= 5;
+			//gameState.TensionMeter -= 5;
+			gameState.TensionMeter += 5; // cant decide if projectiles should increase or decrease tension on hit
 			m_TensionHit = true;
 		}
 	}
@@ -130,8 +132,12 @@ public:
 			m_Collider = { int(m_Position.x), int(m_Position.y), m_SpriteClip.w, m_SpriteClip.h };
 			if (SDL_HasIntersection(&m_Collider, &gameState.player->m_HeartCollider)) {
 				// deal damage to player
+				m_TensionHit = true;
 				gameState.HP -= m_Damage;
 				m_Active = false; // deactivate on hit
+				//gameState.TensionMeter -= 5;
+				gameState.TensionMeter += 5; // cant decide if projectiles should increase or decrease tension on hit
+
 			}
 		}
 	}

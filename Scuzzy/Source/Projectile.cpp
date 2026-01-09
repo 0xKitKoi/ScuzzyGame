@@ -47,6 +47,8 @@ void Projectile::Update(float deltaT, Vector2f PlayerPos) { // DEFAULT UPDATE FU
 			gameState.HP -= m_Damage;
 			m_Active = false; // deactivate on hit
 			m_TensionHit = true;
+			//gameState.TensionMeter -= 5;
+			gameState.TensionMeter += 5; // cant decide if projectiles should increase or decrease tension on hit
 		}
 
 	}

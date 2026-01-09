@@ -123,7 +123,7 @@ bool AttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
 	// if the player presses Z when the TargetRect is inside the TargetAreaRect, return true.
     if (!gameState.FightAttackAttempt &&  event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
 		gameState.FightAttackAttempt = true; // prevent multiple inputs
-        if (SDL_HasIntersection(&gameState.FightTargetAreaRect, &gameState.FightTargetRect)) {
+        if (SDL_HasIntersection(&gameState.FightTargetRect, &gameState.FightTargetAreaRect)) {
 			printf("HIT!\n");
             return true; // Successful hit
         }
@@ -149,7 +149,13 @@ void HandleAttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
         // i want this line on fight start and only on fight start
         //gameState.player->m_HeartPos = { float(gameState.screenwidth / 2), float(gameState.screenheight / 2) }; // reset position
         //gameState.enemy->m_EnemyProjectile->m_Init = true; // reset projectile state
-		gameState.FightTargetRect.x = gameState.screenwidth - 400; // reset target position
+        int screenWidth, screenHeight;
+        SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+        int xOffset = screenWidth * 0.05 + 30;  // Start slightly inside the text box
+        int yOffset = screenHeight - 275;       // Place the text inside the box
+		gameState.FightTargetAreaRect = { xOffset + 200, yOffset + 100, 10, 40 }; // set target area position
+		gameState.FightTargetRect = { xOffset + 500, yOffset + 100, 10, 40 }; // set target position
+		gameState.FightTargetRect.x = gameState.FightTargetAreaRect.x + 500; // reset target position
 		gameState.FightAttackAttempt = false; // reset attack attempt
 
     }
@@ -206,7 +212,7 @@ void HandlePlayerTurnMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event
         gameState.SillyMode = true;
         //
     }
-    std::vector<std::string> fightMenu = { "Fight", "Actions", "Magic" "Items" };
+    std::vector<std::string> fightMenu = { "Fight", "Actions", "Magic", "Items" };
 
     // Render menu options
     int screenWidth, screenHeight;
@@ -265,8 +271,11 @@ void HandlePlayerTurnMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event
                 gameState.fightState = FightState::PLAYER_ACTIONS_MENU;
                 selection = 0; // Reset selection for new menu
                 break;
-
             case 2: // Items
+                gameState.fightState = FightState::PLAYER_MAGIC;
+                selection = 0; // Reset selection for new menu
+                break;
+            case 3: // Items
                 gameState.fightState = FightState::PLAYER_ITEMS_MENU;
                 selection = 0; // Reset selection for new menu
                 break;
@@ -275,6 +284,63 @@ void HandlePlayerTurnMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event
         }
     }
 }
+
+
+void HandlePlayerMagicMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
+    // this is the menu for the actions the player can pick in a fight. 
+    // They come from the enemy that started the fight. 
+
+    FS_renderTextBox(renderer);
+
+    // Get actions for current enemy
+    std::vector<std::string> actionMenu = { "Magic 1", "Magic 2"};
+
+    // Render menu options
+    int screenWidth, screenHeight;
+    SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+    int xOffset = screenWidth * 0.05 + 30;
+    int yOffset = screenHeight - 275;
+
+    for (int i = 0; i < actionMenu.size(); i++) {
+        SDL_Color color = (i == selection) ? SDL_Color{ 237, 28, 36 } : SDL_Color{ 255, 255, 255 };
+        FS_renderText(renderer, font, actionMenu[i], xOffset + (i * 300), yOffset, color);
+    }
+
+    // Handle input
+    if (event.type == SDL_KEYDOWN) {
+        if (event.key.keysym.sym == SDLK_LEFT) {
+            selection--;
+            if (selection < 0) selection = actionMenu.size() - 1;
+        }
+        else if (event.key.keysym.sym == SDLK_RIGHT) {
+            selection++;
+            if (selection >= actionMenu.size()) selection = 0;
+        }
+        else if (event.key.keysym.sym == SDLK_z) {
+            // Set text based on selected action
+            // The enemy will effect the gameState based on the action chosen here.
+
+            if (selection < actionMenu.size()) {
+                //fightText = gameState.enemy->FightActionResponse(selection); // side effects handled inside the function
+				fightText = "Magic Menu: You used " + actionMenu[selection] + "!\n";
+                //fightText = gameState.enemy->m_ActionResponse[selection]; // this is replaced by the above line for silly mode support
+                gameState.fightState = FightState::PLAYER_ACTION_RESULT;
+                gameState.turnCount++;
+                selection = 0; // Set to Actions option
+            }
+            else {
+                fightText = "ERROR: Invalid action!";
+                gameState.fightState = FightState::PLAYER_ACTION_RESULT;
+            }
+        }
+        else if (event.key.keysym.sym == SDLK_x) {
+            // Go back to main menu
+            gameState.fightState = FightState::PLAYER_TURN_MENU;
+            selection = 1; // Set to Actions option
+        }
+    }
+}
+
 
 void HandlePlayerActionsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
 	// this is the menu for the actions the player can pick in a fight. 
@@ -663,6 +729,10 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     case FightState::PLAYER_FIGHT:
         HandleAttackMechanic(renderer, font, event);
         break;
+
+	case FightState::PLAYER_MAGIC:
+		HandlePlayerMagicMenuState(renderer, font, event);
+		break;
     }
 }
 
