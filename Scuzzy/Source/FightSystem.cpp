@@ -109,6 +109,95 @@ void HandleIntroState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     }
 }
 
+bool AttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
+	// timing based attack mechanic
+	// create a SDL_Rect for the target
+	// create a SDL_Rect for the target area.
+	// move the TargetRect across the screen.
+	gameState.FightTargetRect.x -= 5; // move right by 10 pixels per frame, adjust speed as needed
+    // render it
+	SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green for target area
+	SDL_RenderDrawRect(renderer, &gameState.FightTargetRect);
+	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red for target
+	SDL_RenderDrawRect(renderer, &gameState.FightTargetAreaRect);
+	// if the player presses Z when the TargetRect is inside the TargetAreaRect, return true.
+    if (!gameState.FightAttackAttempt &&  event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
+		gameState.FightAttackAttempt = true; // prevent multiple inputs
+        if (SDL_HasIntersection(&gameState.FightTargetAreaRect, &gameState.FightTargetRect)) {
+			printf("HIT!\n");
+            return true; // Successful hit
+        }
+        else {
+            return false; // Missed
+		}
+    }
+	if (gameState.FightTargetRect.x < 0 || gameState.FightTargetAreaRect.x > gameState.FightTargetRect.x ) {
+		//FightState::RESULT_DIALOGUE;
+        return false; // Out of bounds, treat as miss
+    }
+	return false; // No input yet
+}
+
+
+void HandleAttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
+
+    if (!gameState.fightTurnTimer.isStarted()) {
+        gameState.fightTurnTimer.start();
+        gameState.lastTurnTime = SDL_GetTicks();
+        printf("Attack TIME STARTED\n");
+        //gameState.enemy->ResetProjectiles();
+        // i want this line on fight start and only on fight start
+        //gameState.player->m_HeartPos = { float(gameState.screenwidth / 2), float(gameState.screenheight / 2) }; // reset position
+        //gameState.enemy->m_EnemyProjectile->m_Init = true; // reset projectile state
+		gameState.FightTargetRect.x = gameState.screenwidth - 400; // reset target position
+		gameState.FightAttackAttempt = false; // reset attack attempt
+
+    }
+    else {
+        if (SDL_GetTicks() - gameState.lastTurnTime >= gameState.turnTimeLimit) {
+            // time's up, end turn
+            gameState.fightTurnTimer.stop();
+            //gameState.player->m_HeartVelocity = { 0,0 }; // stop fucking moving
+            //gameState.fightState = FightState::ENEMY_TURN;
+
+            //gameState.fightState = FightState::RESULT_DIALOGUE;
+            printf("Attack TIMER UP!\n");
+            // Check if enemy defeated
+            if (gameState.enemy->HP <= 0) {
+                gameState.enemy->alive = false;
+                fightText = "You defeated the enemy!";
+                gameState.kills++;
+                gameState.money += chance(10);
+                gameState.fightState = FightState::FIGHT_END;
+            }
+            else {
+                gameState.fightState = FightState::PLAYER_ACTION_RESULT /*FightState::PLAYER_ACTION_RESULT*/;
+            }
+
+        }
+        else {
+			// still in the attack mechanic.
+            if (gameState.FightAttackAttempt) {
+                // already attempted attack, wait for turn to end
+				gameState.lastTurnTime = gameState.turnTimeLimit; // fast forward to end
+                return;
+            }
+            if (AttackMechanic(renderer, font, event)) {
+				printf("Attack HIT!\n");
+                gameState.enemy->HP -= 1; // Replace with proper damage calculation
+                // Set text for result dialogue
+                fightText = "You hit the " + std::string("{ENEMY ID: ") +
+                    std::to_string(gameState.enemy->m_EnemyID) + " }\n";
+            }
+            else {
+                fightText = "You missed!!!\n";
+            }
+        }
+    }
+
+
+}
+
 void HandlePlayerTurnMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     FS_renderTextBox(renderer);
 
@@ -117,7 +206,7 @@ void HandlePlayerTurnMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event
         gameState.SillyMode = true;
         //
     }
-    std::vector<std::string> fightMenu = { "Fight", "Actions", "Items" };
+    std::vector<std::string> fightMenu = { "Fight", "Actions", "Magic" "Items" };
 
     // Render menu options
     int screenWidth, screenHeight;
@@ -144,24 +233,32 @@ void HandlePlayerTurnMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event
             // Handle selection
             switch (selection) {
             case 0: // Fight
-                // Attack enemy
-                gameState.enemy->HP -= 1; // Replace with proper damage calculation
+				gameState.fightState = FightState::PLAYER_FIGHT;
+				HandleAttackMechanic(renderer, font, event);
+    //            // Attack enemy
+    //            if (HandleAttackMechanic(renderer, font, event)) {
+    //                gameState.enemy->HP -= 1; // Replace with proper damage calculation
+    //                // Set text for result dialogue
+    //                fightText = "You hit the " + std::string("{ENEMY ID: ") +
+    //                    std::to_string(gameState.enemy->m_EnemyID) + " }\n";
+    //            }
+    //            else {
+    //                fightText = "You missed!!!\n";
+				//}
 
-                // Set text for result dialogue
-                fightText = "You hit the " + std::string("{ENEMY ID: ") +
-                    std::to_string(gameState.enemy->m_EnemyID) + " }\n";
+    //            
 
-                // Check if enemy defeated
-                if (gameState.enemy->HP <= 0) {
-                    gameState.enemy->alive = false;
-                    fightText = "You defeated the enemy!";
-                    gameState.kills++;
-                    gameState.money += chance(10);
-                    gameState.fightState = FightState::FIGHT_END;
-                }
-                else {
-                    gameState.fightState = FightState::PLAYER_ACTION_RESULT;
-                }
+    //            // Check if enemy defeated
+    //            if (gameState.enemy->HP <= 0) {
+    //                gameState.enemy->alive = false;
+    //                fightText = "You defeated the enemy!";
+    //                gameState.kills++;
+    //                gameState.money += chance(10);
+    //                gameState.fightState = FightState::FIGHT_END;
+    //            }
+    //            else {
+    //                gameState.fightState = FightState::PLAYER_ACTION_RESULT;
+    //            }
                 break;
 
             case 1: // Actions
@@ -388,14 +485,14 @@ void HandleEnemyTurnState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
         if (gameState.SillyMode) { fightText = "You goofy ass trogladite..."; } // Current indicator of silly mode. 
         else { fightText = gameState.enemy->FightActionResponse(0); }
         
-        if (gameState.HP <= 0) { // this is the only way the player can die right now.
-            gameState.HP = 0;
-            fightText += "You were defeated!";
-            FS_renderText(renderer, font, fightText, { 255, 255, 255 });
-            gameState.fightState = FightState::FIGHT_END;
-			gameState.dead = true;
-			HandleFightEndState(renderer, font, event);
-        }
+   //     if (gameState.HP <= 0) { // this is the only way the player can die right now.
+   //         gameState.HP = 0;
+   //         fightText += "You were defeated!";
+   //         FS_renderText(renderer, font, fightText, { 255, 255, 255 });
+   //         gameState.fightState = FightState::FIGHT_END;
+			//gameState.dead = true;
+			//HandleFightEndState(renderer, font, event);
+   //     }
 
         gameState.fightState = FightState::DODGE_MECHANIC;
     }
@@ -410,6 +507,15 @@ void HandleEnemyDialogueState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event 
 }
 
 void HandleResultDialogueState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
+    if (gameState.HP <= 0) { // this is the only way the player can die right now.
+        gameState.HP = 0;
+        fightText += "You were defeated!";
+        FS_renderText(renderer, font, fightText, { 255, 255, 255 });
+        gameState.fightState = FightState::FIGHT_END;
+        gameState.dead = true;
+        HandleFightEndState(renderer, font, event);
+    }
+
     FS_renderText(renderer, font, fightText, { 255, 255, 255 });
 
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
@@ -500,8 +606,8 @@ void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event ev
 
 // Main fight system input handler. This is also how the fight system enters the Application Flow.
 void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
-	//gameState.player->m_HeartVelocity = { 0,0 }; // stop fucking moving
-	//gameState.player->m_HeartPos = { 200.0f, 400.0f }; // reset position
+    //gameState.player->m_HeartVelocity = { 0,0 }; // stop fucking moving
+    //gameState.player->m_HeartPos = { 200.0f, 400.0f }; // reset position
 
     // Always display HP regardless of state
     std::string HP = "HP: " + std::to_string(gameState.HP);
@@ -510,7 +616,7 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     std::string enemyHP = "Enemy HP: " + std::to_string(gameState.enemy->HP);
     FS_renderText(renderer, font, enemyHP, 200, 50, { 237, 28, 36 });
 
-	std::string Tension = "Tension: " + std::to_string(gameState.TensionMeter);
+    std::string Tension = "Tension: " + std::to_string(gameState.TensionMeter);
     FS_renderText(renderer, font, Tension, 600, 700, { 255, 255, 0 });
 
     // Handle input and rendering based on current state
@@ -538,9 +644,9 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     case FightState::ENEMY_TURN:
         HandleEnemyTurnState(renderer, font, event);
         break;
-	case FightState::DODGE_MECHANIC:
+    case FightState::DODGE_MECHANIC:
         HandleDodgeingMechanic(renderer, font, event);
-		break;
+        break;
 
     case FightState::ENEMY_DIALOGUE:
         HandleEnemyDialogueState(renderer, font, event);
@@ -552,6 +658,10 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
 
     case FightState::FIGHT_END:
         HandleFightEndState(renderer, font, event);
+        break;
+
+    case FightState::PLAYER_FIGHT:
+        HandleAttackMechanic(renderer, font, event);
         break;
     }
 }

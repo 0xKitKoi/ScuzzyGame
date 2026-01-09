@@ -53,6 +53,11 @@ struct GameState {
 	Uint32 turnTimeLimit = 5000; // 5 seconds per turn
 	Uint32 lastTurnTime = 0;
 
+	SDL_Rect FightTargetRect = { 500,500,10,10 };
+	SDL_Rect FightTargetAreaRect = { 300,500,20,20 };
+    bool FightAttackAttempt = false;
+
+
     // Flags
 	FightState fightState;
     bool DebugMode = false; // Debug mode for testing

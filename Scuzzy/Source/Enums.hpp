@@ -12,7 +12,10 @@ enum class FightState {
 	DODGE_MECHANIC,    // Enemy attack dodge mechanic
     ENEMY_DIALOGUE,     // Enemy speaking dialogue
     RESULT_DIALOGUE,    // Showing results of an action
-    FIGHT_END           // Fight is over (win/lose)
+    FIGHT_END,          // Fight is over (win/lose)
+	PLAYER_FIGHT,       // Player is timing an attack
+	PLAYER_MAGIC        // Player is selecting ability.
+
 };
 
 
