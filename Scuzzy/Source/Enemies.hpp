@@ -175,12 +175,12 @@ public:
 	DrPebba(std::shared_ptr<Entity> entity) : Enemy(entity) {
 		m_AttackDamage = 1;
 		m_EnemyDialogue = { "The aluminum can ran at you!",
-			"The DooDoo Mart Box has a buncha doodoo init",
-			"The doodoomart box gave you a negative coupon. you are now in even more doodoo debt." };
+			"The soda can sizzles in anger..!",
+			"The soda can ponders a moment, watching your every move." };
 
-		m_Actions = { "info", "dissassemble", "turn into shitbox" };
+		m_Actions = { "info", "crush", "empty the can" };
 
-		m_ActionResponse = { "STATUS: .. its a box..?",
+		m_ActionResponse = { "STATUS: .. its a can..?",
 			"You flattened the box. It took Heavy Damage",
 			"my actual pc" };
 

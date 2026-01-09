@@ -57,8 +57,6 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			printf("Failed to load sprite sheet texture!\n");
 		}
 		else {
-
-
 			// Dr.Pebba sodacan enemy test
 			Vector2f sodaPos(3841, 314);
 			SDL_Rect sodaRect = { 0, 0, 128, 128 };
@@ -89,7 +87,6 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			Entities.push_back(sodaCanEntity);
 			collisionBoxes.push_back(&sodaCanEntity->m_Collider);
 
-
 			// Load first entity , Enemy !
 			Vector2f entityPos(950, 390);
 			SDL_Rect entityRect = { 0,0,128,128 };
@@ -112,10 +109,8 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 			//entity->m_Enemy->m_EnemyProjectile = std::make_shared<Projectile>(getTexture("data/boolet.png"), {0,0,0,0}, {0,0}, {0,0}, 1);
 
-
 			Entities.push_back(entity); // vector of all entities to render.
 			collisionBoxes.push_back(&entity->m_Collider);
-
 
 
 
@@ -155,7 +150,6 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 
 
-
 			// TEST OF doodoomart box enemy
 			Vector2f entityPos2(3000, 390); // Place in the level
 			SDL_Rect entityRect2 = { 0,0,128,128 }; // basic size of sprite
@@ -179,6 +173,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			auto barrel = std::make_shared<Entity>(Vector2f(2322, 258), SDL_Rect{ 0,0,128,128 }, SDL_Rect{ 0,0,128,128 }, getTexture("data/barrel_nuclear.png"), 1, clips, 1);
 			Entities.push_back(barrel);
 
+			
 
 			// Heres where I want to define custom collision boxes:
 			SDL_Rect leftWall = { 300, 600, 40, 400 };
