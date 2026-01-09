@@ -140,7 +140,7 @@ public:
 		m_Actions = { "info", "crush", "empty the can" };
 
 		m_ActionResponse = { "STATUS: .. its a can..?",
-			"You flattened the box. It took Heavy Damage",
+			"You crumpled the can. It took Heavy Damage",
 			"my actual pc" };
 
 		m_EnemyFightSpriteSheet = getTexture("data/drpebba.png");
