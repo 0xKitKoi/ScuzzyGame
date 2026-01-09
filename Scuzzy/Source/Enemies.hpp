@@ -17,6 +17,47 @@ extern int randomInt(int min, int max);
 
 // Polymorphism time bitches
 
+/*
+class CustomEnemy : public Enemy {
+public:
+	CustomEnemy(std::shared_ptr<Entity> entity) : Enemy(entity) {
+		// Custom initialization for this enemy type
+
+		m_AttackDamage = 1; // Projectiles have their own damage value. Disregard this for now.
+
+		m_EnemyDialogue = { "Dialogue Option 1", // These are shown in fight dialogue.
+			"Dialogue Option 2",
+			"Dialogue Option 3" };
+
+		m_Actions = { "info", "Action1", "Action2" }; // Actions shown to player in fight.
+
+		m_ActionResponse = { "Info: Default Enemy.", // Responses to player actions. See FightActionResponse function for custom behavior.
+			"Response to action 1",
+			"Response to action 2" };
+
+		m_EnemyFightSpriteSheet = getTexture("data/Error.png"); // Replace with Sprite sheet.
+
+		m_EnemySpriteClips = { { 0,0,128,128 } }; // default sprite rect. Replace with dimension of single sprite in sprite sheet.
+
+		FRAME_COUNT = 1; // number of frames in animation.
+
+		m_EnemyProjectile = std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{ 0,0,10,10 }, Vector2f(0, 0), Vector2f(200, 200), 1);
+		m_projectileCount = 10;
+	}
+	std::string FightActionResponse(int actionIndex) override {
+		// Custom behavior for this enemy type
+		return "Custom response for action index " + std::to_string(actionIndex);
+		// Enemy.cpp has a default implementation you can use as a reference.
+	}
+	void ResetProjectiles() override {
+		// Custom projectile reset behavior
+		m_EnemyProjectiles.clear();
+		// Initialize projectiles as needed using the m_EnemyProjectile as a template or create new ones.
+		// Enemy.cpp has a default implementation you can use as a reference.
+	}
+};
+*/
+
 
 class BoxOfFuckYou : public Enemy {
 public:

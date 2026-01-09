@@ -361,7 +361,7 @@ void HandlePlayerActionResultState(SDL_Renderer* renderer, TTF_Font* font, SDL_E
 void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event); // coupon clipping bastard
 void HandleEnemyTurnState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     // Determine enemy action
-    int action = chance(8);
+	int action = chance(8); // A 1 in 8 chance for each action
 
     if (gameState.enemyID > 0 && gameState.enemyID < 5) {
         // Boss-fight specific logic would go here
@@ -370,33 +370,22 @@ void HandleEnemyTurnState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
         return;
     }
 
-    /*
-    // Regular enemy logic
-    if (action == 1) {
-        // Player dodges
-
-		gameState.fightState = FightState::DODGE_MECHANIC;
-        //fightText = "You dodged the attack!";
-        //gameState.fightState = FightState::RESULT_DIALOGUE;
-    }
-    else*/ if (action >= 4 && action <= 6) {
+    if (action >= 4 && action <= 6) { // a 3 in 8 chance for dialogue
         // Enemy speaks dialogue
         if (gameState.enemy->m_EnemyDialogue.size() > 0) {
             int dialogueIndex = chance(gameState.enemy->m_EnemyDialogue.size() - 1);
             fightText = gameState.enemy->m_EnemyDialogue[dialogueIndex];
         }
         else {
-            //fightText = "The enemy glares at you silently.";
-			fightText = gameState.enemy->m_EnemyDialogue[1 + rand() % (gameState.enemy->m_EnemyDialogue.size() - 1 )];
+            // Why is Enemy->m_EnemyDialogue empty..? Bad.
+			fightText = "The Enemy doesn't have m_EnemyDialogue populated. This is an Error.";
         }
         gameState.fightState = FightState::ENEMY_DIALOGUE;
     }
     else {
-        // Player takes damage
-        //gameState.fightState = FightState::DODGE_MECHANIC;
-        //gameState.HP -= gameState.enemy->m_AttackDamage;
-        //fightText = "You took " + std::to_string(gameState.enemy->m_AttackDamage) + " damage!\n";
-        if (gameState.SillyMode) { fightText = "You goofy ass trogladite..."; }
+		// Otherwise, go to the dodge mechanic and check if the player dies.
+
+        if (gameState.SillyMode) { fightText = "You goofy ass trogladite..."; } // Current indicator of silly mode. 
         else { fightText = gameState.enemy->FightActionResponse(0); }
         
         if (gameState.HP <= 0) { // this is the only way the player can die right now.
@@ -407,10 +396,8 @@ void HandleEnemyTurnState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
 			gameState.dead = true;
 			HandleFightEndState(renderer, font, event);
         }
-        else {
-            gameState.fightState = FightState::DODGE_MECHANIC;
-            //gameState.fightState = FightState::RESULT_DIALOGUE;
-        }
+
+        gameState.fightState = FightState::DODGE_MECHANIC;
     }
 }
 
@@ -440,16 +427,18 @@ void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event
         gameState.Text.clear();
         gameState.Text = { "You won! FUCKJ " };
         gameState.textAvailable = true;
+		gameState.shouldAnimateText = true;
 		gameState.FightStarted = false;
 		gameState.player->m_HeartVelocity = { 0,0 };
 		gameState.player->m_VelX = 0; // stop fucking moving 
 		gameState.player->m_VelY = 0;
 	}
-	else {
-        //gameState.Text = { "You lost the fight!" };
-        // game state has been notified of death. 
-		return;
-	}
+    return; // game state has been notified of death. Return to Application Flow
+	//else {
+ //       //gameState.Text = { "You lost the fight!" };
+ //        
+	//	return;
+	//}
 
 
 
@@ -509,7 +498,7 @@ void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event ev
 
 
 
-// Main fight system input handler
+// Main fight system input handler. This is also how the fight system enters the Application Flow.
 void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
 	//gameState.player->m_HeartVelocity = { 0,0 }; // stop fucking moving
 	//gameState.player->m_HeartPos = { 200.0f, 400.0f }; // reset position
