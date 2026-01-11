@@ -239,7 +239,7 @@ bool AttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
         ActualArea.w += 10;
         ActualArea.h += 10;
         if (SDL_HasIntersection(&gameState.FightTargetRect, &ActualArea)) {
-			printf("HIT!\n");
+			//printf("HIT!\n");
             return true; // Successful hit
         }
         else {
@@ -260,7 +260,7 @@ void HandleAttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
     if (!gameState.fightTurnTimer.isStarted()) {
         gameState.fightTurnTimer.start();
         gameState.lastTurnTime = SDL_GetTicks();
-        printf("Attack TIME STARTED\n");
+        //printf("Attack TIME STARTED\n");
         //gameState.enemy->ResetProjectiles();
         // i want this line on fight start and only on fight start
         //gameState.player->m_HeartPos = { float(gameState.screenwidth / 2), float(gameState.screenheight / 2) }; // reset position
@@ -283,16 +283,16 @@ void HandleAttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
             //gameState.fightState = FightState::ENEMY_TURN;
 
             //gameState.fightState = FightState::RESULT_DIALOGUE;
-            printf("Attack TIMER UP!\n");
+            //printf("Attack TIMER UP!\n");
             // Check if enemy defeated
             if (gameState.enemy->HP <= 0) {
                 gameState.enemy->alive = false;
-                FS_QueueFightText("You defeated the enemy!");
-                gameState.kills++;
-                gameState.money += chance(10);
+                //FS_QueueFightText("You defeated the enemy!");
+                //gameState.kills++;
+                //gameState.money += chance(10);
                 //gameState.fightState = FightState::FIGHT_END;
                 gameState.wonFight = true;
-                gameState.fightState = FightState::RESULT_DIALOGUE;
+                gameState.fightState = FightState::FIGHT_END;
             }
             else {
                 gameState.fightState = FightState::PLAYER_ACTION_RESULT /*FightState::PLAYER_ACTION_RESULT*/;
@@ -314,14 +314,28 @@ void HandleAttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
                     gameState.enemy->HP -= 2; // critical hit does double damage
                 }
                 else {
-                    FS_QueueFightText("You hit the " + std::string("{ENEMY ID: ") +
-                        std::to_string(gameState.enemy->m_EnemyID) + " }\n");
+                    FS_QueueFightText("You hit the " + gameState.enemy->m_Name + "! \n");
                     gameState.enemy->HP -= 1; // normal hit
                 }
-                //gameState.enemy->HP -= 1; // Replace with proper damage calculation
-                // Set text for result dialogue
-                //FS_QueueFightText("You hit the " + std::string("{ENEMY ID: ") +
-                //    std::to_string(gameState.enemy->m_EnemyID) + " }\n");
+
+                // If enemy died from this hit, record victory and go to result dialogue
+                if (gameState.enemy->HP <= 0) {
+                    gameState.enemy->alive = false;
+                    gameState.kills++;
+                    gameState.money += chance(10);
+                    gameState.wonFight = true;
+                    // Stop the turn and show the result dialogue
+                    gameState.fightTurnTimer.stop();
+                    gameState.FightAttackAttempt = true;
+                    gameState.fightState = FightState::RESULT_DIALOGUE;
+                    return;
+                }
+
+                // Otherwise, end the turn and show the player's action result
+                gameState.fightTurnTimer.stop();
+                gameState.FightAttackAttempt = true;
+                gameState.fightState = FightState::PLAYER_ACTION_RESULT;
+                return;
             }
             else if (gameState.FightAttackAttempt){
                 //fightText = "You missed!!!\n";
@@ -333,7 +347,10 @@ void HandleAttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
                     FS_QueueFightText("Your attack was a little shallow. You hit the " + gameState.enemy->m_Name + " !\n");
                     gameState.enemy->HP -= 1; // Replace with proper damage calculation 
                 }
-                gameState.lastTurnTime = gameState.turnTimeLimit; // fast forward to end
+                // End the turn immediately and show result so no further inputs apply this turn
+                gameState.fightTurnTimer.stop();
+                gameState.FightAttackAttempt = true;
+                gameState.fightState = FightState::PLAYER_ACTION_RESULT;
                 return;
             }
             else { FS_QueueFightText("You Missed!"); }
