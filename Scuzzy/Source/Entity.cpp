@@ -81,6 +81,7 @@ void Entity::Update(float deltaTime, Camera CameraRect, SDL_Rect PlayerPos)
 	}
 	if (m_NPC) {
 		m_NPC->Update(deltaTime, CameraRect, PlayerPos);
+		
 	}
 
 	if (moving) {

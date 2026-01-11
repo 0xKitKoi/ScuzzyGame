@@ -73,6 +73,7 @@ public:
 
 	std::shared_ptr<Enemy> m_Enemy;
 	std::shared_ptr<NPC> m_NPC;
+	std::vector<SDL_Rect> m_Clips;
 
 private:
 	float angle = 0;
@@ -81,7 +82,7 @@ private:
 	//SDL_Texture* m_Texture;
 	//LTexture m_Texture; // Sprite sheet.
 	std::shared_ptr<LTexture> m_Texture;
-	std::vector<SDL_Rect> m_Clips;
+	
 	
 
 

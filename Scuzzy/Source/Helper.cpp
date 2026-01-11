@@ -57,6 +57,28 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			printf("Failed to load sprite sheet texture!\n");
 		}
 		else {
+
+			// Merchant Test:
+			Vector2f shopguyPOS = { 1200, 600 };
+			SDL_Rect shopguyRect = {0, 0, 128, 128} ;
+			clips.clear();
+			clips.push_back({0, 0, 128, 128});
+			clips.push_back({128, 0, 128, 128});
+			SDL_Rect shopGuyCollisionBox = {shopguyPOS.x, shopguyPOS.y, 128, 128};
+			auto MerchantGuy = std::make_shared<Entity> (shopguyPOS, shopGuyCollisionBox, shopguyRect, 
+			getTexture("data/AverageTweaker.png"),
+			2,
+			clips,
+			420
+			);
+			Entities.push_back(MerchantGuy);	
+			collisionBoxes.push_back(&MerchantGuy->m_Collider);
+			std::vector<std::string> SHOPdialogue = {"GETT OUUTA ME HEADD!!!"};
+			std::vector<MerchantNPC::ShopItem> stock = { MerchantNPC::ShopItem{2, 2, "test"} };
+			std::shared_ptr<MerchantNPC> shopdood = std::make_shared<MerchantNPC>(SHOPdialogue, MerchantGuy, stock);
+			MerchantGuy->setNPC(shopdood);
+
+
 			// Dr.Pebba sodacan enemy test
 			Vector2f sodaPos(3841, 314);
 			SDL_Rect sodaRect = { 0, 0, 128, 128 };

@@ -4,6 +4,8 @@
 #include "Source/GameState.hpp"
 #include "Source/Enums.hpp"
 #include "Source/Helper.hpp"
+#include "Source/TestNPC.hpp" // MerchantNPC
+#include "Source/Item.hpp"
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <stdio.h>
@@ -262,6 +264,9 @@ void MS_renderMenu(SDL_Renderer* renderer, TTF_Font* font) {
     case STATS_MENU:
         renderStatsMenu(renderer, font);
         break;
+    case SHOP_MENU:
+        renderShopMenu(renderer, font);
+        break;
 	case RESPONSE:
 		renderResponse(renderer, font);
         break;
@@ -296,6 +301,9 @@ void MS_handleMenuInput(SDL_Event event) {
     }
     else if (currentMenu == STATS_MENU) {
         handleStatsMenu(event);
+    }
+    else if (currentMenu == SHOP_MENU) {
+        handleShopMenuSelection(event);
     }
 	else if (currentMenu == RESPONSE) {
 		handleResponse(event);
@@ -505,6 +513,112 @@ void renderStatsMenu(SDL_Renderer* renderer, TTF_Font* font) {
 
 
         MS_renderText(renderer, font, options[i], xOffset, currentY, color);
+    }
+}
+
+// ------------------------- Shop Menu -------------------------
+void renderShopMenu(SDL_Renderer* renderer, TTF_Font* font) {
+    MerchantNPC* merchant = nullptr;
+    if (gameState.currentNPC) {
+        merchant = dynamic_cast<MerchantNPC*>(gameState.currentNPC);
+    }
+
+    MS_renderTextBox(renderer);
+
+    int screenWidth, screenHeight;
+    SDL_GetWindowSize(SDL_GetWindowFromID(1), &screenWidth, &screenHeight);
+
+    if (!merchant) {
+        MS_renderText(renderer, font, "Nobody is here to sell...", screenWidth * 0.05 + 30, screenHeight - 275, {255,255,255});
+        return;
+    }
+
+    int numOptions = std::min(static_cast<int>(merchant->m_Stock.size()), 12);
+    if (numOptions == 0) {
+        MS_renderText(renderer, font, "The shop is empty.", screenWidth * 0.05 + 30, screenHeight - 275, {255,255,255});
+        return;
+    }
+
+    // Layout similar to renderMenuGrid
+    int boxWidth = screenWidth * 0.9;
+    int xOffset = screenWidth * 0.05 + 30;
+    int yOffset = screenHeight - 275;
+    const int maxColumns = 4;
+    int optionWidth = (boxWidth - (maxColumns + 1) * 10) / maxColumns; // 10 is spacing
+    int optionHeight = 50; // fixed
+
+    SDL_Color white = {255,255,255};
+    SDL_Color red = {237,28,36};
+    SDL_Color grey = {128,128,128};
+
+    for (int i = 0; i < numOptions; i++) {
+        int column = i % maxColumns;
+        int row = i / maxColumns;
+        int currentX = xOffset + (column * (optionWidth + 10));
+        int currentY = yOffset + (row * (optionHeight + 10));
+
+        const auto &item = merchant->m_Stock[i];
+        std::string line = item.name + " - " + std::to_string(item.price) + "g";
+
+        SDL_Color color;
+        if (!merchant->canAfford(i)) {
+            color = grey; // unaffordable grey
+        }
+        else if (i == MS_selectedIndex) {
+            color = red; // selected
+        }
+        else {
+            color = white;
+        }
+
+        MS_renderText(renderer, font, line, currentX, currentY, color);
+    }
+}
+
+void handleShopMenuSelection(SDL_Event event) {
+    MerchantNPC* merchant = nullptr;
+    if (gameState.currentNPC) {
+        merchant = dynamic_cast<MerchantNPC*>(gameState.currentNPC);
+    }
+
+    if (!merchant) {
+        if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x) {
+            currentMenu = MAIN_MENU;
+            gameState.inMenu = false;
+        }
+        return;
+    }
+
+    // Exit shop
+    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x) {
+        lastMenuState = currentMenu;
+        currentMenu = MAIN_MENU;
+        gameState.inMenu = false;
+        MS_selectedIndex = 0;
+        gameState.currentNPC = nullptr;
+        return;
+    }
+
+    // Attempt purchase on Z release
+    if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_z) {
+        int sel = MS_selectedIndex;
+        if (sel < 0 || sel >= (int)merchant->m_Stock.size()) return;
+        if (!merchant->canAfford(sel)) {
+            gameState.Text = { std::string("You don't have enough money for ") + merchant->m_Stock[sel].name + "." };
+            gameState.textIndex = 0;
+            lastMenuState = SHOP_MENU;
+            currentMenu = RESPONSE;
+            return;
+        }
+
+        bool ok = merchant->purchase(sel);
+        if (ok) {
+            gameState.Text = { std::string("You bought ") + merchant->m_Stock[sel].name + "." };
+            gameState.textIndex = 0;
+            lastMenuState = SHOP_MENU;
+            currentMenu = RESPONSE;
+            return;
+        }
     }
 }
 

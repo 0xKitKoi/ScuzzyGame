@@ -12,8 +12,13 @@ enum MenuState {
     INVENTORY_MENU,
     ITEM_OPTIONS_MENU,
     STATS_MENU,
+    SHOP_MENU,
 	RESPONSE
 };
+
+// Shop menu functions
+void renderShopMenu(SDL_Renderer* renderer, TTF_Font* font);
+void handleShopMenuSelection(SDL_Event event);
 
 // Declare your current menu state globally, if needed
 extern MenuState currentMenu;
