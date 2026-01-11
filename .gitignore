@@ -370,3 +370,5 @@ FodyWeavers.xsd
 .vscode/c_cpp_properties.json
 Makefile
 .vscode/settings.json
+
+compile_commands.json
