@@ -104,7 +104,7 @@ public:
         if (m_checked) {
             gameState.currentNPC = this; // expose ourselves to the menu system
             gameState.inMenu = true;
-            currentMenu = SHOP_MENU;
+            currentMenu = SHOP_MENU; // The MenuSystem variable is exposed, so the Merchant can manipulate it
             MS_selectedIndex = 0;
             m_checked = false;
         }

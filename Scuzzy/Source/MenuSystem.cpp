@@ -600,7 +600,7 @@ void handleShopMenuSelection(SDL_Event event) {
     }
 
     // Attempt purchase on Z release
-    if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_z) {
+    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
         int sel = MS_selectedIndex;
         if (sel < 0 || sel >= (int)merchant->m_Stock.size()) return;
         if (!merchant->canAfford(sel)) {
