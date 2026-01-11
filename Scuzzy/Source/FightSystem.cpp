@@ -51,6 +51,17 @@ int chance(int n) {
     return dist(rng);
 }
 
+int chance(int i, int j) {
+    // random number in range
+    if (i <= 0 || j <= 0) {
+        printf("Warning! : range chance() called with i:%d, j:%d !!!!\n", i, j);
+        return 0;
+    }
+    if (!rngInitialized) { initRandom(); }
+    std::uniform_int_distribution<int> dist(i, j);
+    return dist(rng);
+}
+
 // Render the text box background
 void FS_renderTextBox(SDL_Renderer* renderer) {
     int screenWidth, screenHeight;
@@ -225,7 +236,8 @@ bool AttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
 	// create a SDL_Rect for the target
 	// create a SDL_Rect for the target area.
 	// move the TargetRect across the screen.
-	gameState.FightTargetRect.x -= 5; // move right by 10 pixels per frame, adjust speed as needed
+    int randomSpeedMultiplier = chance(1, 2);
+	gameState.FightTargetRect.x -= 5 * randomSpeedMultiplier; // move right by 10 pixels per frame, adjust speed as needed
     // render it
 	SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green for target area
 	SDL_RenderDrawRect(renderer, &gameState.FightTargetRect);
@@ -270,8 +282,9 @@ void HandleAttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
         int xOffset = screenWidth * 0.05 + 30;  // Start slightly inside the text box
         int yOffset = screenHeight - 275;       // Place the text inside the box
 		gameState.FightTargetAreaRect = { xOffset + 200, yOffset + 100, 10, 40 }; // set target area position
+        int randomXPositionMultiplier = chance(2, 4);
 		gameState.FightTargetRect = { xOffset + 500, yOffset + 100, 10, 40 }; // set target position
-		gameState.FightTargetRect.x = gameState.FightTargetAreaRect.x + 500; // reset target position
+		gameState.FightTargetRect.x = gameState.FightTargetAreaRect.x * randomXPositionMultiplier; // reset target position
 		gameState.FightAttackAttempt = false; // reset attack attempt
 
     }
