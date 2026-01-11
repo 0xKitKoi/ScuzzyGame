@@ -19,6 +19,14 @@ int selection = 0;
 // Text to display in dialogue boxes
 std::string fightText = "";
 
+// Fight-specific animated text state (do NOT use gameState.Text for fight text)
+std::string fightFullText = "";           // full string for the current queued fight line
+std::string fightCurrentDisplay = "";      // currently visible substring (typewriter)
+int fightCurrentCharIndex = 0;               // index into full string
+float fightTextTimer = 0.0f;                 // timer accumulator for animation
+bool fightTextAnimating = false;             // whether fight text is currently animating
+bool fightShouldAnimateText = false;         // whether to animate the next queued text
+
 std::string GetItemnameFromIndex(int index);
 
 // Initialize random number generator (call once at program start)
@@ -31,6 +39,11 @@ void initRandom() {
 
 // Generate a random number between 1 and n
 int chance(int n) {
+    if (n <= 0) {
+        // Avoid invalid distribution bounds. Returning 0 means 'none' for callers that expect 1..n.
+        printf("Warning: chance() called with n=%d\n", n);
+        return 0;
+    }
     if (!rngInitialized) {
         initRandom();
     }
@@ -62,8 +75,22 @@ void FS_renderTextBox(SDL_Renderer* renderer) {
 
 // Render text at a specific position
 void FS_renderText(SDL_Renderer* renderer, TTF_Font* font, std::string text, int x, int y, SDL_Color color) {
+    if (!renderer || !font) return; // Defensive: ensure we have what we need
+    if (text.empty()) return; // Nothing to render
+
     SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
+    if (!surface) {
+        printf("TTF_RenderText_Solid failed: %s\n", TTF_GetError());
+        return;
+    }
+
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    if (!texture) {
+        printf("SDL_CreateTextureFromSurface failed: %s\n", SDL_GetError());
+        SDL_FreeSurface(surface);
+        return;
+    }
+
     SDL_Rect dstRect = { x, y, surface->w, surface->h };
     SDL_RenderCopy(renderer, texture, NULL, &dstRect);
     SDL_FreeSurface(surface);
@@ -73,8 +100,21 @@ void FS_renderText(SDL_Renderer* renderer, TTF_Font* font, std::string text, int
 // Render text inside the text box
 void FS_renderText(SDL_Renderer* renderer, TTF_Font* font, std::string text, SDL_Color color) {
     FS_renderTextBox(renderer);
+    if (!renderer || !font) return; // Defensive: ensure we have what we need
+    if (text.empty()) return; // Nothing to render inside box
+
     SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
+    if (!surface) {
+        printf("TTF_RenderText_Solid failed: %s\n", TTF_GetError());
+        return;
+    }
+
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    if (!texture) {
+        printf("SDL_CreateTextureFromSurface failed: %s\n", SDL_GetError());
+        SDL_FreeSurface(surface);
+        return;
+    }
 
     int screenWidth, screenHeight;
     SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
@@ -86,20 +126,91 @@ void FS_renderText(SDL_Renderer* renderer, TTF_Font* font, std::string text, SDL
     SDL_DestroyTexture(texture);
 }
 
+// Helper: clear any queued/dialogue animation (use when entering input-driven states)
+void FS_ClearFightTextQueue() {
+    // Clear only fight-local animation state so we don't interfere with global/dialogue text
+    fightFullText.clear();
+    fightCurrentDisplay.clear();
+    fightCurrentCharIndex = 0;
+    fightTextTimer = 0.0f;
+    fightTextAnimating = false;
+    fightShouldAnimateText = false;
+    fightText.clear();
+}
+
+// Helper: queue fight text for animated display
+void FS_QueueFightText(const std::string& text) {
+    // Use fight-local buffers so we don't affect global NPC/dialogue flow
+    fightFullText = text;
+    fightText = text; // keep top-level fightText as a fallback/full-text holder
+    fightCurrentCharIndex = (text.empty() ? 0 : 1);
+    fightTextTimer = 0.0f;
+    fightTextAnimating = true;
+    fightShouldAnimateText = true;
+    fightCurrentDisplay = (text.empty() ? std::string() : text.substr(0, fightCurrentCharIndex));
+}
+
+// Update animation state and render the current (possibly partial) display text.
+// event is passed so skipping (X) can be handled immediately.
+void FS_UpdateAndRenderAnimatedText(SDL_Renderer* renderer, TTF_Font* font, SDL_Color color, SDL_Event event) {
+    // Draw text box and render inside it
+    FS_renderTextBox(renderer);
+
+    // If we have fight-local animation data, process it
+    if (fightShouldAnimateText && !fightFullText.empty()) {
+        const std::string& full = fightFullText;
+
+        // Skip animation if X pressed
+        if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x) {
+            if (fightTextAnimating) {
+                fightCurrentDisplay = full;
+                fightTextAnimating = false;
+            }
+        }
+
+        // Advance animation using frame delta
+        if (fightTextAnimating) {
+            fightTextTimer += gameState.deltaTime; // deltaTime is seconds per frame
+            while (fightTextTimer >= gameState.textSpeed && fightCurrentCharIndex < (int)full.size()) {
+                fightCurrentCharIndex++;
+                fightCurrentDisplay = full.substr(0, fightCurrentCharIndex);
+                fightTextTimer -= gameState.textSpeed;
+            }
+            if (fightCurrentCharIndex >= (int)full.size()) {
+                fightTextAnimating = false;
+            }
+        }
+
+        // Render current display text inside the text box
+        FS_renderText(renderer, font, fightCurrentDisplay, color);
+    }
+    else {
+        // No animation requested; fallback to showing fightText directly (also rendered inside box)
+        FS_renderText(renderer, font, fightText, color);
+    }
+}
+
 // State handler functions
 void HandleIntroState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
-    // Display initial enemy dialogue
-	FS_renderText(renderer, font, gameState.enemy->m_EnemyDialogue[gameState.Plot], { 255, 255, 255 }); // indexing by gameState.Plot might cause issues if out of bounds
-	// maybe since I know this is the Intro state I can hardcode it to 0?
-	// maybe I should leave this for now so I know when this breaks, that I correctly set the Plot index elsewhere.
+    // Ensure the current intro dialogue is queued for animated display
+    if (gameState.enemy && gameState.Plot < gameState.enemy->m_EnemyDialogue.size()) {
+        // Use fight-local buffer to decide whether to (re-)queue text so we don't reset animation every frame
+        if (fightFullText != gameState.enemy->m_EnemyDialogue[gameState.Plot]) {
+            FS_QueueFightText(gameState.enemy->m_EnemyDialogue[gameState.Plot]);
+        }
+    }
 
-    // Press Z to advance
+    // Render (animated) text and allow X to skip via the helper
+    FS_UpdateAndRenderAnimatedText(renderer, font, { 255, 255, 255 }, event);
+
+    // Press Z to advance but only after animation finished
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
-        // after the player sees the intro text, select the first action.
-        gameState.Plot++;
-        gameState.fightState = FightState::PLAYER_TURN_MENU;
-        selection = 0; // Reset selection for menu
-
+        if (!fightTextAnimating) {
+            // after the player sees the intro text, select the first action.
+            gameState.Plot++;
+            gameState.fightState = FightState::PLAYER_TURN_MENU;
+            selection = 0; // Reset selection for menu
+        }
 
         //// If we've reached the end of intro dialogue, move to player's turn
         //if (gameState.Plot >= gameState.enemy->m_EnemyDialogue.size()) {
@@ -121,9 +232,13 @@ bool AttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red for target
 	SDL_RenderDrawRect(renderer, &gameState.FightTargetAreaRect);
 	// if the player presses Z when the TargetRect is inside the TargetAreaRect, return true.
-    if (!gameState.FightAttackAttempt &&  event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
+    if (!gameState.FightAttackAttempt &&  event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z && event.key.repeat == 0) {
+		// Only accept the initial keydown (not key-repeat events)
 		gameState.FightAttackAttempt = true; // prevent multiple inputs
-        if (SDL_HasIntersection(&gameState.FightTargetRect, &gameState.FightTargetAreaRect)) {
+        SDL_Rect ActualArea = gameState.FightTargetAreaRect;
+        ActualArea.w += 10;
+        ActualArea.h += 10;
+        if (SDL_HasIntersection(&gameState.FightTargetRect, &ActualArea)) {
 			printf("HIT!\n");
             return true; // Successful hit
         }
@@ -131,8 +246,9 @@ bool AttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
             return false; // Missed
 		}
     }
-	if (gameState.FightTargetRect.x < 0 || gameState.FightTargetAreaRect.x > gameState.FightTargetRect.x ) {
+	if (gameState.FightTargetRect.x < 0 || (gameState.FightTargetAreaRect.x - 20) > gameState.FightTargetRect.x ) {
 		//FightState::RESULT_DIALOGUE;
+        gameState.FightAttackAttempt = true;
         return false; // Out of bounds, treat as miss
     }
 	return false; // No input yet
@@ -171,10 +287,12 @@ void HandleAttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
             // Check if enemy defeated
             if (gameState.enemy->HP <= 0) {
                 gameState.enemy->alive = false;
-                fightText = "You defeated the enemy!";
+                FS_QueueFightText("You defeated the enemy!");
                 gameState.kills++;
                 gameState.money += chance(10);
-                gameState.fightState = FightState::FIGHT_END;
+                //gameState.fightState = FightState::FIGHT_END;
+                gameState.wonFight = true;
+                gameState.fightState = FightState::RESULT_DIALOGUE;
             }
             else {
                 gameState.fightState = FightState::PLAYER_ACTION_RESULT /*FightState::PLAYER_ACTION_RESULT*/;
@@ -183,21 +301,42 @@ void HandleAttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
         }
         else {
 			// still in the attack mechanic.
-            if (gameState.FightAttackAttempt) {
-                // already attempted attack, wait for turn to end
-				gameState.lastTurnTime = gameState.turnTimeLimit; // fast forward to end
-                return;
-            }
+            //if (gameState.FightAttackAttempt) {
+            //    // already attempted attack, wait for turn to end
+			//	gameState.lastTurnTime = gameState.turnTimeLimit; // fast forward to end
+            //    return;
+            //}
             if (AttackMechanic(renderer, font, event)) {
 				printf("Attack HIT!\n");
-                gameState.enemy->HP -= 1; // Replace with proper damage calculation
+                int damage = chance(10);
+                if (damage == 1 || damage == 10) {
+                    FS_QueueFightText("SMAAASHHH!!!!!!\n");
+                    gameState.enemy->HP -= 2; // critical hit does double damage
+                }
+                else {
+                    FS_QueueFightText("You hit the " + std::string("{ENEMY ID: ") +
+                        std::to_string(gameState.enemy->m_EnemyID) + " }\n");
+                    gameState.enemy->HP -= 1; // normal hit
+                }
+                //gameState.enemy->HP -= 1; // Replace with proper damage calculation
                 // Set text for result dialogue
-                fightText = "You hit the " + std::string("{ENEMY ID: ") +
-                    std::to_string(gameState.enemy->m_EnemyID) + " }\n";
+                //FS_QueueFightText("You hit the " + std::string("{ENEMY ID: ") +
+                //    std::to_string(gameState.enemy->m_EnemyID) + " }\n");
             }
-            else {
-                fightText = "You missed!!!\n";
+            else if (gameState.FightAttackAttempt){
+                //fightText = "You missed!!!\n";
+                int miss = chance(8);
+                if (miss >=3 && miss <=5) {
+                    FS_QueueFightText("You missed!!!\n");
+                }
+                else {
+                    FS_QueueFightText("Your attack was a little shallow. You hit the " + gameState.enemy->m_Name + " !\n");
+                    gameState.enemy->HP -= 1; // Replace with proper damage calculation 
+                }
+                gameState.lastTurnTime = gameState.turnTimeLimit; // fast forward to end
+                return;
             }
+            else { FS_QueueFightText("You Missed!"); }
         }
     }
 
@@ -322,14 +461,14 @@ void HandlePlayerMagicMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
 
             if (selection < actionMenu.size()) {
                 //fightText = gameState.enemy->FightActionResponse(selection); // side effects handled inside the function
-				fightText = "Magic Menu: You used " + actionMenu[selection] + "!\n";
+				FS_QueueFightText("Magic Menu: You used " + actionMenu[selection] + "!\n");
                 //fightText = gameState.enemy->m_ActionResponse[selection]; // this is replaced by the above line for silly mode support
                 gameState.fightState = FightState::PLAYER_ACTION_RESULT;
                 gameState.turnCount++;
                 selection = 0; // Set to Actions option
             }
             else {
-                fightText = "ERROR: Invalid action!";
+                FS_QueueFightText("ERROR: Invalid action!");
                 gameState.fightState = FightState::PLAYER_ACTION_RESULT;
             }
         }
@@ -377,14 +516,14 @@ void HandlePlayerActionsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Ev
 			// The enemy will effect the gameState based on the action chosen here.
 
             if (selection < gameState.enemy->m_ActionResponse.size()) {
-				fightText = gameState.enemy->FightActionResponse(selection); // side effects handled inside the function
+				FS_QueueFightText(gameState.enemy->FightActionResponse(selection)); // side effects handled inside the function
 				//fightText = gameState.enemy->m_ActionResponse[selection]; // this is replaced by the above line for silly mode support
                 gameState.fightState = FightState::PLAYER_ACTION_RESULT;
                 gameState.turnCount++;
                 selection = 0; // Set to Actions option
             }
             else {
-                fightText = "ERROR: Invalid action!";
+                FS_QueueFightText("ERROR: Invalid action!");
                 gameState.fightState = FightState::PLAYER_ACTION_RESULT;
             }
         }
@@ -453,8 +592,7 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
 			gameState.fightState = FightState::RESULT_DIALOGUE;
 
             //gameState.fightState = FightState::PLAYER_TURN_MENU;
-			fightText = "You used the ";
-			fightText += gameState.Inventory[selection]->m_ItemName;
+			FS_QueueFightText(std::string("You used the ") + gameState.Inventory[selection]->m_ItemName);
 			//gameState.Inventory[selection]->Use(); // Use the selected item
             gameState.Inventory[selection]->Use();
             gameState.Inventory.erase(gameState.Inventory.begin() + selection);
@@ -513,11 +651,14 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
 }
 
 void HandlePlayerActionResultState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
-    FS_renderText(renderer, font, fightText, { 255, 255, 255 });
+    FS_UpdateAndRenderAnimatedText(renderer, font, { 255, 255, 255 }, event);
 
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
-        // Move to enemy's turn
-        gameState.fightState = FightState::ENEMY_TURN;
+        if (!fightTextAnimating) {
+            // Move to enemy's turn
+            gameState.fightState = FightState::ENEMY_TURN;
+        }
+        // If text is animating, Z does nothing; X is the skip key
     }
 }
 
@@ -537,19 +678,19 @@ void HandleEnemyTurnState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
         // Enemy speaks dialogue
         if (gameState.enemy->m_EnemyDialogue.size() > 0) {
             int dialogueIndex = chance(gameState.enemy->m_EnemyDialogue.size() - 1);
-            fightText = gameState.enemy->m_EnemyDialogue[dialogueIndex];
+            FS_QueueFightText(gameState.enemy->m_EnemyDialogue[dialogueIndex]);
         }
         else {
             // Why is Enemy->m_EnemyDialogue empty..? Bad.
-			fightText = "The Enemy doesn't have m_EnemyDialogue populated. This is an Error.";
+			FS_QueueFightText("The Enemy doesn't have m_EnemyDialogue populated. This is an Error.");
         }
         gameState.fightState = FightState::ENEMY_DIALOGUE;
     }
     else {
 		// Otherwise, go to the dodge mechanic and check if the player dies.
 
-        if (gameState.SillyMode) { fightText = "You goofy ass trogladite..."; } // Current indicator of silly mode. 
-        else { fightText = gameState.enemy->FightActionResponse(0); }
+        if (gameState.SillyMode) { FS_QueueFightText("You goofy ass trogladite..."); } // Current indicator of silly mode. 
+        else { FS_QueueFightText(gameState.enemy->FightActionResponse(0)); }
         
    //     if (gameState.HP <= 0) { // this is the only way the player can die right now.
    //         gameState.HP = 0;
@@ -565,28 +706,34 @@ void HandleEnemyTurnState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
 }
 
 void HandleEnemyDialogueState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
-    FS_renderText(renderer, font, fightText, { 255, 255, 255 });
+    FS_UpdateAndRenderAnimatedText(renderer, font, { 255, 255, 255 }, event);
 
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
-        gameState.fightState = FightState::RESULT_DIALOGUE;
+        if (!fightTextAnimating) {
+            gameState.fightState = FightState::RESULT_DIALOGUE;
+        }
     }
 }
 
 void HandleResultDialogueState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     if (gameState.HP <= 0) { // this is the only way the player can die right now.
         gameState.HP = 0;
-        fightText += "You were defeated!";
-        FS_renderText(renderer, font, fightText, { 255, 255, 255 });
-        gameState.fightState = FightState::FIGHT_END;
+        // Queue a defeat message and mark dead; wait for player confirmation (Z) after animation
+        FS_QueueFightText(fightText + "You were defeated!");
         gameState.dead = true;
-        HandleFightEndState(renderer, font, event);
     }
 
-    FS_renderText(renderer, font, fightText, { 255, 255, 255 });
+    FS_UpdateAndRenderAnimatedText(renderer, font, { 255, 255, 255 }, event);
 
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
-        // Return to player's turn
-        gameState.fightState = FightState::PLAYER_TURN_MENU;
+        if (!fightTextAnimating) {
+            // Return to player's turn or end fight if that was final
+            if (gameState.wonFight || gameState.dead) {
+                gameState.fightState = FightState::FIGHT_END;
+                return;
+            }
+            gameState.fightState = FightState::PLAYER_TURN_MENU;
+        }
     }
 }
 
@@ -596,8 +743,12 @@ void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event
 	gameState.FightStarted = false;
 	
 	if (!gameState.dead) {
+        int moneys = 0;
+        if (gameState.TensionMeter > 0) moneys = chance(gameState.TensionMeter);
+        gameState.money += moneys;
         gameState.Text.clear();
-        gameState.Text = { "You won! FUCKJ " };
+        std::string out = "You WON!! You got $" + std::to_string(moneys) + " for winning.\n";
+        gameState.Text.push_back(out);
         gameState.textAvailable = true;
 		gameState.shouldAnimateText = true;
 		gameState.FightStarted = false;
@@ -655,7 +806,8 @@ void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event ev
             gameState.player->m_HeartVelocity = { 0,0 }; // stop fucking moving
             //gameState.fightState = FightState::ENEMY_TURN;
 
-			gameState.fightState = FightState::RESULT_DIALOGUE;
+			//gameState.fightState = FightState::RESULT_DIALOGUE;
+            gameState.fightState = FightState::PLAYER_TURN_MENU;
 			printf("DODGE TIMER UP! FightState  is now Result_Dialogue\n");
 		}
         else {
@@ -692,14 +844,18 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
         break;
 
     case FightState::PLAYER_TURN_MENU:
+        // This state expects immediate menu input; clear any lingering dialogue animation
+        FS_ClearFightTextQueue();
         HandlePlayerTurnMenuState(renderer, font, event);
         break;
 
     case FightState::PLAYER_ACTIONS_MENU:
+        FS_ClearFightTextQueue();
         HandlePlayerActionsMenuState(renderer, font, event);
         break;
 
     case FightState::PLAYER_ITEMS_MENU:
+        FS_ClearFightTextQueue();
         HandlePlayerItemsMenuState(renderer, font, event);
         break;
 
@@ -708,9 +864,11 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
         break;
 
     case FightState::ENEMY_TURN:
+        FS_ClearFightTextQueue();
         HandleEnemyTurnState(renderer, font, event);
         break;
     case FightState::DODGE_MECHANIC:
+        FS_ClearFightTextQueue();
         HandleDodgeingMechanic(renderer, font, event);
         break;
 
@@ -727,10 +885,12 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
         break;
 
     case FightState::PLAYER_FIGHT:
+        // Handle the attack mechanic; do NOT clear fight text here so queued result text persists
         HandleAttackMechanic(renderer, font, event);
         break;
 
 	case FightState::PLAYER_MAGIC:
+		FS_ClearFightTextQueue();
 		HandlePlayerMagicMenuState(renderer, font, event);
 		break;
     }

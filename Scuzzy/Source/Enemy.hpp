@@ -38,6 +38,7 @@ public:
 	//Entity &m_Entity;
 	std::shared_ptr<Entity> m_Entity;
 	int m_EnemyID = 0;
+	std::string m_Name = "Default Enemy Name";
 	//std::string m_EnemyFightSprite = "data/Error.png";
 	std::shared_ptr<LTexture> m_EnemyFightSpriteSheet;
 	std::vector<SDL_Rect> m_EnemySpriteClips;
