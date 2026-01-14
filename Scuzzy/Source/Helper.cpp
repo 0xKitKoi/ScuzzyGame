@@ -17,6 +17,7 @@
 extern std::vector<std::shared_ptr<Entity>> Entities;
 extern std::vector<SDL_Rect*> collisionBoxes;
 extern std::vector<SDL_Rect> staticCollisionBoxes;
+
 extern std::vector<SDL_Rect> clips;
 
 extern Camera camera;
@@ -47,7 +48,6 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 	collisionBoxes.clear();
 	staticCollisionBoxes.clear();
 	
-
 
 	Vector2f leveldimentions;
 	switch (LevelIDFromName(Room)) {
@@ -173,21 +173,22 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			auto barrel = std::make_shared<Entity>(Vector2f(2322, 258), SDL_Rect{ 0,0,128,128 }, SDL_Rect{ 0,0,128,128 }, getTexture("data/barrel_nuclear.png"), 1, clips, 1);
 			Entities.push_back(barrel);
 
-			
-
 			// Heres where I want to define custom collision boxes:
 			SDL_Rect leftWall = { 300, 600, 40, 400 };
 			SDL_Rect topWall = { 300, 600, 340, 40 };
 			SDL_Rect rightWall = { 640, 600, 40, 400 };
 			SDL_Rect bottomWall = { 300, 960, 340, 40 };
 				
-				staticCollisionBoxes.push_back(leftWall);
+			staticCollisionBoxes.push_back(leftWall);
+			staticCollisionBoxes.push_back(topWall);
+			staticCollisionBoxes.push_back(rightWall);
+			staticCollisionBoxes.push_back(bottomWall);
 
-				staticCollisionBoxes.push_back(topWall);
-
-				staticCollisionBoxes.push_back(rightWall);
-
-				staticCollisionBoxes.push_back(bottomWall);
+			// DooDooMart Collision
+			SDL_Rect leftFrontDooDooMartWall = { 2430, 305, 415, 40 };
+			SDL_Rect rightFrontDooDooMartWall = { 3148, 305, 850, 40 };
+			staticCollisionBoxes.push_back(leftFrontDooDooMartWall);
+			staticCollisionBoxes.push_back(rightFrontDooDooMartWall);
 
 		}
 

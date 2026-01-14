@@ -19,8 +19,6 @@ int randomInt(int min, int max) {
     return dist(gen);
 }
 
-
-
 float duration = 2.0f;
 float elapsed_time = 0.0f;
 

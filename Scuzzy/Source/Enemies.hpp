@@ -132,7 +132,7 @@ public:
 class DrPebba : public Enemy {
 public:
 	DrPebba(std::shared_ptr<Entity> entity) : Enemy(entity) {
-		m_AttackDamage = 1;
+		m_AttackDamage = 1; // putting a decimal point here breaks the game allowing you to win against the enemy for some reason
 		m_EnemyDialogue = { "The aluminum can ran at you!",
 			"The soda can sizzles in anger..!",
 			"The soda can ponders a moment, watching your every move." };
@@ -182,11 +182,13 @@ public:
 			float subx = float(randomInt(0, gameState.screenwidth));
 			float suby = float(randomInt(0, gameState.screenheight));
 			m_EnemyProjectiles.push_back(std::make_shared<FallingProjectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f(subx, suby), Vector2f(200, 200), 1));
-			// randomize vector2f(x,y) position:
+			
+			// cause them all to come toward you
+			m_EnemyProjectiles[i] = std::make_shared<HomingProjectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f(subx, suby), Vector2f(200, 200), 1);
 		}
+
 		float subx = float(randomInt(0, gameState.screenwidth));
 		float suby = float(randomInt(0, gameState.screenheight));
-		m_EnemyProjectiles[0] = std::make_shared<HomingProjectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f(subx, suby), Vector2f(200, 200), 1);
 	}
 
 };
