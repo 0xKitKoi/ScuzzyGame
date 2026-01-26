@@ -82,6 +82,8 @@ public:
 
 		m_EnemyProjectile = std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{ 0,0,10,10 }, Vector2f(0, 0), Vector2f(200, 200), 1);
 		m_projectileCount = 10;
+		m_layer1 = 220;
+		m_layer2 = 0;
 		/*
 		for (int i = 0; i < m_projectileCount; i++) {
 			m_EnemyProjectiles.push_back(std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1));
@@ -131,7 +133,8 @@ public:
 
 		m_EnemyProjectile = std::make_shared<FallingProjectile>(getTexture("data/box.png"), SDL_Rect{0,0,20,20}, Vector2f(0,0), Vector2f(200,200), 1);
 		m_projectileCount = 10;
-
+		m_layer1 = 1;
+		m_layer2 = 0;
 	}
 
 	std::string FightActionResponse(int actionIndex) override {
@@ -195,6 +198,8 @@ public:
 
 		m_EnemyProjectile = std::make_shared<AluminumCanProjectile>(getTexture("data/soda_bullet.png"), SDL_Rect{ 0,0,20,20 }, Vector2f(0, 0), Vector2f(200, 200), 1);
 		m_projectileCount = 25;
+		m_layer1 = 4;
+		m_layer2 = 0;
 
 	}
 

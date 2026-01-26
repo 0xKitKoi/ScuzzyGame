@@ -49,6 +49,8 @@ public:
 	int m_AttackDamage = 0;
 	bool alive = true;
 	int HP = 5;
+	int m_layer1 = 0;
+	int m_layer2 = 0;
 
 	int projectileType = 0; // what type of projectile this enemy uses.
 	std::shared_ptr<Projectile> m_EnemyProjectile = nullptr;

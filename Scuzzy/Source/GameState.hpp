@@ -5,6 +5,7 @@
 #include "Source/Enums.hpp"
 #include "Source/Timer.hpp"
 #include "Source/Item.hpp"
+#include "Source/BackgroundLayer.h"
 #include <memory>
 
 //enum class FightState {
@@ -52,6 +53,12 @@ struct GameState {
 	Timer fightTurnTimer;
 	Uint32 turnTimeLimit = 5000; // 5 seconds per turn
 	Uint32 lastTurnTime = 0;
+    int fightLayer1 = 1;
+    int fightLayer2 = 0;
+    float alpha1 = 1.0f;
+    float alpha2 = 0.0f;
+    std::shared_ptr<BackgroundLayer> bgLayer1;
+    std::shared_ptr<BackgroundLayer> bgLayer2;
 
 	SDL_Rect FightTargetRect = { 500,500,10,40 };
 	SDL_Rect FightTargetAreaRect = { 300,500,20,40 };

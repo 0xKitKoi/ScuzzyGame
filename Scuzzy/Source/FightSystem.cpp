@@ -7,7 +7,11 @@
 #include <random>
 #include "Source/GameState.hpp"
 #include "Source/Item.hpp"
+#include "Source/BackgroundLayer.h"
 
+
+//extern std::shared_ptr<BackgroundLayer> bgLayer1;
+//extern std::shared_ptr<BackgroundLayer> bgLayer2;
 
 // Modern random number generator
 std::mt19937 rng;
@@ -239,6 +243,7 @@ bool AttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     int randomSpeedMultiplier = chance(1, 2);
 	gameState.FightTargetRect.x -= 5 * randomSpeedMultiplier; // move right by 10 pixels per frame, adjust speed as needed
     // render it
+    FS_renderTextBox(renderer);
 	SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green for target area
 	SDL_RenderDrawRect(renderer, &gameState.FightTargetRect);
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red for target
@@ -946,5 +951,36 @@ void FS_InitFight() {
     // Initialize RNG if not already done
     if (!rngInitialized) {
         initRandom();
+    }
+
+    try {
+        gameState.bgLayer1 = std::make_shared<BackgroundLayer>(gameState.fightLayer1);
+        if (!gameState.bgLayer1->isValid()) {
+            std::cerr << "Error: Failed to load layer1 (" << gameState.fightLayer1 << ")\n";
+            //return 1;
+        }
+    } catch (const std::exception &e) {
+        std::cerr << "Error: Failed to load layer1 (" << gameState.fightLayer1 << "): " << e.what() << "\n";
+        //return 1;
+    }
+    
+    if (gameState.fightLayer2 != 0) {
+        try {
+            gameState.bgLayer2 = std::make_shared<BackgroundLayer>(gameState.fightLayer2);
+            if (gameState.bgLayer2->isValid()) {
+                gameState.alpha1 = 0.5f;
+                gameState.alpha2 = 0.5f;
+            } else {
+                std::cerr << "Warning: Failed to load layer2 (" << gameState.fightLayer2 << ")\n";
+                std::cerr << "Continuing with layer1 only\n";
+                gameState.fightLayer2 = 0;
+                gameState.alpha1 = 1.0f;
+            }
+        } catch (const std::exception &e) {
+            std::cerr << "Warning: Failed to load layer2 (" << gameState.fightLayer2 << "): " << e.what() << "\n";
+            std::cerr << "Continuing with layer1 only\n";
+            gameState.fightLayer2 = 0;
+            gameState.alpha1 = 1.0f;
+        }
     }
 }

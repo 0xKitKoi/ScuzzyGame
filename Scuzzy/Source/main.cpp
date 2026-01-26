@@ -21,9 +21,25 @@
 #include "Source/FightSystem.hpp"
 #include "Source/TestNPC.hpp"
 #include "Helper.hpp"
+#include "Source/Rom.h"
+#include "Source/BackgroundLayer.h"
+
+const std::string romPath = "truncated_backgrounds.dat";
 
 
 
+constexpr int SNES_WIDTH  = 256;
+constexpr int SNES_HEIGHT = 224;
+constexpr int WINDOW_SCALE = 3;
+constexpr int FPS = 30;
+constexpr int FRAME_TIME_MS = 1000 / FPS;
+int aspect_ratio = 16;
+
+ std::vector<uint8_t> framebuffer(SNES_WIDTH * SNES_HEIGHT * 4);
+ std::shared_ptr<BackgroundLayer> bgLayer1;
+ std::shared_ptr<BackgroundLayer> bgLayer2;
+
+ SDL_Texture* texture;
 
 
 //Screen dimension constants
@@ -230,6 +246,22 @@ bool init()
 				success = false;
 			}
 		}
+	}
+
+
+	//SDL_RenderSetLogicalSize(gRenderer, SNES_WIDTH, SNES_HEIGHT);
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+	texture = SDL_CreateTexture(
+		gRenderer,
+		SDL_PIXELFORMAT_ARGB8888,
+		SDL_TEXTUREACCESS_STREAMING,
+		SNES_WIDTH,
+		SNES_HEIGHT
+	);
+
+	if (!ROM::loadFromFile(romPath)) {
+		std::cerr << "Failed to load ROM: " << romPath << "\n";
+    	return 1;
 	}
 
 	return success;
@@ -1280,10 +1312,14 @@ int main(int argc, char* args[])
 			camera.width = windowWidth;
 			camera.height = windowHeight;
 
+			uint32_t tick = 0;
+    		uint32_t frameCount = 0;
+
 			while (!quit)
 			{
 				//Start cap timer
 				capTimer.start();
+				uint32_t frameStart = SDL_GetTicks();
 
 
 				gameState.deltaTime = deltaTime;
@@ -2063,8 +2099,22 @@ int main(int argc, char* args[])
 				else { // IN FIGHT 
 					//Clear screen
 					//SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-					SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
-					SDL_RenderClear(gRenderer);
+
+					/*
+					SDL_UpdateTexture(texture, nullptr, framebuffer.data(), SNES_WIDTH * 4);
+        			SDL_RenderClear(gRenderer);
+        			SDL_RenderCopy(gRenderer, texture, nullptr, nullptr);
+        			SDL_RenderPresent(gRenderer);
+					*/
+
+
+					//SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
+					//SDL_RenderClear(gRenderer);
+					//SDL_RenderCopy(gRenderer, texture, nullptr, nullptr); // battle background inserted here
+					//SDL_UpdateTexture(texture, nullptr, framebuffer.data(), SNES_WIDTH * 4);
+        			SDL_RenderClear(gRenderer);
+        			SDL_RenderCopy(gRenderer, texture, nullptr, nullptr);
+        			//SDL_RenderPresent(gRenderer);
 					std::string bruh;
 					bruh.append(std::to_string(gameState.enemyID));
 					gTextTexture.loadFromRenderedText(bruh, { 0xFF, 0xFF, 0xFF, 0xFF });
@@ -2073,6 +2123,102 @@ int main(int argc, char* args[])
 
 					// Enemy will now render itself like a man
 					gameState.enemy->Update(deltaTime, SCREEN_HEIGHT, SCREEN_WIDTH);
+
+
+					/*
+					try {
+        				bgLayer1 = std::make_shared<BackgroundLayer>(gameState.fightLayer1);
+        				if (!bgLayer1->isValid()) {
+            				std::cerr << "Error: Failed to load layer1 (" << gameState.fightLayer1 << ")\n";
+            				return 1;
+        				}
+    				} catch (const std::exception &e) {
+        				std::cerr << "Error: Failed to load layer1 (" << gameState.fightLayer1 << "): " << e.what() << "\n";
+        				return 1;
+    				}
+
+    				// Set alpha blending based on whether we have 2 layers
+    				float alpha1 = 1.0f;
+    				float alpha2 = 0.0f;
+    
+    				if (gameState.fightLayer2 != 0) {
+        				try {
+            				bgLayer2 = std::make_shared<BackgroundLayer>(gameState.fightLayer2);
+            				if (bgLayer2->isValid()) {
+                				alpha1 = 0.5f;
+                				alpha2 = 0.5f;
+            				} else {
+                				std::cerr << "Warning: Failed to load layer2 (" << gameState.fightLayer2 << ")\n";
+                				std::cerr << "Continuing with layer1 only\n";
+                				gameState.fightLayer2 = 0;
+                				alpha1 = 1.0f;
+            				}
+        				} catch (const std::exception &e) {
+            					std::cerr << "Warning: Failed to load layer2 (" << gameState.fightLayer2 << "): " << e.what() << "\n";
+            					std::cerr << "Continuing with layer1 only\n";
+            					gameState.fightLayer2 = 0;
+            					alpha1 = 1.0f;
+        				}
+    				}
+					*/
+
+        			// Clear framebuffer
+        			memset(framebuffer.data(), 0, framebuffer.size());
+
+       	 			// Apply layer 1 distortion (without letterbox yet, erase=true for first layer)
+        			gameState.bgLayer1->overlayFrame(framebuffer.data(), SNES_WIDTH, SNES_HEIGHT, 0, 
+                               static_cast<float>(tick), gameState.alpha1, true);
+
+        			// Apply layer 2 distortion if present (erase=false to blend)
+        			if (gameState.bgLayer2 && gameState.bgLayer2->isValid()) {
+            			gameState.bgLayer2->overlayFrame(framebuffer.data(), SNES_WIDTH, SNES_HEIGHT, 0, 
+                                   static_cast<float>(tick), gameState.alpha2, false);
+        			}
+
+        			// Apply letterbox AFTER distortion (just fill the edge pixels)
+        			if (aspect_ratio > 0) {
+            			for (int y = 0; y < aspect_ratio; ++y) {
+                			for (int x = 0; x < SNES_WIDTH; ++x) {
+                    			// Top letterbox
+                    			int idx = (y * SNES_WIDTH + x) * 4;
+                    			framebuffer[idx + 0] = 0;      // B
+                    			framebuffer[idx + 1] = 0;      // G
+                    			framebuffer[idx + 2] = 0;      // R
+                    			framebuffer[idx + 3] = 255;    // A
+                    
+                    			// Bottom letterbox
+                    			idx = ((SNES_HEIGHT - 1 - y) * SNES_WIDTH + x) * 4;
+                    			framebuffer[idx + 0] = 0;      // B
+                    			framebuffer[idx + 1] = 0;      // G
+                    			framebuffer[idx + 2] = 0;      // R
+                    			framebuffer[idx + 3] = 255;    // A
+                			}
+            			}
+        			}
+
+
+        			SDL_UpdateTexture(texture, nullptr, framebuffer.data(), SNES_WIDTH * 4);
+        			//SDL_RenderClear(gRenderer);
+        			//SDL_RenderCopy(gRenderer, texture, nullptr, nullptr);
+        			//SDL_RenderPresent(gRenderer);
+
+        			tick += 1; // frameskip set to 1 for now
+        			frameCount++;
+
+
+        			uint32_t frameTime = SDL_GetTicks() - frameStart;
+        			//if (frameTime < FRAME_TIME_MS) {
+            		//	SDL_Delay(FRAME_TIME_MS - frameTime);
+        			//}
+					/* currectly:
+						int frameTicks = capTimer.getTicks();
+						if (frameTicks < SCREEN_TICKS_PER_FRAME)
+						{
+							//Wait remaining time
+							SDL_Delay(SCREEN_TICKS_PER_FRAME - frameTicks);
+						}
+					*/
+
 
 					
 

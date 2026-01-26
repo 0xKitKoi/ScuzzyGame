@@ -83,11 +83,13 @@ void Enemy::Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) {
                 gameState.FightStarted = true;
                 gameState.player->m_HeartPos = { float(gameState.screenwidth) / 2.0f - 32.0f, float(gameState.screenheight) / 2.0f - 32.0f };
                 gameState.Plot = 0;
+
+                gameState.fightLayer1 = m_layer1;
+                gameState.fightLayer2 = m_layer2;
 				FS_InitFight();
                 this->alive = false;
                 std::random_device rd;
                 std::mt19937 gen(rd());
-                
 
                 // init the projectiles
                 for (int i = 0; i < m_projectileCount; i++) {
