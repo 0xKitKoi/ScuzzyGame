@@ -109,6 +109,14 @@ xcopy /Q /E /Y /I $(SolutionDir)\Scuzzy\data ..\bin\Release\data</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\BackgroundGraphics.h" />
+    <ClInclude Include="Source\BackgroundLayer.h" />
+    <ClInclude Include="Source\BackgroundPalette.h" />
+    <ClInclude Include="Source\BattleBackground.h" />
+    <ClInclude Include="Source\Block.h" />
+    <ClInclude Include="Source\Decompress.h" />
+    <ClInclude Include="Source\Distorter.hpp" />
+    <ClInclude Include="Source\DistortionEffect.hpp" />
     <ClInclude Include="Source\Enemies.hpp" />
     <ClInclude Include="Source\Enemy.hpp" />
     <ClInclude Include="Source\Entity.hpp" />
@@ -121,12 +129,22 @@ xcopy /Q /E /Y /I $(SolutionDir)\Scuzzy\data ..\bin\Release\data</Command>
     <ClInclude Include="Source\Math.hpp" />
     <ClInclude Include="Source\MenuSystem.hpp" />
     <ClInclude Include="Source\NPC.hpp" />
+    <ClInclude Include="Source\PaletteCycle.h" />
     <ClInclude Include="Source\Player.hpp" />
     <ClInclude Include="Source\Projectile.hpp" />
+    <ClInclude Include="Source\ROMGraphics.h" />
+    <ClInclude Include="Source\Rom.h" />
     <ClInclude Include="Source\TestNPC.hpp" />
     <ClInclude Include="Source\Timer.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\BackgroundGraphics.cpp" />
+    <ClCompile Include="Source\BackgroundLayer.cpp" />
+    <ClCompile Include="Source\BackgroundPalette.cpp" />
+    <ClCompile Include="Source\BattleBackground.cpp" />
+    <ClCompile Include="Source\Block.cpp" />
+    <ClCompile Include="Source\Decompress.cpp" />
+    <ClCompile Include="Source\Distorter.cpp" />
     <ClCompile Include="Source\Enemy.cpp" />
     <ClCompile Include="Source\Entity.cpp" />
     <ClCompile Include="Source\FightSystem.cpp" />
@@ -136,8 +154,11 @@ xcopy /Q /E /Y /I $(SolutionDir)\Scuzzy\data ..\bin\Release\data</Command>
     <ClCompile Include="Source\Math.cpp" />
     <ClCompile Include="Source\MenuSystem.cpp" />
     <ClCompile Include="Source\NPC.cpp" />
+    <ClCompile Include="Source\PaletteCycle.cpp" />
     <ClCompile Include="Source\Player.cpp" />
     <ClCompile Include="Source\Projectile.cpp" />
+    <ClCompile Include="Source\ROMGraphics.cpp" />
+    <ClCompile Include="Source\Rom.cpp" />
     <ClCompile Include="Source\TextBox.cpp" />
     <ClCompile Include="Source\Timer.cpp" />
     <ClCompile Include="Source\main.cpp" />

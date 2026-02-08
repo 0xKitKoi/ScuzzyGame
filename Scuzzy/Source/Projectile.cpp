@@ -44,7 +44,8 @@ void Projectile::Update(float deltaT, Vector2f PlayerPos) { // DEFAULT UPDATE FU
 		if (SDL_HasIntersection(&m_Collider, &gameState.player->m_HeartCollider)) {
 			printf("Projectile hit the player!\n");
 			// deal damage to player
-			gameState.HP -= m_Damage;
+			//gameState.HP -= m_Damage;
+			gameState.DamageTaken += m_Damage;
 			m_Active = false; // deactivate on hit
 			m_TensionHit = true;
 			//gameState.TensionMeter -= 5;

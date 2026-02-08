@@ -16,5 +16,7 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event);
 void FS_InitFight();
 // Define the fight states
 
+static bool FightEndConsumed = false; // to prevent multiple inputs after fight end
+
 
 #endif

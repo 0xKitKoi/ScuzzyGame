@@ -24,7 +24,7 @@
 #include "Source/Rom.h"
 #include "Source/BackgroundLayer.h"
 
-const std::string romPath = "truncated_backgrounds.dat";
+const std::string romPath = "data/truncated_backgrounds.dat";
 
 
 

@@ -345,7 +345,8 @@ void HandleAttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
                     // Stop the turn and show the result dialogue
                     gameState.fightTurnTimer.stop();
                     gameState.FightAttackAttempt = true;
-                    gameState.fightState = FightState::RESULT_DIALOGUE;
+                    //gameState.fightState = FightState::RESULT_DIALOGUE;
+					gameState.fightState = FightState::FIGHT_END;
                     return;
                 }
 
@@ -627,7 +628,7 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
 			gameState.fightState = FightState::RESULT_DIALOGUE;
 
             //gameState.fightState = FightState::PLAYER_TURN_MENU;
-			FS_QueueFightText(std::string("You used the ") + gameState.Inventory[selection]->m_ItemName);
+			FS_QueueFightText(std::string("You used the ") + gameState.Inventory[selection]->m_ItemName); 
 			//gameState.Inventory[selection]->Use(); // Use the selected item
             gameState.Inventory[selection]->Use();
             gameState.Inventory.erase(gameState.Inventory.begin() + selection);
@@ -751,33 +752,34 @@ void HandleEnemyDialogueState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event 
 }
 
 void HandleResultDialogueState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
-    if (gameState.HP <= 0) { // this is the only way the player can die right now.
-        gameState.HP = 0;
-        // Queue a defeat message and mark dead; wait for player confirmation (Z) after animation
-        FS_QueueFightText(fightText + "You were defeated!");
-        gameState.dead = true;
-    }
 
     FS_UpdateAndRenderAnimatedText(renderer, font, { 255, 255, 255 }, event);
 
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
         if (!fightTextAnimating) {
-            // Return to player's turn or end fight if that was final
-            if (gameState.wonFight || gameState.dead) {
-                gameState.fightState = FightState::FIGHT_END;
-                return;
-            }
+    //        // Return to player's turn or end fight if that was final
+    //        if ( /* gameState.wonFight || */ gameState.dead  /* || !gameState.enemy->alive */ || (gameState.enemy->HP <= 0)) {
+				////EndFightAndReturnToFlow();
+    //            gameState.fightState = FightState::FIGHT_END;
+    //            return;
+    //        }
             gameState.fightState = FightState::PLAYER_TURN_MENU;
         }
     }
 }
 
-void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
+void EndFightAndReturnToFlow() {
+    // Reset fight state and return to main application flow
     gameState.inFight = false;
     gameState.wonFight = !gameState.dead;
-	gameState.FightStarted = false;
-	
-	if (!gameState.dead) {
+    gameState.FightStarted = false;
+    //gameState.dead = false;
+    //gameState.fightState = FightState::INTRO;
+    gameState.Plot = 0;
+    selection = 0;
+    FS_ClearFightTextQueue();
+    if (!gameState.dead || !(gameState.HP <= 0) ) {
+        gameState.dead = true;
         int moneys = 0;
         if (gameState.TensionMeter > 0) moneys = chance(gameState.TensionMeter);
         gameState.money += moneys;
@@ -785,12 +787,76 @@ void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event
         std::string out = "You WON!! You got $" + std::to_string(moneys) + " for winning.\n";
         gameState.Text.push_back(out);
         gameState.textAvailable = true;
-		gameState.shouldAnimateText = true;
-		gameState.FightStarted = false;
-		gameState.player->m_HeartVelocity = { 0,0 };
-		gameState.player->m_VelX = 0; // stop fucking moving 
-		gameState.player->m_VelY = 0;
-	}
+        gameState.shouldAnimateText = true;
+        gameState.FightStarted = false;
+        gameState.player->m_HeartVelocity = { 0,0 };
+        gameState.player->m_VelX = 0; // stop fucking moving 
+        gameState.player->m_VelY = 0;
+    }
+    else {
+        gameState.Text = { "You lost the fight!" };
+        return;
+
+    }
+}
+
+void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
+    if (gameState.HP <= 0 && !FightEndConsumed) { // this is the only way the player can die right now.
+        gameState.HP = 0;
+        fightText = "You were defeated!";
+        FS_QueueFightText(fightText);
+        fightShouldAnimateText = true;
+        FightEndConsumed = true;
+
+    }
+    else {
+        if (!FightEndConsumed) {
+            printf("Handling fight end state. Dead: %d, Enemy Alive: %d, Enemy HP: %d\n", gameState.dead, gameState.enemy->alive, gameState.enemy->HP);
+            fightText = "The Enemy Stopped Moving!";
+            FS_QueueFightText(fightText);
+            fightShouldAnimateText = true;
+            FightEndConsumed = true;
+        }
+    }
+    FS_UpdateAndRenderAnimatedText(renderer, font, { 255, 255, 255 }, event);
+    //HandleResultDialogueState(renderer, font, event); // Reuse the result dialogue handler for end-of-fight summary and transition
+    //FightEndConsumed = true; // Ensure this block only runs once
+    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
+        if (!fightTextAnimating) {
+            //// Return to player's turn or end fight if that was final
+            //if ( /* gameState.wonFight || */ gameState.dead  /* || !gameState.enemy->alive */ || (gameState.enemy->HP <= 0)) {
+            //    //EndFightAndReturnToFlow();
+            //    gameState.fightState = FightState::FIGHT_END;
+            //    return;
+            //}
+            //gameState.fightState = FightState::PLAYER_TURN_MENU;
+            //FightEndConsumed = true;
+            EndFightAndReturnToFlow();
+        }
+    }
+        
+
+    
+    
+	
+ //   gameState.inFight = false;
+ //   gameState.wonFight = !gameState.dead;
+	//gameState.FightStarted = false;
+	//
+	//if (!gameState.dead) {
+ //       int moneys = 0;
+ //       if (gameState.TensionMeter > 0) moneys = chance(gameState.TensionMeter);
+ //       gameState.money += moneys;
+ //       gameState.Text.clear();
+ //       std::string out = "You WON!! You got $" + std::to_string(moneys) + " for winning.\n";
+ //       gameState.Text.push_back(out);
+ //       gameState.textAvailable = true;
+	//	gameState.shouldAnimateText = true;
+	//	gameState.FightStarted = false;
+	//	gameState.player->m_HeartVelocity = { 0,0 };
+	//	gameState.player->m_VelX = 0; // stop fucking moving 
+	//	gameState.player->m_VelY = 0;
+	//}
     return; // game state has been notified of death. Return to Application Flow
 	//else {
  //       //gameState.Text = { "You lost the fight!" };
@@ -844,12 +910,20 @@ void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event ev
 			//gameState.fightState = FightState::RESULT_DIALOGUE;
             gameState.fightState = FightState::PLAYER_TURN_MENU;
 			printf("DODGE TIMER UP! FightState  is now Result_Dialogue\n");
+            //if (gameState.HP <= 0) { // this is the only way the player can die right now.
+            //    gameState.HP = 0;
+            //   gameState.fightState = FightState::FIGHT_END;
+            //}
 		}
         else {
 			// still the enemy's turn, update projectiles and handle player position.
 			//printf("DODGE TIME ONGOING!\n");
             //printf("");
             // Update enemy projectile(s)
+            if (gameState.HP <= 0) { // this is the only way the player can die right now.
+                gameState.HP = 0;
+                gameState.fightState = FightState::FIGHT_END;
+            }
             gameState.enemy->m_EnemyProjectile->Update(gameState.deltaTime, gameState.player->m_HeartPos);
         }
     }
@@ -862,15 +936,44 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     //gameState.player->m_HeartVelocity = { 0,0 }; // stop fucking moving
     //gameState.player->m_HeartPos = { 200.0f, 400.0f }; // reset position
 
-    // Always display HP regardless of state
-    std::string HP = "HP: " + std::to_string(gameState.HP);
-    FS_renderText(renderer, font, HP, 200, 700, { 237, 28, 36 });
+
 
     std::string enemyHP = "Enemy HP: " + std::to_string(gameState.enemy->HP);
     FS_renderText(renderer, font, enemyHP, 200, 50, { 237, 28, 36 });
 
     std::string Tension = "Tension: " + std::to_string(gameState.TensionMeter);
-    FS_renderText(renderer, font, Tension, 600, 700, { 255, 255, 0 });
+    FS_renderText(renderer, font, Tension, 600, 50, { 255, 255, 0 });
+
+	// rolling HP meter logic
+    // this needs to run once per actual second.
+	if (gameState.DamageTaken > 0) {
+        // If player took damage, animate HP decrease
+        int displayedHP = std::max(gameState.HP, 0);
+        std::string rollingHP = "HP: " + std::to_string(displayedHP);
+        FS_renderText(renderer, font, rollingHP, 500, 50, { 237, 28, 36 });
+        gameState.DamageTaken -= 1; // Decrease damage taken until it reaches 0
+		gameState.HP -= 1; // Decrease actual HP to match displayed HP
+    }
+    else {
+        // Always display HP regardless of state
+        std::string HP = "HP: " + std::to_string(gameState.HP);
+        FS_renderText(renderer, font, HP, 500, 50, { 237, 28, 36 });
+    }
+
+    if (gameState.enemy->HP <= 0) {
+        gameState.enemy->alive = false;
+        //FS_QueueFightText("You defeated the enemy!");
+        //gameState.kills++;
+        //gameState.money += chance(10);
+        //gameState.fightState = FightState::FIGHT_END;
+        gameState.wonFight = true;
+        gameState.fightState = FightState::FIGHT_END;
+    }
+	//if (gameState.HP <= 0) {
+ //       gameState.HP = 0;
+ //       gameState.dead = true;
+ //       gameState.fightState = FightState::FIGHT_END;
+ //   }
 
     // Handle input and rendering based on current state
     switch (gameState.fightState) {

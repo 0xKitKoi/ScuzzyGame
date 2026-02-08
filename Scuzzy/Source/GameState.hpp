@@ -39,6 +39,7 @@ struct GameState {
     int money = 0;
     int kills = 0;
     int HP = 10;
+	int DamageTaken = 0;
     bool dead = false;
 
     Vector2f DOOR_OUT_POS = {0,0};
