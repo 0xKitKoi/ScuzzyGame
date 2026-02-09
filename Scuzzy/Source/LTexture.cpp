@@ -186,7 +186,7 @@ void LTexture::renderGlow(int x, int y, SDL_Rect* clip, double angle, SDL_Point*
 			/*height*/ clip->h + offset * 2
 		};
 		SDL_SetTextureAlphaMod(mTexture, 80 / i);  // Fade outer layers
-		SDL_RenderCopy(gRenderer, mTexture, NULL, &glowRect);
+		SDL_RenderCopy(gRenderer, mTexture, clip, &glowRect);
 	}
 
 	// Original on top

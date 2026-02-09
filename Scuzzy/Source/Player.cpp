@@ -670,7 +670,7 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 	else { // IN FIGHT MODE
 		if (gameState.fightState != FightState::DODGE_MECHANIC) {
 			//printf("Not in dodge mechanic, skipping heart controls.\n");
-			m_FightSpriteSheet.render(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[currentFrame]);
+			m_FightSpriteSheet.renderGlow(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[currentFrame]);
 			//SDL_Color debugColor = { 255, 0, 0, 255 };
 			//SDL_Color tmp;
 			//SDL_GetRenderDrawColor(gRenderer, &tmp.r, &tmp.g, &tmp.b, &tmp.a);
