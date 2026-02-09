@@ -820,7 +820,7 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 
 		m_HeartCollider = { int(m_HeartPos.x) +8, int(m_HeartPos.y) +8, 15, 15 };
 
-		m_FightSpriteSheet.render(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[currentFrame]);
+		m_FightSpriteSheet.renderGlow(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[currentFrame]);
 		SDL_RenderDrawRect(gRenderer, &m_HeartCollider); // draw heart hitbox for debugging
 		if (gameState.DebugMode)
 			printf("currentFrame: %d\n", currentFrame);

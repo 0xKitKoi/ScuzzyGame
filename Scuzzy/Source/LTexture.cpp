@@ -159,6 +159,45 @@ void LTexture::render(int x, int y, SDL_Rect* clip, double angle, SDL_Point* cen
 	SDL_RenderCopyEx(gRenderer, mTexture, clip, &renderQuad, angle, center, flip);
 }
 
+void LTexture::renderGlow(int x, int y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip, float scale)
+{
+	//Set rendering space and render to screen
+	//SDL_Rect renderQuad = { x, y, mWidth, mHeight };
+	SDL_Rect renderQuad = { x, y, std::round(mWidth * scale), std::round(mHeight * scale) };
+
+	//Set clip rendering dimensions
+	if (clip != NULL)
+	{
+		renderQuad.w = clip->w * scale;
+		renderQuad.h = clip->h * scale;
+	}
+	if (scale != 1.0f) {
+		renderQuad.w = static_cast<int>(renderQuad.w * scale);
+		renderQuad.h = static_cast<int>(renderQuad.h * scale);
+	}
+
+	// Draw multiple enlarged copies with decreasing alpha (fake blur)
+	for (int i = 3; i > 0; i--) {
+		int offset = i * 3;
+		SDL_Rect glowRect = {
+			x - offset,
+			y - offset,
+			/*width*/ clip->w + offset * 2,
+			/*height*/ clip->h + offset * 2
+		};
+		SDL_SetTextureAlphaMod(mTexture, 80 / i);  // Fade outer layers
+		SDL_RenderCopy(gRenderer, mTexture, NULL, &glowRect);
+	}
+
+	// Original on top
+	SDL_SetTextureAlphaMod(mTexture, 255);
+	//SDL_RenderCopy(gRenderer, mTexture, NULL, &(SDL_Rect){x, y, clip->w, clip->h /*width, height*/});
+
+	//Render to screen
+	SDL_RenderCopyEx(gRenderer, mTexture, clip, &renderQuad, angle, center, flip);
+}
+
+
 int LTexture::getWidth()
 {
 	return mWidth;
