@@ -133,8 +133,8 @@ public:
 
 		m_EnemyProjectile = std::make_shared<FallingProjectile>(getTexture("data/box.png"), SDL_Rect{0,0,20,20}, Vector2f(0,0), Vector2f(200,200), 1);
 		m_projectileCount = 10;
-		m_layer1 = 1;
-		m_layer2 = 0;
+		m_layer1 = 284;
+		m_layer2 = 194;
 	}
 
 	std::string FightActionResponse(int actionIndex) override {
