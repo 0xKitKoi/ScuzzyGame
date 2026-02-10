@@ -865,92 +865,92 @@ std::vector<std::string> dialogue = {
 	"We hope you enjoy your journey.",
 	"Press Z to continue."
 };*/
-void handleDialogue(SDL_Event event) {
-
-	// ok this could be the sign NPC or the Merchant.
-	if (gameState.callbackNPC != nullptr) {
-		// this is not the sign NPC.
-	}
-
-
-	if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
-		// If we don't have any valid text, cancel the dialog state
-		if (gameState.Text.empty() || gameState.textIndex < 0 || static_cast<size_t>(gameState.textIndex) >= gameState.Text.size()) {
-			gameState.textAvailable = false;
-			return;
-		}
-		if (gameState.shouldAnimateText && gameState.textAnimating) {
-			// If text is still animating, show the full text immediately
-			gameState.currentDisplayText = gameState.Text[gameState.textIndex];
-			gameState.textAnimating = false;
-		}
-		else if (gameState.textIndex < gameState.Text.size() - 1) {
-			// Move to next line and start animating if needed
-			gameState.textIndex++;
-			if (gameState.shouldAnimateText) {
-				gameState.currentCharIndex = 0;
-				gameState.textTimer = 0.0f;
-				gameState.textAnimating = true;
-				gameState.currentDisplayText = "";
-			}
-		}
-		else {
-			// Dialogue finished
-			gameState.textIndex = 0;
-			gameState.textAvailable = false;
-			gameState.textAnimating = false;
-		}
-	}
-}
-
-
-void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) {
-	// Get screen dimensions
-	int screenWidth, screenHeight;
-	SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
-
-	// Render the text box at the bottom of the screen
-	renderTextBox(renderer);
-
-	// Calculate text position inside the text box
-	int boxWidth = screenWidth * 0.9;
-	int xOffset = screenWidth * 0.05 + 20;  // Small margin inside the box
-	int yOffset = screenHeight - 275;       // Positioning inside the text box
-
-	// Ensure we have valid text to display
-	if (gameState.Text.empty() || gameState.textIndex < 0 || static_cast<size_t>(gameState.textIndex) >= gameState.Text.size()) {
-		// Nothing to render
-		return;
-	}
-
-	// If the current line exists, update and render it
-	if (gameState.currentCharIndex < gameState.Text.at(gameState.textIndex).size()) {
-		// Update text animation if needed
-		if (gameState.shouldAnimateText && gameState.textAnimating) {
-			gameState.textTimer += 1.0f / 60.0f;//60.0f; // Assuming 60 FPS
-			if (gameState.textTimer >= gameState.textSpeed) {
-				gameState.textTimer = 0.0f;
-				if (gameState.currentCharIndex < gameState.Text.at(gameState.textIndex).length()) {
-					gameState.currentDisplayText += gameState.Text.at(gameState.textIndex).at(gameState.currentCharIndex);
-					gameState.currentCharIndex++;
-				}
-				else {
-					gameState.textAnimating = false;
-				}
-			}
-		}
-
-
-	}
-	// Render the current text
-	SDL_Color white = { 255, 255, 255 };  // Normal text color
-	if (gameState.shouldAnimateText && gameState.textAnimating) {
-		renderText(renderer, font, gameState.currentDisplayText, xOffset, yOffset, white);
-	}
-	else {
-		renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, white);
-	}
-}
+//void handleDialogue(SDL_Event event) {
+//
+//	// ok this could be the sign NPC or the Merchant.
+//	if (gameState.callbackNPC != nullptr) {
+//		// this is not the sign NPC.
+//	}
+//
+//
+//	if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
+//		// If we don't have any valid text, cancel the dialog state
+//		if (gameState.Text.empty() || gameState.textIndex < 0 || static_cast<size_t>(gameState.textIndex) >= gameState.Text.size()) {
+//			gameState.textAvailable = false;
+//			return;
+//		}
+//		if (gameState.shouldAnimateText && gameState.textAnimating) {
+//			// If text is still animating, show the full text immediately
+//			gameState.currentDisplayText = gameState.Text[gameState.textIndex];
+//			gameState.textAnimating = false;
+//		}
+//		else if (gameState.textIndex < gameState.Text.size() - 1) {
+//			// Move to next line and start animating if needed
+//			gameState.textIndex++;
+//			if (gameState.shouldAnimateText) {
+//				gameState.currentCharIndex = 0;
+//				gameState.textTimer = 0.0f;
+//				gameState.textAnimating = true;
+//				gameState.currentDisplayText = "";
+//			}
+//		}
+//		else {
+//			// Dialogue finished
+//			gameState.textIndex = 0;
+//			gameState.textAvailable = false;
+//			gameState.textAnimating = false;
+//		}
+//	}
+//}
+//
+//
+//void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) {
+//	// Get screen dimensions
+//	int screenWidth, screenHeight;
+//	SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+//
+//	// Render the text box at the bottom of the screen
+//	renderTextBox(renderer);
+//
+//	// Calculate text position inside the text box
+//	int boxWidth = screenWidth * 0.9;
+//	int xOffset = screenWidth * 0.05 + 20;  // Small margin inside the box
+//	int yOffset = screenHeight - 275;       // Positioning inside the text box
+//
+//	// Ensure we have valid text to display
+//	if (gameState.Text.empty() || gameState.textIndex < 0 || static_cast<size_t>(gameState.textIndex) >= gameState.Text.size()) {
+//		// Nothing to render
+//		return;
+//	}
+//
+//	// If the current line exists, update and render it
+//	if (gameState.currentCharIndex < gameState.Text.at(gameState.textIndex).size()) {
+//		// Update text animation if needed
+//		if (gameState.shouldAnimateText && gameState.textAnimating) {
+//			gameState.textTimer += 1.0f / 60.0f;//60.0f; // Assuming 60 FPS
+//			if (gameState.textTimer >= gameState.textSpeed) {
+//				gameState.textTimer = 0.0f;
+//				if (gameState.currentCharIndex < gameState.Text.at(gameState.textIndex).length()) {
+//					gameState.currentDisplayText += gameState.Text.at(gameState.textIndex).at(gameState.currentCharIndex);
+//					gameState.currentCharIndex++;
+//				}
+//				else {
+//					gameState.textAnimating = false;
+//				}
+//			}
+//		}
+//
+//
+//	}
+//	// Render the current text
+//	SDL_Color white = { 255, 255, 255 };  // Normal text color
+//	if (gameState.shouldAnimateText && gameState.textAnimating) {
+//		renderText(renderer, font, gameState.currentDisplayText, xOffset, yOffset, white);
+//	}
+//	else {
+//		renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, white);
+//	}
+//}
 
 
 

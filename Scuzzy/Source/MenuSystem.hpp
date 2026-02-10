@@ -13,6 +13,8 @@ enum MenuState {
     ITEM_OPTIONS_MENU,
     STATS_MENU,
     SHOP_MENU,
+	DIALOGUE,
+	QUESTION_MENU,
 	RESPONSE
 };
 
@@ -39,5 +41,12 @@ void renderMainMenu(SDL_Renderer* renderer, TTF_Font* font);
 void renderInventoryMenu(SDL_Renderer* renderer, TTF_Font* font);
 void renderItemOptionsMenu(SDL_Renderer* renderer, TTF_Font* font);
 void renderStatsMenu(SDL_Renderer* renderer, TTF_Font* font);
+
+void renderQuestion(SDL_Renderer* renderer, TTF_Font* font);
+void handleQuestionInput(SDL_Event event);
+
+
+void renderDialogue(SDL_Renderer* renderer, TTF_Font* font);
+void handleDialogue(SDL_Event event);
 
 #endif

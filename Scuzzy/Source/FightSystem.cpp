@@ -1049,6 +1049,7 @@ void FS_InitFight() {
 	gameState.player->m_HeartVelocity = { 0,0 }; // stop fucking moving
 
     // Set initial state
+    gameState.TensionMeter = 0;
     gameState.fightState = FightState::INTRO;
 
     // Initialize RNG if not already done

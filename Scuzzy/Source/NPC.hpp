@@ -55,6 +55,8 @@ public:
 	bool m_checked = false;
 	int m_TalkedTo = 0;
 	std::vector<std::string> m_Dialogue;
+	std::string m_prompt = "Question Prompt";
+	std::vector<std::string> m_Choices;
 	std::string m_room;
 	Vector2f m_Location;
 

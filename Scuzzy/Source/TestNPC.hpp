@@ -60,6 +60,7 @@ public:
             gameState.textAvailable = true;
             m_checked = false;
 
+            gameState.shouldAnimateText = true;
             gameState.textIndex = 0;
             gameState.currentCharIndex = 1; // offset because i need a char to start the animation.
             gameState.textTimer = 0.0f;
@@ -96,15 +97,20 @@ public:
     MerchantNPC(const std::vector<std::string>& dialogue, std::shared_ptr<Entity> entity) : NPC(entity, dialogue) {}
 
     MerchantNPC(const std::vector<std::string>& dialogue, std::shared_ptr<Entity> entity, const std::vector<ShopItem>& stock)
-        : NPC(entity, dialogue), m_Stock(stock) {}
+        : NPC(entity, dialogue), m_Stock(stock) {
+        m_prompt = "hey kid, want a weenie ?";
+        m_Choices = {"damn straight I want a weenie", "...naw"};
+    }
 
     // When the player checks the merchant, open the shop menu
     void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override {
         m_Entity->moving = true;
         if (m_checked) {
             gameState.currentNPC = this; // expose ourselves to the menu system
+			gameState.callbackNPC = this; // set callback for menu choices
             gameState.inMenu = true;
-            currentMenu = SHOP_MENU; // The MenuSystem variable is exposed, so the Merchant can manipulate it
+            //currentMenu = SHOP_MENU; // The MenuSystem variable is exposed, so the Merchant can manipulate it
+			currentMenu = QUESTION_MENU;
             MS_selectedIndex = 0;
             m_checked = false;
         }
@@ -118,6 +124,33 @@ public:
         SDL_Rect srcRect = m_Entity->m_Clips[m_Entity->currentFrameCount]; // render the sprite at index of animation
 
         m_Entity->getTex()->render(m_Entity->m_PosX, m_Entity->m_PosY, &srcRect);*/
+	}
+
+    void handleChoice(int choice) override {
+        switch (choice) {
+		case -1: // player pressed X to exit question prompt.
+			currentMenu = MAIN_MENU;
+			gameState.Text = { "Did u just come to say hey..?" };
+			gameState.textIndex = 0;
+            gameState.textAvailable = true;
+			gameState.inMenu = false;
+            break;
+        case 0: // 0th index of options
+            //gameState.Text = { "WHAT??? NO!!! DONT TALK TO STRANGERS!!!" };
+            //gameState.textIndex = 0;
+            //gameState.textAvailable = true;
+            //gameState.inMenu = false;
+			currentMenu = SHOP_MENU;
+			break;
+        case 1: // 1st index of options
+            gameState.Text = { "moar for me then mm yummy *chomp* " };
+            gameState.textIndex = 0;
+			gameState.textAvailable = true;
+            gameState.inMenu = false;
+		default:
+			printf("\n [!] ERROR: MerchantNPC::handleChoice() received invalid choice index: %d", choice);
+        }
+
 	}
 	
   

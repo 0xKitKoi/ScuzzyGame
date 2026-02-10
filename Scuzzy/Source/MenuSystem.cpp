@@ -267,6 +267,12 @@ void MS_renderMenu(SDL_Renderer* renderer, TTF_Font* font) {
     case SHOP_MENU:
         renderShopMenu(renderer, font);
         break;
+	case QUESTION_MENU:
+        renderQuestion(renderer, font);
+		break;
+    case DIALOGUE:
+        renderDialogue(renderer, font);
+		break;
 	case RESPONSE:
 		renderResponse(renderer, font);
         break;
@@ -305,6 +311,12 @@ void MS_handleMenuInput(SDL_Event event) {
     else if (currentMenu == SHOP_MENU) {
         handleShopMenuSelection(event);
     }
+    else if (currentMenu == QUESTION_MENU) {
+        handleQuestionInput(event);
+	}
+    else if (currentMenu == DIALOGUE) {
+		handleDialogue(event);
+	}
 	else if (currentMenu == RESPONSE) {
 		handleResponse(event);
 	}
@@ -591,8 +603,9 @@ void handleShopMenuSelection(SDL_Event event) {
 
     // Exit shop
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x) {
-        lastMenuState = currentMenu;
-        currentMenu = MAIN_MENU;
+        currentMenu = lastMenuState;
+        //lastMenuState = currentMenu;
+        //currentMenu = MAIN_MENU;
         gameState.inMenu = false;
         MS_selectedIndex = 0;
         gameState.currentNPC = nullptr;
@@ -834,4 +847,169 @@ void handleStatsMenu(SDL_Event event) {
         lastMenuState = currentMenu;
         currentMenu = MAIN_MENU;  // Enter item options
     }
+}
+
+
+//// need a dialogue system
+//void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) {
+//    // Get screen dimensions
+//    int screenWidth, screenHeight;
+//    SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+//    // Render the text box at the bottom of the screen
+//    MS_renderTextBox(renderer);
+//    // Calculate text rendering position
+//    int boxWidth = screenWidth * 0.9;
+//    int xOffset = screenWidth * 0.05 + 30;  // Start slightly inside the text box
+//    int yOffset = screenHeight - 275;       // Place the text inside the box
+//    MS_renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, { 255, 255, 255 });
+//}
+//
+//void handleDialogueInput(SDL_Event event) {
+//    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z || event.key.keysym.sym == SDLK_x) {
+//        if (gameState.textIndex < gameState.Text.size() - 1) {
+//            // Move to next line
+//            gameState.textIndex++;
+//        }
+//        else {
+//            // Dialogue finished
+//            gameState.textIndex = 0;
+//            gameState.Text.clear();
+//            gameState.textAvailable = false;
+//            currentMenu = lastMenuState; // go back to whatever menu we were in before dialogue
+//        }
+//    }
+//}
+
+void handleDialogue(SDL_Event event) {
+
+    // ok this could be the sign NPC or the Merchant.
+    if (gameState.callbackNPC != nullptr) {
+        // this is not the sign NPC.
+    }
+
+
+    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
+        // If we don't have any valid text, cancel the dialog state
+        if (gameState.Text.empty() || gameState.textIndex < 0 || static_cast<size_t>(gameState.textIndex) >= gameState.Text.size()) {
+            gameState.textAvailable = false;
+            return;
+        }
+        if (gameState.shouldAnimateText && gameState.textAnimating) {
+            // If text is still animating, show the full text immediately
+            gameState.currentDisplayText = gameState.Text[gameState.textIndex];
+            gameState.textAnimating = false;
+        }
+        else if (gameState.textIndex < gameState.Text.size() - 1) {
+            // Move to next line and start animating if needed
+            gameState.textIndex++;
+            if (gameState.shouldAnimateText) {
+                gameState.currentCharIndex = 0;
+                gameState.textTimer = 0.0f;
+                gameState.textAnimating = true;
+                gameState.currentDisplayText = "";
+            }
+        }
+        else {
+            // Dialogue finished
+            gameState.textIndex = 0;
+            gameState.textAvailable = false;
+            gameState.textAnimating = false;
+        }
+    }
+}
+
+
+void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) {
+    // Get screen dimensions
+    int screenWidth, screenHeight;
+    SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+
+    // Render the text box at the bottom of the screen
+	MS_renderTextBox(renderer);
+
+    // Calculate text position inside the text box
+    int boxWidth = screenWidth * 0.9;
+    int xOffset = screenWidth * 0.05 + 20;  // Small margin inside the box
+    int yOffset = screenHeight - 275;       // Positioning inside the text box
+
+    // Ensure we have valid text to display
+    if (gameState.Text.empty() || gameState.textIndex < 0 || static_cast<size_t>(gameState.textIndex) >= gameState.Text.size()) {
+        // Nothing to render
+        return;
+    }
+
+    // If the current line exists, update and render it
+    if (gameState.currentCharIndex < gameState.Text.at(gameState.textIndex).size()) {
+        // Update text animation if needed
+        if (gameState.shouldAnimateText && gameState.textAnimating) {
+            gameState.textTimer += 1.0f / 60.0f;//60.0f; // Assuming 60 FPS
+            if (gameState.textTimer >= gameState.textSpeed) {
+                gameState.textTimer = 0.0f;
+                if (gameState.currentCharIndex < gameState.Text.at(gameState.textIndex).length()) {
+                    gameState.currentDisplayText += gameState.Text.at(gameState.textIndex).at(gameState.currentCharIndex);
+                    gameState.currentCharIndex++;
+                }
+                else {
+                    gameState.textAnimating = false;
+                }
+            }
+        }
+
+
+    }
+    // Render the current text
+    SDL_Color white = { 255, 255, 255 };  // Normal text color
+    if (gameState.shouldAnimateText && gameState.textAnimating) {
+        MS_renderText(renderer, font, gameState.currentDisplayText, xOffset, yOffset, white);
+    }
+    else {
+        MS_renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, white);
+    }
+}
+
+
+// need a question and answer system for npcs, with branching dialogue options based on player choices and game state.
+//   needs to prompt a player with options, and return the selection to the npc, which will then respond
+void renderQuestion(SDL_Renderer* renderer, TTF_Font* font) {
+    // Get screen dimensions
+    int screenWidth, screenHeight;
+    SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+    // Render the text box at the bottom of the screen
+    MS_renderTextBox(renderer);
+    // Calculate text rendering position
+    int boxWidth = screenWidth * 0.9;
+    int xOffset = screenWidth * 0.05 + 30;  // Start slightly inside the text box
+    int yOffset = screenHeight - 275;       // Place the text inside the box
+
+	MS_renderText(renderer, font, gameState.callbackNPC->m_prompt, xOffset, yOffset, { 255, 255, 255 });
+	// Render options below the prompt
+    for (size_t i = 0; i < gameState.callbackNPC->m_Choices.size(); ++i) {
+        SDL_Color color = (i == MS_selectedIndex) ? SDL_Color{ 237, 28, 36 } : SDL_Color{ 255, 255, 255 }; // Highlight color
+        MS_renderText(renderer, font, gameState.callbackNPC->m_Choices.at(i), xOffset + ((i + 1) * 500), yOffset + 40 , color); // Spacing options
+	}
+    //MS_renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, {255, 255, 255});
+}
+
+void handleQuestionInput(SDL_Event event) {
+    // this is invoked by an NPC signaling that it wants to prompt the player with a question.
+	// gameState.callbackNPC has a callback function called handleChoice(int choice)
+    if (event.type == SDL_KEYDOWN) {
+        if (event.key.keysym.sym == SDLK_LEFT) {
+            MS_selectedIndex = (MS_selectedIndex > 0) ? MS_selectedIndex - 1 : gameState.callbackNPC->m_Choices.size() - 1;
+        }
+        else if (event.key.keysym.sym == SDLK_RIGHT) {
+            MS_selectedIndex = (MS_selectedIndex < gameState.callbackNPC->m_Choices.size() - 1) ? MS_selectedIndex + 1 : 0;
+        }
+        else if (event.key.keysym.sym == SDLK_z) { // Confirm selection
+            gameState.callbackNPC->handleChoice(MS_selectedIndex);  /*(MS_selectedIndex + 1); // Notify the NPC about the selection (1-based index)*/
+            //return MS_selectedIndex + 1; // Return the selected option index (1-based)
+        }
+        else if (event.key.keysym.sym == SDLK_x) { // Cancel action
+            //return 0; // Indicate cancellation
+			// we can tell the npc that the player cancelled by sending a -1 or something, up to implementation
+            gameState.callbackNPC->handleChoice(-1);
+
+        }
+    }
+    //return -1; // No selection made
 }
