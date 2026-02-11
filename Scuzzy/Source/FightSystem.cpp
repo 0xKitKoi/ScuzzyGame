@@ -476,8 +476,16 @@ void HandlePlayerMagicMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
     int xOffset = screenWidth * 0.05 + 30;
     int yOffset = screenHeight - 275;
 
+    SDL_Color white = { 255,255,255 };
+    SDL_Color red = { 237,28,36 };
+    SDL_Color grey = { 128,128,128 };
+
     for (int i = 0; i < actionMenu.size(); i++) {
-        SDL_Color color = (i == selection) ? SDL_Color{ 237, 28, 36 } : SDL_Color{ 255, 255, 255 };
+        SDL_Color color;
+        if (i == selection) { color = red; }
+        else if (gameState.TensionMeterCost[i] > gameState.TensionMeter) { color = grey; }
+        else { color = white; }
+        // SDL_Color color = (i == selection) ? red : white;
         FS_renderText(renderer, font, actionMenu[i], xOffset + (i * 300), yOffset, color);
     }
 
@@ -494,10 +502,15 @@ void HandlePlayerMagicMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
         else if (event.key.keysym.sym == SDLK_z) {
             // Set text based on selected action
             // The enemy will effect the gameState based on the action chosen here.
-
+            if (gameState.TensionMeterCost[selection] > gameState.TensionMeter) {
+                // player does not have enough Tension Points to cast this ability. 
+                // I will play a sound to indicate that this option is unselectable. for now, do nothing. 
+                return;
+            }
             if (selection < actionMenu.size()) {
                 //fightText = gameState.enemy->FightActionResponse(selection); // side effects handled inside the function
 				FS_QueueFightText("Magic Menu: You used " + actionMenu[selection] + "!\n");
+                gameState.TensionMeter -= gameState.TensionMeterCost[selection];
                 //fightText = gameState.enemy->m_ActionResponse[selection]; // this is replaced by the above line for silly mode support
                 gameState.fightState = FightState::PLAYER_ACTION_RESULT;
                 gameState.turnCount++;

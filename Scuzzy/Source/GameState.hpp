@@ -73,6 +73,7 @@ struct GameState {
 	bool SillyMode = false;
     int SillyMeter = 0;
 	int TensionMeter = 0;
+    std::vector<int> TensionMeterCost = { 0, 5, 10 }; // this is a test of mana costs for magic abilities in fights. I dont know if i want to have a lot of magic in my fights so for now its ok to set the mana costs manually here. 
 
 	bool LoadingScreen = false; // Loading screen for room transitions
 	bool DoneLoading = false;
