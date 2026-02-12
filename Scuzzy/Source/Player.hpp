@@ -4,6 +4,7 @@
 #include "Source/Math.hpp"
 #include <vector>
 #include <Source/Entity.hpp>
+#include "Source/Magic.hpp"
 
 
 enum class State {
@@ -67,6 +68,9 @@ public:
 	SDL_Rect m_HeartCollider;
 	SDL_Rect m_HeartTensionCollider;
 
+	//std::vector<Magic> m_Abilities;
+	//std::vector<Magic*> m_Abilities;
+	std::vector<std::unique_ptr<Magic>> m_Abilities;
 
 	int m_PosX, m_PosY;
 	int m_VelX, m_VelY;

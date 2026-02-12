@@ -8,6 +8,7 @@
 #include "Source/GameState.hpp"
 #include "Source/Item.hpp"
 #include "Source/BackgroundLayer.h"
+#include "Source/Magic.hpp"
 
 
 //extern std::shared_ptr<BackgroundLayer> bgLayer1;
@@ -468,7 +469,10 @@ void HandlePlayerMagicMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
     FS_renderTextBox(renderer);
 
     // Get actions for current enemy
-    std::vector<std::string> actionMenu = { "Magic 1", "Magic 2"};
+    //std::vector<std::string> actionMenu = { "Magic 1", "Magic 2"};
+	//std::vector<Magic> *actionMenu = &gameState.player->m_Abilities;
+	std::vector<std::unique_ptr<Magic>>* actionMenu = &gameState.player->m_Abilities;
+
 
     // Render menu options
     int screenWidth, screenHeight;
@@ -480,24 +484,24 @@ void HandlePlayerMagicMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
     SDL_Color red = { 237,28,36 };
     SDL_Color grey = { 128,128,128 };
 
-    for (int i = 0; i < actionMenu.size(); i++) {
+    for (int i = 0; i < actionMenu->size(); i++) {
         SDL_Color color;
         if (i == selection) { color = red; }
         else if (gameState.TensionMeterCost[i] > gameState.TensionMeter) { color = grey; }
         else { color = white; }
         // SDL_Color color = (i == selection) ? red : white;
-        FS_renderText(renderer, font, actionMenu[i], xOffset + (i * 300), yOffset, color);
+        FS_renderText(renderer, font, actionMenu->at(i)->m_abilityName, xOffset + (i * 300), yOffset, color);
     }
 
     // Handle input
     if (event.type == SDL_KEYDOWN) {
         if (event.key.keysym.sym == SDLK_LEFT) {
             selection--;
-            if (selection < 0) selection = actionMenu.size() - 1;
+            if (selection < 0) selection = actionMenu->size() - 1;
         }
         else if (event.key.keysym.sym == SDLK_RIGHT) {
             selection++;
-            if (selection >= actionMenu.size()) selection = 0;
+            if (selection >= actionMenu->size()) selection = 0;
         }
         else if (event.key.keysym.sym == SDLK_z) {
             // Set text based on selected action
@@ -507,10 +511,12 @@ void HandlePlayerMagicMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
                 // I will play a sound to indicate that this option is unselectable. for now, do nothing. 
                 return;
             }
-            if (selection < actionMenu.size()) {
+            if (selection < actionMenu->size()) {
                 //fightText = gameState.enemy->FightActionResponse(selection); // side effects handled inside the function
-				FS_QueueFightText("Magic Menu: You used " + actionMenu[selection] + "!\n");
-                gameState.TensionMeter -= gameState.TensionMeterCost[selection];
+				FS_QueueFightText("Magic Menu: You used " + actionMenu->at(selection)->m_abilityName + "!\n");
+                //gameState.TensionMeter -= gameState.TensionMeterCost[selection];
+				gameState.TensionMeter -= actionMenu->at(selection)->m_TensionCost; // deduct the appropriate amount of tension points
+				gameState.player->m_Abilities.at(selection)->Cast(); // call the Cast method of the selected ability, which will apply its effects to the game state
                 //fightText = gameState.enemy->m_ActionResponse[selection]; // this is replaced by the above line for silly mode support
                 gameState.fightState = FightState::PLAYER_ACTION_RESULT;
                 gameState.turnCount++;
@@ -792,7 +798,7 @@ void EndFightAndReturnToFlow() {
     selection = 0;
     FS_ClearFightTextQueue();
     if (!gameState.dead || !(gameState.HP <= 0) ) {
-        gameState.dead = true;
+        //gameState.dead = true;
         int moneys = 0;
         if (gameState.TensionMeter > 0) moneys = chance(gameState.TensionMeter);
         gameState.money += moneys;

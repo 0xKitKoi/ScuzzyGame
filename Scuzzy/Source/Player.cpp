@@ -11,6 +11,7 @@ extern GameState gameState;
 #include "Source/FightSystem.hpp"
 #include "Source/GameState.hpp"
 #include "Source/Projectile.hpp"
+#include "Source/Magic.hpp"
 
 //bool checkCollision(SDL_Rect a, SDL_Rect b);
 //const int SCREEN_WIDTH = 1920;
@@ -70,6 +71,37 @@ Player::Player(Vector2f initPos, std::vector<std::shared_ptr<Entity>>& entityVec
 	currentState = State::Idle;
 	currentDirection = Direction::Down;
 	currentFrame = 0; // animtion frame count.
+
+
+	/*
+	// C++ needs to know: "How big is each element?"
+	std::vector<Magic> spells;  // Each element is sizeof(Magic) bytes
+
+	// When you do this:
+	spells.push_back(DoubleOrNothing());  // DoubleOrNothing might be bigger!
+	// C++ can't resize the already-allocated vector slots, so it slices
+	
+	if (gameState.hasDoubleOrNothing) {
+		m_Abilities.push_back(DoubleOrNothing());
+	}
+	if (gameState.hasHealing) {
+		m_Abilities.push_back(Heal());
+	}
+	if (gameState.hasScuzzy) {
+		m_Abilities.push_back(Scuzzy());
+	}
+	*/
+	if (gameState.hasDoubleOrNothing) {
+		m_Abilities.push_back(std::make_unique<DoubleOrNothing>());
+	}
+	if (gameState.hasHealing) {
+		m_Abilities.push_back(std::make_unique<Heal>());
+	}
+	if (gameState.hasScuzzy) {
+		m_Abilities.push_back(std::make_unique<Scuzzy>());
+	}
+
+
 
 	SDL_Rect gSpriteClips[6*6]; // sprite sheet. dont you dare touch. 
 	int pixelsize = 128; // size of each frame in sprite sheet. offset.
@@ -670,7 +702,12 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 	else { // IN FIGHT MODE
 		if (gameState.fightState != FightState::DODGE_MECHANIC) {
 			//printf("Not in dodge mechanic, skipping heart controls.\n");
-			m_FightSpriteSheet.renderGlow(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[currentFrame]);
+			if (gameState.doubleOrNothingActive) {
+				m_FightSpriteSheet.renderGlow(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[currentFrame]);
+			}
+			else {
+				m_FightSpriteSheet.render(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[currentFrame]);
+			}
 			//SDL_Color debugColor = { 255, 0, 0, 255 };
 			//SDL_Color tmp;
 			//SDL_GetRenderDrawColor(gRenderer, &tmp.r, &tmp.g, &tmp.b, &tmp.a);
@@ -820,7 +857,13 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 
 		m_HeartCollider = { int(m_HeartPos.x) +8, int(m_HeartPos.y) +8, 15, 15 };
 
-		m_FightSpriteSheet.renderGlow(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[currentFrame]);
+		//m_FightSpriteSheet.renderGlow(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[currentFrame]);
+		if (gameState.doubleOrNothingActive) {
+			m_FightSpriteSheet.renderGlow(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[currentFrame]);
+		}
+		else {
+			m_FightSpriteSheet.render(m_HeartPos.x, m_HeartPos.y, &m_HeartClips[currentFrame]);
+		}
 		SDL_RenderDrawRect(gRenderer, &m_HeartCollider); // draw heart hitbox for debugging
 		if (gameState.DebugMode)
 			printf("currentFrame: %d\n", currentFrame);

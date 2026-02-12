@@ -26,8 +26,29 @@
 #define GAME_STATE_H
 
 struct GameState {
-
+    // These need to be saved to a file. 
 	//saveData CurrentSave;
+    std::string room;
+    int money = 0;
+    int kills = 0;
+    int HP = 10;
+	int maxHP = 10;
+    int SillyMeter = 0;
+    std::vector<std::shared_ptr<Item>> Inventory;
+    // Story flags here! These will be set by various plot events and checked by NPC dialogue and stuff
+    // we need to save and load what spells the player has to init the player on boot. 
+	bool hasDoubleOrNothing = true;
+	bool hasHealing = true;
+    bool hasScuzzy = false;
+
+
+
+	// these are game mechanic flags used to keep track of the state machines that is the fight system, the dialogue system, and the menu system.
+    // 
+    // 
+    //
+    
+
 
     //std::vector<std::shared_ptr<Entity>> Entities;
 
@@ -35,10 +56,6 @@ struct GameState {
 	Player* player = nullptr;
     float deltaTime;
 
-    std::string room;
-    int money = 0;
-    int kills = 0;
-    int HP = 10;
 	int DamageTaken = 0;
     bool dead = false;
 
@@ -67,11 +84,12 @@ struct GameState {
 
 
     // Flags
+    bool doubleOrNothingActive = false;
 	FightState fightState;
     bool DebugMode = false; // Debug mode for testing
 
 	bool SillyMode = false;
-    int SillyMeter = 0;
+    //int SillyMeter = 0;
 	int TensionMeter = 0;
     std::vector<int> TensionMeterCost = { 0, 5, 10 }; // this is a test of mana costs for magic abilities in fights. I dont know if i want to have a lot of magic in my fights so for now its ok to set the mana costs manually here. 
 
@@ -116,7 +134,7 @@ struct GameState {
     bool shouldAnimateText = false;  // Whether the current text should be animated (dialogue vs menu)
     
     //std::vector<int> Inventory;
-    std::vector<std::shared_ptr<Item>> Inventory;
+    //std::vector<std::shared_ptr<Item>> Inventory;
 
 };
 

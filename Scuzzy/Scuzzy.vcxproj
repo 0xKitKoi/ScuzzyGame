@@ -126,6 +126,7 @@ xcopy /Q /E /Y /I $(SolutionDir)\Scuzzy\data ..\bin\Release\data</Command>
     <ClInclude Include="Source\Helper.hpp" />
     <ClInclude Include="Source\Item.hpp" />
     <ClInclude Include="Source\LTexture.hpp" />
+    <ClInclude Include="Source\Magic.hpp" />
     <ClInclude Include="Source\Math.hpp" />
     <ClInclude Include="Source\MenuSystem.hpp" />
     <ClInclude Include="Source\NPC.hpp" />
@@ -151,6 +152,7 @@ xcopy /Q /E /Y /I $(SolutionDir)\Scuzzy\data ..\bin\Release\data</Command>
     <ClCompile Include="Source\Helper.cpp" />
     <ClCompile Include="Source\Item.cpp" />
     <ClCompile Include="Source\LTexture.cpp" />
+    <ClCompile Include="Source\Magic.cpp" />
     <ClCompile Include="Source\Math.cpp" />
     <ClCompile Include="Source\MenuSystem.cpp" />
     <ClCompile Include="Source\NPC.cpp" />
