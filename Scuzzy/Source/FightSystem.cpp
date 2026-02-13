@@ -721,6 +721,15 @@ void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event
 void HandleEnemyTurnState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     // Determine enemy action
 	int action = chance(8); // A 1 in 8 chance for each action
+    if (gameState.enemy->HP == 1) {
+        action = 10; // If enemy is low on health, increase chance of dialogue
+        // enemy will cast desperation attempt, the Double or Nothing
+        gameState.enemy->doubleOrNothing = true;
+
+        FS_ClearFightTextQueue(); // Clear text to make way for the next line of dialogue
+        FS_QueueFightText("The " + gameState.enemy->m_Name + " just reached into it's soul... \n");
+        FS_UpdateAndRenderAnimatedText(renderer, font, { 255, 255, 255 }, event);
+    }
 
     if (gameState.enemyID > 0 && gameState.enemyID < 5) {
         // Boss-fight specific logic would go here

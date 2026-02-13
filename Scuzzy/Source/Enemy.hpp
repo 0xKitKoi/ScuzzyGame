@@ -22,7 +22,9 @@ public:
 	///	entity->setEnemy(child); // bind the new enemy object to the entity
 	/// </summary>
 	/// <param name="entity">Entity Object.</param>
-	Enemy(std::shared_ptr<Entity> entity) : m_Entity(entity), m_EnemyID(entity->m_EntityID) {}
+	Enemy(std::shared_ptr<Entity> entity) : m_Entity(entity), m_EnemyID(entity->m_EntityID) {
+		//m_EnemySoulSpriteSheet = getTexture("data/EnemySoul.png");
+	}
 	~Enemy();
 	//void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos);
 	void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos);
@@ -41,6 +43,8 @@ public:
 	std::string m_Name = "Default Enemy Name";
 	//std::string m_EnemyFightSprite = "data/Error.png";
 	std::shared_ptr<LTexture> m_EnemyFightSpriteSheet;
+	std::shared_ptr<LTexture> m_EnemySoulSpriteSheet;
+	std::vector<SDL_Rect> m_EnemySoulSpriteClips = { { 0,0,32,32 }, { 32,0,32,32 }, { 32*2,0,32,32 }, { 32*3,0,32,32 } };
 	std::vector<SDL_Rect> m_EnemySpriteClips;
 	std::vector<std::string> m_EnemyDialogue;
 	std::vector<std::string> m_Actions;
@@ -48,6 +52,7 @@ public:
 	
 	int m_AttackDamage = 0;
 	bool alive = true;
+	bool doubleOrNothing = false; 
 	int HP = 5;
 	int m_layer1 = 0;
 	int m_layer2 = 0;

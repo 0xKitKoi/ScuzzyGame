@@ -22,6 +22,7 @@ class CustomEnemy : public Enemy {
 public:
 	CustomEnemy(std::shared_ptr<Entity> entity) : Enemy(entity) {
 		// Custom initialization for this enemy type
+		m_EnemySoulSpriteSheet = getTexture("data/EnemySoul.png");
 
 		m_AttackDamage = 1; // Projectiles have their own damage value. Disregard this for now.
 
@@ -62,6 +63,7 @@ public:
 class BoxOfFuckYou : public Enemy {
 public:
 	BoxOfFuckYou(std::shared_ptr<Entity> entity) : Enemy(entity) {
+		m_EnemySoulSpriteSheet = getTexture("data/EnemySoul.png");
 		m_Name = "Box of Fuck You";
 		m_AttackDamage = 1;
 		m_EnemyDialogue = { "The Box Full of \"Fuck You\" Appeared!",
@@ -113,6 +115,7 @@ public:
 class DooDooMartBox : public Enemy {
 public:
 	DooDooMartBox(std::shared_ptr<Entity> entity) : Enemy(entity) {
+		m_EnemySoulSpriteSheet = getTexture("data/EnemySoul.png");
 		m_Name = "DooDooMart Box";
 		m_AttackDamage = 3;
 		m_EnemyDialogue = { "The DOODOOMART Box ran at you!",
@@ -178,6 +181,7 @@ public:
 class DrPebba : public Enemy {
 public:
 	DrPebba(std::shared_ptr<Entity> entity) : Enemy(entity) {
+		m_EnemySoulSpriteSheet = getTexture("data/EnemySoul.png");
 		m_Name = "Evil ass Dr. Pebba";
 		m_AttackDamage = 1;
 		m_EnemyDialogue = { "The aluminum can ran at you!",

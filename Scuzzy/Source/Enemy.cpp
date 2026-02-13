@@ -115,6 +115,8 @@ void Enemy::Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) {
 /// <param name="screenheight">int</param>
 /// <param name="screenwidth">int</param>
 void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
+
+
 	if (gameState.fightState == FightState::ENEMY_DIALOGUE || gameState.fightState == FightState::DODGE_MECHANIC || gameState.fightState == FightState::ENEMY_TURN) {
 		//SDL_Rect enemysprite = this->m_EnemySpriteClips[0];
         
@@ -140,12 +142,25 @@ void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
 
         //enemysprite = m_EnemySpriteClips[currentFrameCount]; // render the sprite at index of animation
         //this->m_Entity->getTex()->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_Entity->getCurrentFrame());
-        this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
-
+        if (this->doubleOrNothing) {
+            // make the soul visible. make it also glow.
+            this->m_EnemySoulSpriteSheet->renderGlow((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySoulSpriteClips[currentFrameCount]);  
+        }
+        else {
+            this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
+        }
 	}
     else {
 		//this->m_Entity->getTex()->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_Entity->getCurrentFrame());
-        this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
+        //this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
+        if (this->doubleOrNothing) {
+            // make the soul visible. make it also glow.
+            
+            this->m_EnemySoulSpriteSheet->renderGlow((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySoulSpriteClips[currentFrameCount]);  
+        }
+        else {
+            this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
+        }
     }
     //if (gameState.fightState == FightState::ENEMY_TURN) {
     //    //
@@ -170,6 +185,8 @@ void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
             }
         }   
     }
+
+    if (gameState.fightState == FightState::ENEMY_TURN) {}
 }
 
 /// @brief This returns text based off of an action chosen by the player in a fight. This should be overwritten with custom behavior for each special enemy.
@@ -189,6 +206,19 @@ std::string Enemy::FightActionResponse(int actionIndex) {
 void Enemy::ResetProjectiles() {
     //m_EnemyProjectiles.clear();
         // init the projectiles
+        if (this->doubleOrNothing) {
+            m_projectileCount += 30;
+            m_EnemyProjectiles.clear();
+            // init the projectiles
+            for (int i = 0; i < m_projectileCount; i++) {
+			    //m_EnemyProjectiles.push_back(std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1));
+                // using the m_EnemyProjectile as a template, create new projectiles
+                float subx = float(randomInt(0, gameState.screenwidth));
+                float suby = float(randomInt(0, gameState.screenheight));
+                m_EnemyProjectiles.push_back(std::make_shared<Projectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f( subx, suby ), Vector2f(200,200), 1));
+                // randomize vector2f(x,y) position:
+		    }
+        }
         for (int i = 0; i < m_projectileCount; i++) {
 		    //m_EnemyProjectiles.push_back(std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1));
             // using the m_EnemyProjectile as a template, create new projectiles
