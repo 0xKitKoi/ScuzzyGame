@@ -724,11 +724,18 @@ void HandleEnemyTurnState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
     if (gameState.enemy->HP == 1) {
         action = 10; // If enemy is low on health, increase chance of dialogue
         // enemy will cast desperation attempt, the Double or Nothing
-        gameState.enemy->doubleOrNothing = true;
+        //gameState.enemy->doubleOrNothing = true;
 
         FS_ClearFightTextQueue(); // Clear text to make way for the next line of dialogue
+        fightText = "The " + gameState.enemy->m_Name + " just reached into it's soul... \n";
+        fightShouldAnimateText = true;
         FS_QueueFightText("The " + gameState.enemy->m_Name + " just reached into it's soul... \n");
-        FS_UpdateAndRenderAnimatedText(renderer, font, { 255, 255, 255 }, event);
+        //FS_UpdateAndRenderAnimatedText(renderer, font, { 255, 255, 255 }, event);
+        if (!gameState.enemy->doubleOrNothing) {
+            gameState.fightState = FightState::PLAYER_ACTION_RESULT;
+            gameState.enemy->doubleOrNothing = true;
+            return;
+        }
     }
 
     if (gameState.enemyID > 0 && gameState.enemyID < 5) {
