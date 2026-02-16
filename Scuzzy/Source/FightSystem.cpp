@@ -813,7 +813,7 @@ void EndFightAndReturnToFlow() {
     gameState.Plot = 0;
     selection = 0;
     FS_ClearFightTextQueue();
-    if (!gameState.dead || !(gameState.HP <= 0) ) {
+    if (!gameState.dead && !(gameState.HP <= 0) ) { 
         //gameState.dead = true;
         int moneys = 0;
         if (gameState.TensionMeter > 0) moneys = chance(gameState.TensionMeter);
@@ -829,8 +829,8 @@ void EndFightAndReturnToFlow() {
         gameState.player->m_VelY = 0;
     }
     else {
-        gameState.Text = { "You lost the fight!" };
-        return;
+        //gameState.Text = { "You lost the fight!" };
+        return; // Main() -> SDL_PollEvent() -> if (gameState.dead) will handle this. 
 
     }
 }
@@ -838,6 +838,7 @@ void EndFightAndReturnToFlow() {
 void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     if (gameState.HP <= 0 && !FightEndConsumed) { // this is the only way the player can die right now.
         gameState.HP = 0;
+        gameState.dead = true;
         fightText = "You were defeated!";
         FS_QueueFightText(fightText);
         fightShouldAnimateText = true;
@@ -929,7 +930,7 @@ void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event ev
     if (!gameState.fightTurnTimer.isStarted()) {
         gameState.fightTurnTimer.start();   
 		gameState.lastTurnTime = SDL_GetTicks();
-		printf("DODGE TIME STARTED\n");
+		//printf("DODGE TIME STARTED\n");
         gameState.enemy->ResetProjectiles();
 		// i want this line on fight start and only on fight start
 		//gameState.player->m_HeartPos = { float(gameState.screenwidth / 2), float(gameState.screenheight / 2) }; // reset position
@@ -944,7 +945,9 @@ void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event ev
 
 			//gameState.fightState = FightState::RESULT_DIALOGUE;
             gameState.fightState = FightState::PLAYER_TURN_MENU;
-			printf("DODGE TIMER UP! FightState  is now Result_Dialogue\n");
+            //if (gameState.DebugMode) {
+			 //   printf("DODGE TIMER UP! FightState  is now Result_Dialogue\n");
+            //}
             //if (gameState.HP <= 0) { // this is the only way the player can die right now.
             //    gameState.HP = 0;
             //   gameState.fightState = FightState::FIGHT_END;

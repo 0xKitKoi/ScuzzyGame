@@ -45,6 +45,9 @@ void Projectile::Update(float deltaT, Vector2f PlayerPos) { // DEFAULT UPDATE FU
 			printf("Projectile hit the player!\n");
 			// deal damage to player
 			//gameState.HP -= m_Damage;
+			if (gameState.doubleOrNothingActive) {
+				gameState.HP = 0;
+			}
 			gameState.DamageTaken += m_Damage;
 			m_Active = false; // deactivate on hit
 			m_TensionHit = true;

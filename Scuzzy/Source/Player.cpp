@@ -25,7 +25,11 @@ extern GameState gameState;
 extern int screenwidth;
 extern int screenheight;
 
+extern float avgFPS;
+
 extern Camera camera;
+
+extern std::vector<std::shared_ptr<Entity>> Entities;
 
 const int GRID_CELL_SIZE = 100;
 const int GRID_WIDTH = gameState.levelWidth / GRID_CELL_SIZE;
@@ -359,7 +363,8 @@ Player::Player(Vector2f initPos, std::vector<std::shared_ptr<Entity>>& entityVec
 Player::~Player() {
 	// Destructor
 	// Free the texture if it was loaded
-	printf("Player destructor called.\n");
+	if (gameState.DebugMode)
+		printf("Player destructor called.\n");
 	SpriteSheet.free();
 }
 
@@ -449,12 +454,14 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 
 
 
+	/*
 	for (const auto& entity : AllEntities) {
 		if (SDL_HasIntersection(&m_Collider, &entity->m_Collider )) { // &entity->m_Collider
 			printf(std::to_string(entity->m_EntityID).c_str());
 
 		}
 	}
+	*/
 
 	// Check for collisions on X axis
 	for (const auto& wall : boxes) { // these are from entities that may or may not be moving. Must be pointers.
@@ -559,11 +566,11 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	//SDL_Color textColor = { 0, 0, 0 };
 	SDL_Color textColor = { 0xFF, 0xFF, 0xFF, 0xFF };
 	char buffer[200];
-	snprintf(buffer, sizeof(buffer), "DELTA: %f\n Velocity X: %d, \nVelocity Y: %d\nPOS: (%d,%d)\nCOLLIDER POS: (%d,%d)\nCHECKBOX: (%d,%d)", deltaTime, m_VelX, m_VelY, m_PosX, m_PosY, m_Collider.x, m_Collider.y, m_CheckBox.x, m_CheckBox.y);
+	snprintf(buffer, sizeof(buffer), "DELTA: %f, FPS: %f, Velocity X: %d, \nVelocity Y: %d\nPOS: (%d,%d)\nCOLLIDER POS: (%d,%d)\nCHECKBOX: (%d,%d)", deltaTime, avgFPS,  m_VelX, m_VelY, m_PosX, m_PosY, m_Collider.x, m_Collider.y, m_CheckBox.x, m_CheckBox.y);
 	std::string str = buffer;
 
 	if (!gTextTexture.loadFromRenderedText(str, textColor)) {
-		printf("Failed to render text texture!\n");
+		printf("[!] Failed to render text texture! Player::Update()\n");
 	}
 
 	camera.centerOn(m_PosX , m_PosY );
@@ -578,6 +585,11 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 /// </summary>
 /// <param name="e">SDL checks for key presses. We check for the buttons.</param>
 void Player::handleEvent(SDL_Event& e, float deltaTime) {
+	if (gameState.inMenu) {
+		clearInputState();
+		reset({ float(m_PosX), float(m_PosY) });
+		return;
+	}
 	/*
 	if (gameState.inMenu || gameState.FightStarted) {
 		reset({ float(m_PosX), float(m_PosY) });
@@ -623,7 +635,7 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 		//}
 
 
-
+		
 		if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {
 			// Adjust the velocity and update direction/state
 			switch (e.key.keysym.sym) {
@@ -655,7 +667,7 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 		}
 
 		// If a key was released
-		else if (e.type == SDL_KEYUP && e.key.repeat == 0) {
+		/*else */if (e.type == SDL_KEYUP /* && e.key.repeat == 0*/ ) {
 			// Adjust the velocity and update key states
 			switch (e.key.keysym.sym) {
 			case SDLK_UP:
@@ -676,6 +688,8 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 				break;
 			}
 		}
+		
+
 
 		// Determine the current state based on which keys are still pressed
 		if (keyUpPressed || keyDownPressed || keyLeftPressed || keyRightPressed) {
@@ -728,12 +742,13 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 		SDL_GetRenderDrawColor(gRenderer, &tmp.r, &tmp.g, &tmp.b, &tmp.a);
 		SDL_SetRenderDrawColor(gRenderer, debugColor.r, debugColor.g, debugColor.b, debugColor.a);
 		m_HeartTensionCollider = { int(m_HeartPos.x) - 8, int(m_HeartPos.y) - 8, m_HeartClips[0].w + 11, m_HeartClips[0].h + 13 };
+		// Projectiles do this check with the player's m_HeartCollider. Here, I want to check if they collide with the tension box, and if they do, increase tension and mark the projectile as having hit the tension box so it doesn't increase tension multiple times.
 		for (size_t i = 0; i < gameState.enemy->m_EnemyProjectiles.size(); i++) {
 			if (SDL_HasIntersection(&gameState.enemy->m_EnemyProjectiles.at(i)->m_Collider, &m_HeartTensionCollider)) {
 				SDL_SetRenderDrawColor(gRenderer, 0, 255, 0, 255); // green if colliding
 				SDL_RenderDrawRect(gRenderer, &m_HeartTensionCollider); // draw heart tension hitbox for debugging
 				if (gameState.enemy->m_EnemyProjectiles.at(i)->m_TensionHit) {
-					continue; // skip if already hit tension box
+					continue; // skip if already hit tension box. 
 				}
 				gameState.TensionMeter += 5; // increase tension meter on hit
 				gameState.enemy->m_EnemyProjectiles.at(i)->m_TensionHit = true; // mark projectile as having hit tension box
@@ -881,12 +896,8 @@ void Player::reset(Vector2f initPos) {
 	currentState = State::Idle;
 	//currentDirection = Direction::Down;
 	currentFrame = 0; // animtion frame count.
-	m_VelX = 0;
-	m_VelY = 0;
-	keyDownPressed = false;
-	keyUpPressed = false;
-	keyLeftPressed = false;
-	keyRightPressed = false;
+	clearInputState();
+	m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };
 	m_HeartCollider = { int(m_HeartPos.x) + 16, int(m_HeartPos.y) + 16, 20, 20 };
 	gameState.dead = false;
 	//gameState.HP = 10;
@@ -896,6 +907,15 @@ void Player::reset(Vector2f initPos) {
 	//m_CheckBox = { m_PosX + 30, m_PosY , 60,60 };
 
 
+}
+
+void Player::clearInputState() {
+	m_VelX = 0;
+	m_VelY = 0;
+	keyDownPressed = false;
+	keyUpPressed = false;
+	keyLeftPressed = false;
+	keyRightPressed = false;
 }
 
 

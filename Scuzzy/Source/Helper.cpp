@@ -381,6 +381,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 	leveldimentions.y = Map->getWidth(); // callers problem to load level dimensions. i aint doing all that.
 	camera.mapWidth = leveldimentions.y;
 	camera.mapHeight = leveldimentions.x;
+	//gameState.player->AllEntities = Entities; // TODO: make the player look up the entities vector on its own instead of having to set it every time we load a level. maybe make it a reference or smthn.
 	return leveldimentions;
 }
 

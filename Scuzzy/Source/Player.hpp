@@ -28,6 +28,7 @@ public:
 	Player(Vector2f initPos, std::vector<std::shared_ptr<Entity>>& entityVec); // init
 	~Player();
 	void reset(Vector2f initPos);
+	void clearInputState();
 	//void Update(const std::vector<SDL_Rect>& walls, float deltaTime);
 	void Update(std::vector<SDL_Rect*>& walls, float deltaTime);
 

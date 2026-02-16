@@ -183,6 +183,9 @@ int handleMenuInputGrid(SDL_Event event, std::vector<std::string>* options) {
     }
     else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x && currentMenu == MAIN_MENU) {
         gameState.inMenu = false;
+        if (gameState.player) {
+            gameState.player->clearInputState();
+        }
 		//MS_selectedIndex = 0;
 		return 0;
     }
@@ -607,6 +610,9 @@ void handleShopMenuSelection(SDL_Event event) {
         //lastMenuState = currentMenu;
         //currentMenu = MAIN_MENU;
         gameState.inMenu = false;
+        if (gameState.player) {
+            gameState.player->clearInputState();
+        }
         MS_selectedIndex = 0;
         gameState.currentNPC = nullptr;
         return;
@@ -643,6 +649,7 @@ void handleMainMenuSelection(SDL_Event event) {
 	}
     if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_x && currentMenu != MAIN_MENU) {
         gameState.inMenu = false;
+        gameState.player->clearInputState();
         gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
         return;
     }

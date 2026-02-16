@@ -47,6 +47,8 @@ int aspect_ratio = 16;
 int SCREEN_WIDTH = 0;
 int SCREEN_HEIGHT = 0;
 
+float avgFPS = 0.0f;
+
 
 Camera camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 
@@ -505,11 +507,11 @@ void handleDeath(SDL_Event e, Player player) {
 	// auto barrel = std::make_shared<Entity>(Vector2f(2322, 258), SDL_Rect{ 0,0,128,128 }, SDL_Rect{ 0,0,128,128 }, getTexture("data/barrel_nuclear.png"), 1, clips, 1);
 	//Entities.clear();
 	SDL_RenderClear(gRenderer);
-	deathScreen.render(screenwidth / 2, screenheight / 2);
+	deathScreen.render((screenwidth / 2) - (deathScreen.getWidth() / 2), (screenheight / 2) - (deathScreen.getHeight() / 2));
 	//SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, count);
 	//SDL_RenderClear(gRenderer);
 
-
+	SDL_Delay(1000); // pause for a moment to show the death screen. TODO: make this better, maybe a fade out or something?
 	SDL_RenderPresent(gRenderer);
 	if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_z) {
 		// reset the game
@@ -1314,6 +1316,7 @@ int main(int argc, char* args[])
 
 			uint32_t tick = 0;
     		uint32_t frameCount = 0;
+			bool wasInMenu = false;
 
 			while (!quit)
 			{
@@ -1369,6 +1372,9 @@ int main(int argc, char* args[])
 						case SDLK_c:
 							gameState.inMenu = true;
 							gameState.shouldAnimateText = false;
+							if (gameState.player) {
+								gameState.player->clearInputState();
+							}
 							MS_renderMenu(gRenderer, gFont);
 							break;
 						default:
@@ -1451,32 +1457,42 @@ int main(int argc, char* args[])
 							deathScreen.render(screenwidth / 2, screenheight / 2);
 							//SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, count);
 							//SDL_RenderClear(gRenderer);
+							const Uint8* keystate = SDL_GetKeyboardState(NULL);
 
-
+							
 							SDL_RenderPresent(gRenderer);
+							SDL_Delay(1000);
 							if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_z) {
+							//if (keystate[SDL_SCANCODE_Z]) {
 								// reset the game
-								printf("reseting the game\n");
+								
+								printf("[!] Player has died. Reseting the game. Main()-> SDL_PollEvent()-> if(gameSTate.dead)\n");
 								LoadSave();
 								//player.reset(new Player(SaveData.pos, Entities));
 								player.reset(SaveData.pos);
 								player.SetPosX(SaveData.pos.x);
 								player.SetPosY(SaveData.pos.y);
 								player.currentState = State::Idle; // why is the little bastard moving on his own 
-								player.AllEntities = Entities;
+								//player.AllEntities = Entities; // this is breaking. 
 								//player = std::make_unique<Player>(SaveData.pos, Entities);
 								GameStart();
 								gameState.dead = false;
+								gameState.inFight = false;
+								gameState.FightStarted = false;
+								gameState.inMenu = false;
 								gameState.textAvailable = false;
 								levelHeight = Map.getHeight(); // needed to make sure death upon smaller maps doesnt break rendering loop
 								levelWidth = Map.getWidth();
-								gameState.HP = 10;
+								gameState.HP = gameState.maxHP; // reset HP on death
 
 								/*main(argc, args);*/ // lmfao dont call main in main lesson learned
 							}
+							continue;
 					}
 					else {
 						if (gameState.textAvailable) {
+							//gameState.player->clearInputState(); // prevent player input from being buffered and triggering after dialogue ends.
+							player.clearInputState();
 							// either text or an NPC!
 							/*
 								if (gameState.callbackNPC != nullptr) {
@@ -1504,6 +1520,8 @@ int main(int argc, char* args[])
 						else if (gameState.inMenu) {
 							//handleMenuInput(e);
 							//handleMenuInputSideBySide(e);
+							SDL_FlushEvent(SDL_KEYDOWN);
+							SDL_FlushEvent(SDL_KEYUP);
 							MS_renderMenu(gRenderer, gFont);
 							MS_handleMenuInput(e);
 							gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
@@ -1522,8 +1540,19 @@ int main(int argc, char* args[])
 					}
 				}
 
+				if (wasInMenu && !gameState.inMenu) {
+					if (gameState.player) {
+						gameState.player->clearInputState();
+						gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) });
+					}
+					SDL_PumpEvents();
+					SDL_FlushEvent(SDL_KEYDOWN);
+					SDL_FlushEvent(SDL_KEYUP);
+				}
+				wasInMenu = gameState.inMenu;
+
 				//Calculate and correct fps
-				float avgFPS = countedFrames / (fpsTimer.getTicks() / 1000.f);
+				avgFPS = countedFrames / (fpsTimer.getTicks() / 1000.f);
 				if (avgFPS > 2000000)
 				{
 					avgFPS = 0;
@@ -1546,11 +1575,11 @@ int main(int argc, char* args[])
 
 				// Starting Point!
 
-				if (gameState.dead) {
-					//handleDeath(e, player);
-					// dont bother with the rest of the application loop.
-					continue;
-				}
+				//if (gameState.dead) {
+				//	//handleDeath(e, player);
+				//	// dont bother with the rest of the application loop.
+				//	continue;
+				//}
 
 				if (gameState.LoadingScreen) {
 					// fade to black, load map texture based on room name, and fade back in.

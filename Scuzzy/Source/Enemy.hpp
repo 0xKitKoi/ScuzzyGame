@@ -54,6 +54,7 @@ public:
 	bool alive = true;
 	bool doubleOrNothing = false; 
 	int HP = 5;
+	int m_MaxHP = HP;
 	int m_layer1 = 0;
 	int m_layer2 = 0;
 

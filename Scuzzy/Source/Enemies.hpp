@@ -84,8 +84,8 @@ public:
 
 		m_EnemyProjectile = std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{ 0,0,10,10 }, Vector2f(0, 0), Vector2f(200, 200), 1);
 		m_projectileCount = 10;
-		m_layer1 = 220;
-		m_layer2 = 0;
+		m_layer1 = 323;
+		m_layer2 = 194;
 		/*
 		for (int i = 0; i < m_projectileCount; i++) {
 			m_EnemyProjectiles.push_back(std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1));
@@ -104,7 +104,9 @@ public:
 		}
 		// increase silly mode?
 		if (actionIndex == 1) {
-			printf("Silly mode INCREASED!!!!!!!!!!");
+			if (gameState.DebugMode) {
+				printf("Silly mode INCREASED!!!!!!!!!!");
+			}
 			gameState.SillyMeter += 5;
 		}
 		return m_ActionResponse[actionIndex];
@@ -141,8 +143,9 @@ public:
 	}
 
 	std::string FightActionResponse(int actionIndex) override {
-
-		printf("DooDooMartBox FightActionResponse called with actionIndex: %d\n", actionIndex);
+		if (gameState.DebugMode) {
+			printf("DooDooMartBox FightActionResponse called with actionIndex: %d\n", actionIndex);
+		}
 		// by default, return the action response at the given index.
 		if (actionIndex < 0 || actionIndex >= m_ActionResponse.size()) {
 			return "Invalid action.";
@@ -153,7 +156,9 @@ public:
 		}
 		// increase silly mode?
 		if (actionIndex == 1) {
-			printf("Silly mode INCREASED!!!!!!!!!!");
+			if (gameState.DebugMode) {
+				printf("Silly mode INCREASED!!!!!!!!!!");
+			}
 			gameState.SillyMeter += 5;
 		}
 		return m_ActionResponse[actionIndex];
@@ -208,8 +213,9 @@ public:
 	}
 
 	std::string FightActionResponse(int actionIndex) override {
-
-		printf("DooDooMartBox FightActionResponse called with actionIndex: %d\n", actionIndex);
+		if (gameState.DebugMode) {
+			printf("DrPebba FightActionResponse called with actionIndex: %d\n", actionIndex);
+		}
 		// by default, return the action response at the given index.
 		if (actionIndex < 0 || actionIndex >= m_ActionResponse.size()) {
 			return "Invalid action.";
@@ -220,7 +226,9 @@ public:
 		}
 		// increase silly mode?
 		if (actionIndex == 1) {
-			printf("Silly mode INCREASED!!!!!!!!!!");
+			if (gameState.DebugMode) {
+				printf("Silly mode INCREASED!!!!!!!!!!");
+			}
 			gameState.SillyMeter += 5;
 		}
 		return m_ActionResponse[actionIndex];

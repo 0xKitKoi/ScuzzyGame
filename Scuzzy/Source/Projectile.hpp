@@ -67,6 +67,9 @@ public:
 			if (SDL_HasIntersection(&m_Collider, &gameState.player->m_HeartCollider) ) {
 				// deal damage to player
 				//gameState.HP -= m_Damage;
+				if (gameState.doubleOrNothingActive) {
+					gameState.HP = 0;
+				}
 				gameState.DamageTaken += m_Damage;
 				m_Active = false; // deactivate on hit
 				//gameState.TensionMeter -= 5;
@@ -100,6 +103,9 @@ public:
 		if (SDL_HasIntersection(&m_Collider, &gameState.player->m_HeartCollider) ) {
 			// deal damage to player
 			//gameState.HP -= m_Damage;
+			if (gameState.doubleOrNothingActive) {
+				gameState.HP = 0;
+			}
 			gameState.DamageTaken += m_Damage;
 			m_Active = false; // deactivate on hit
 			//gameState.TensionMeter -= 5;
@@ -134,6 +140,9 @@ public:
 			m_Collider = { int(m_Position.x), int(m_Position.y), m_SpriteClip.w, m_SpriteClip.h };
 			if (SDL_HasIntersection(&m_Collider, &gameState.player->m_HeartCollider)) {
 				// deal damage to player
+				if (gameState.doubleOrNothingActive) {
+					gameState.HP = 0;
+				}
 				m_TensionHit = true;
 				//gameState.HP -= m_Damage;
 				gameState.DamageTaken += m_Damage;

@@ -36,7 +36,7 @@ Vector2f Enemy::moveEntity(Vector2f pos, float deltaTime, Vector2f target) {
 
     // If the entity is close enough to the target, stop moving
     if (distance < 0.1f) {
-        printf("Too close");
+        //printf("Too close");
         //gameState.inFight = true;
         //gameState.enemyID = m_EnemyID;
         return pos;
@@ -77,7 +77,9 @@ void Enemy::Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) {
             m_Entity->m_PosY = out.y;
 
             if (SDL_HasIntersection(&m_Entity->m_Collider, &PlayerPos)) {
-				printf("Enemy has reached the player! Starting fight...\n");
+                if (gameState.DebugMode) {
+                    printf("Enemy has reached the player! Starting fight...\n");
+                }
                 gameState.enemyID = m_EnemyID;
                 gameState.enemy = this;
                 gameState.FightStarted = true;
@@ -147,7 +149,12 @@ void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
             this->m_EnemySoulSpriteSheet->renderGlow((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySoulSpriteClips[currentFrameCount]);  
         }
         else {
-            this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
+
+            this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - (128/2), (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
+            // show the heart more and more linearly with enemy HP. lower HP, more visible heart.
+            //float alpha = 255.0f * (1.0f - (float(this->HP) / 5.0f)); // assuming max HP is 5, adjust
+            this->m_EnemySoulSpriteSheet->setAlpha(255.0f * (1.0f - (float(this->HP) / float(this->m_MaxHP))));
+            this->m_EnemySoulSpriteSheet->render((screenwidth / 2) - (128/2), (screenheight / 2) - (128/2), &this->m_EnemySoulSpriteClips[currentFrameCount]);
         }
 	}
     else {
@@ -156,10 +163,15 @@ void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
         if (this->doubleOrNothing) {
             // make the soul visible. make it also glow.
             
-            this->m_EnemySoulSpriteSheet->renderGlow((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySoulSpriteClips[currentFrameCount]);  
+            this->m_EnemySoulSpriteSheet->renderGlow((screenwidth / 2) - (128/2), (screenheight / 2) - (128/2), &this->m_EnemySoulSpriteClips[currentFrameCount]);  
         }
         else {
-            this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
+            //this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
+            this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - (128/2), (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
+            // show the heart more and more linearly with enemy HP. lower HP, more visible heart.
+            //float alpha = 255.0f * (1.0f - (float(this->HP) / 5.0f)); // assuming max HP is 5, adjust
+            this->m_EnemySoulSpriteSheet->setAlpha(255.0f * (1.0f - (float(this->HP) / float(this->m_MaxHP))));
+            this->m_EnemySoulSpriteSheet->render((screenwidth / 2) - (128/2), (screenheight / 2) - 128 * 2, &this->m_EnemySoulSpriteClips[currentFrameCount]);
         }
     }
     //if (gameState.fightState == FightState::ENEMY_TURN) {
