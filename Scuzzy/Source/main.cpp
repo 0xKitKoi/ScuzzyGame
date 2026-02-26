@@ -1457,7 +1457,7 @@ int main(int argc, char* args[])
 							deathScreen.render(screenwidth / 2, screenheight / 2);
 							//SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, count);
 							//SDL_RenderClear(gRenderer);
-							const Uint8* keystate = SDL_GetKeyboardState(NULL);
+							//const Uint8* keystate = SDL_GetKeyboardState(NULL);
 
 							
 							SDL_RenderPresent(gRenderer);

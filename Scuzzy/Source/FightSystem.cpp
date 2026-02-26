@@ -827,6 +827,8 @@ void EndFightAndReturnToFlow() {
         gameState.player->m_HeartVelocity = { 0,0 };
         gameState.player->m_VelX = 0; // stop fucking moving 
         gameState.player->m_VelY = 0;
+        FightEndConsumed = false;
+
     }
     else {
         //gameState.Text = { "You lost the fight!" };

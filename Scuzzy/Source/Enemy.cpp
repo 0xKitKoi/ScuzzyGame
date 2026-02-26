@@ -142,38 +142,53 @@ void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
             currentFrameCount = 0; // stay on first frame if only one frame.
 		}
 
-        //enemysprite = m_EnemySpriteClips[currentFrameCount]; // render the sprite at index of animation
-        //this->m_Entity->getTex()->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_Entity->getCurrentFrame());
-        if (this->doubleOrNothing) {
-            // make the soul visible. make it also glow.
-            this->m_EnemySoulSpriteSheet->renderGlow((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySoulSpriteClips[currentFrameCount]);  
-        }
-        else {
+        ////enemysprite = m_EnemySpriteClips[currentFrameCount]; // render the sprite at index of animation
+        ////this->m_Entity->getTex()->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_Entity->getCurrentFrame());
+        //if (this->doubleOrNothing) {
+        //    // make the soul visible. make it also glow.
+        //    this->m_EnemySoulSpriteSheet->renderGlow((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySoulSpriteClips[currentFrameCount]);  
+        //}
+        //else {
 
-            this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - (128/2), (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
-            // show the heart more and more linearly with enemy HP. lower HP, more visible heart.
-            //float alpha = 255.0f * (1.0f - (float(this->HP) / 5.0f)); // assuming max HP is 5, adjust
-            this->m_EnemySoulSpriteSheet->setAlpha(255.0f * (1.0f - (float(this->HP) / float(this->m_MaxHP))));
-            this->m_EnemySoulSpriteSheet->render((screenwidth / 2) - (128/2), (screenheight / 2) - (128/2), &this->m_EnemySoulSpriteClips[currentFrameCount]);
-        }
+        //    this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - (128/2), (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
+        //    // show the heart more and more linearly with enemy HP. lower HP, more visible heart.
+        //    //float alpha = 255.0f * (1.0f - (float(this->HP) / 5.0f)); // assuming max HP is 5, adjust
+        //    this->m_EnemySoulSpriteSheet->setAlpha(255.0f * (1.0f - (float(this->HP) / float(this->m_MaxHP))));
+        //    this->m_EnemySoulSpriteSheet->render((screenwidth / 2) - (128/2), (screenheight / 2) - (128/2), &this->m_EnemySoulSpriteClips[currentFrameCount]);
+        //}
 	}
-    else {
-		//this->m_Entity->getTex()->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_Entity->getCurrentFrame());
-        //this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
-        if (this->doubleOrNothing) {
-            // make the soul visible. make it also glow.
-            
-            this->m_EnemySoulSpriteSheet->renderGlow((screenwidth / 2) - (128/2), (screenheight / 2) - (128/2), &this->m_EnemySoulSpriteClips[currentFrameCount]);  
-        }
-        else {
-            //this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
-            this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - (128/2), (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
-            // show the heart more and more linearly with enemy HP. lower HP, more visible heart.
-            //float alpha = 255.0f * (1.0f - (float(this->HP) / 5.0f)); // assuming max HP is 5, adjust
-            this->m_EnemySoulSpriteSheet->setAlpha(255.0f * (1.0f - (float(this->HP) / float(this->m_MaxHP))));
-            this->m_EnemySoulSpriteSheet->render((screenwidth / 2) - (128/2), (screenheight / 2) - 128 * 2, &this->m_EnemySoulSpriteClips[currentFrameCount]);
-        }
+  //  else {
+		////this->m_Entity->getTex()->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_Entity->getCurrentFrame());
+  //      //this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
+  //      if (this->doubleOrNothing) {
+  //          // make the soul visible. make it also glow.
+  //          
+  //          this->m_EnemySoulSpriteSheet->renderGlow((screenwidth / 2) - (128/2), (screenheight / 2) - (128/2), &this->m_EnemySoulSpriteClips[currentFrameCount]);  
+  //      }
+  //      else {
+  //          //this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
+  //          this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - (128/2), (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
+  //          // show the heart more and more linearly with enemy HP. lower HP, more visible heart.
+  //          //float alpha = 255.0f * (1.0f - (float(this->HP) / 5.0f)); // assuming max HP is 5, adjust
+  //          this->m_EnemySoulSpriteSheet->setAlpha(255.0f * (1.0f - (float(this->HP) / float(this->m_MaxHP))));
+  //          this->m_EnemySoulSpriteSheet->render((screenwidth / 2) - (128/2), (screenheight / 2) - 128 * 2, &this->m_EnemySoulSpriteClips[currentFrameCount]);
+  //      }
+  //  }
+  //  if (this->doubleOrNothing) {
+        // make the soul visible. make it also glow.
+
+    if (this->doubleOrNothing) {
+        this->m_EnemySoulSpriteSheet->renderGlow((screenwidth / 2) - (m_EnemySoulSpriteClips[0].w / 2), (screenheight / 2) - (128.0 * 1.5), &this->m_EnemySoulSpriteClips[currentFrameCount]);
     }
+    else {
+        //this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - 128, (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
+        this->m_EnemyFightSpriteSheet->render((screenwidth / 2) - (128 / 2), (screenheight / 2) - 128 * 2, &this->m_EnemySpriteClips[currentFrameCount]);
+        // show the heart more and more linearly with enemy HP. lower HP, more visible heart.
+        //float alpha = 255.0f * (1.0f - (float(this->HP) / 5.0f)); // assuming max HP is 5, adjust
+        this->m_EnemySoulSpriteSheet->setAlpha(255.0f * (1.0f - (float(this->HP) / float(this->m_MaxHP))));
+        this->m_EnemySoulSpriteSheet->render((screenwidth / 2) - (m_EnemySoulSpriteClips[0].w / 2), (screenheight / 2) - (128.0 * 1.5), &this->m_EnemySoulSpriteClips[currentFrameCount]);
+    }
+
     //if (gameState.fightState == FightState::ENEMY_TURN) {
     //    //
     //    gameState.enemy->HP -= gameState.enemy->m_AttackDamage; // Example of attacking the player
