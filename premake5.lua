@@ -6,6 +6,7 @@ workspace "Scuzzy"
    sdl2_version = "2.32.4"
    sdl2_image_version = "2.8.8"
    sdl2_ttf_version = "2.24.0"
+   sdl2_mixer_version = "2.8.1"
 
 project "Scuzzy"
    location "Scuzzy"
@@ -27,20 +28,23 @@ project "Scuzzy"
       "Scuzzy",
       "thirdparty/SDL2/include",
       "thirdparty/SDL2_image/include",
-      "thirdparty/SDL2_ttf/include"
+      "thirdparty/SDL2_ttf/include",
+      "thirdparty/SDL2_mixer/include"
    }
 
    libdirs {
       "thirdparty/SDL2/lib/x64",
       "thirdparty/SDL2_image/lib/x64",
-      "thirdparty/SDL2_ttf/lib/x64"
+      "thirdparty/SDL2_ttf/lib/x64",
+      "thirdparty/SDL2_mixer/lib/x64"
    }
 
    links {
       "SDL2",
       "SDL2main",
       "SDL2_image",
-      "SDL2_ttf"
+      "SDL2_ttf",
+      "SDL2_mixer"
    }
 
  filter "system:windows"
@@ -54,12 +58,15 @@ project "Scuzzy"
       "{COPY} %{wks.location}/thirdparty/SDL2_image/lib/x64/SDL2_image.dll %{cfg.targetdir}",
       -- Copy SDL2_ttf.dll
       "{COPY} %{wks.location}/thirdparty/SDL2_ttf/lib/x64/SDL2_ttf.dll %{cfg.targetdir}",
+      -- Copy SDL2_mixer.dll
+      "{COPY} %{wks.location}/thirdparty/SDL2_mixer/lib/x64/SDL2_mixer.dll %{cfg.targetdir}",
+      -- Copy data/ to be next to executable.
       "{COPYDIR} %{wks.location}/Scuzzy/data %{cfg.targetdir}/data"
    }
 
     filter "system:linux"
       defines { "PLATFORM_LINUX" }
-      links { "SDL2", "SDL2_image", "SDL2_ttf" }
+      links { "SDL2", "SDL2_image", "SDL2_ttf", "SDL2_mixer" }
       libdirs {
          "/usr/lib/x86_64-linux-gnu",
          "/usr/local/lib"

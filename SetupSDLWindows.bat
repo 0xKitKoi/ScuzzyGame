@@ -40,5 +40,16 @@ if not exist "%THIRDPARTY_DIR%\SDL2_ttf" (
     del "%THIRDPARTY_DIR%\SDL_ttf.zip"
 )
 
+:: Download and extract precompiled SDL_mixer if it doesn't exist
+if not exist "%THIRDPARTY_DIR%\SDL2_mixer" (
+    echo Downloading precompiled SDL_mixer...
+    powershell -Command "Invoke-WebRequest -Uri https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.8.1/SDL2_mixer-devel-2.8.1-VC.zip -OutFile %THIRDPARTY_DIR%\SDL_mixer.zip"
+    echo Extracting precompiled SDL_mixer...
+    powershell -Command "Expand-Archive -Path %THIRDPARTY_DIR%\SDL_mixer.zip -DestinationPath %THIRDPARTY_DIR%"
+    move "%THIRDPARTY_DIR%\SDL2_mixer-2.8.1" "%THIRDPARTY_DIR%\SDL2_mixer"
+    del "%THIRDPARTY_DIR%\SDL_mixer.zip"
+)
+
+
 echo All precompiled libraries have been downloaded and extracted successfully.
 pause

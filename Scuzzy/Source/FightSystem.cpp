@@ -2,6 +2,7 @@
 #include "Source/Helper.hpp"
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 #include <stdio.h>
 #include <string>
 #include <random>
@@ -13,6 +14,15 @@
 
 //extern std::shared_ptr<BackgroundLayer> bgLayer1;
 //extern std::shared_ptr<BackgroundLayer> bgLayer2;
+
+extern Mix_Chunk* gSelectSound; // player presses z
+extern Mix_Chunk* gDeSelectSound; // player presses x
+extern Mix_Chunk* gMoveSound; // player moves cursor in menu.
+
+extern Mix_Chunk* gTextCharSound1; // character 1 a
+extern Mix_Chunk* gTextCharSound2; // character 1 b
+extern Mix_Chunk* gTextCharSound3; // character 1 c
+
 
 // Modern random number generator
 std::mt19937 rng;
@@ -178,6 +188,7 @@ void FS_UpdateAndRenderAnimatedText(SDL_Renderer* renderer, TTF_Font* font, SDL_
 
         // Skip animation if X pressed
         if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x) {
+			Mix_PlayChannel(-1, gDeSelectSound, 0);
             if (fightTextAnimating) {
                 fightCurrentDisplay = full;
                 fightTextAnimating = false;
@@ -188,6 +199,38 @@ void FS_UpdateAndRenderAnimatedText(SDL_Renderer* renderer, TTF_Font* font, SDL_
         if (fightTextAnimating) {
             fightTextTimer += gameState.deltaTime; // deltaTime is seconds per frame
             while (fightTextTimer >= gameState.textSpeed && fightCurrentCharIndex < (int)full.size()) {
+
+				// make sure to wait until the next character is actually added before playing sound, so we don't get a burst of sounds when skipping
+				if (gameState.textSoundEffectTick == 0 || SDL_GetTicks() - gameState.textSoundEffectTick >= 50) { // 50ms cooldown between character sounds
+					gameState.textSoundEffectTick = SDL_GetTicks();
+                    // play one of three character voice sounds for each character in string here, maybe based on the character index to add variety?
+                    int soundSel = chance(1, 3);
+                    switch (soundSel) {
+                        case 1:
+                            Mix_PlayChannel(-1, gTextCharSound1, 0); // placeholder sound effect for character voice
+                            break;
+                        case 2:
+                            Mix_PlayChannel(-1, gTextCharSound2, 0); // placeholder sound effect for character voice
+                            break;
+                        case 3:
+                            Mix_PlayChannel(-1, gTextCharSound3, 0); // placeholder sound effect for character voice
+                            break;
+                    }
+                    gameState.textSoundEffectTick = SDL_GetTicks();
+                }
+				// play one of three character voice sounds for each character in string here, maybe based on the character index to add variety?
+				int soundSel = chance(1, 3);
+                switch (soundSel) {
+                    case 1:
+                        Mix_PlayChannel(-1, gTextCharSound1, 0); // placeholder sound effect for character voice
+                        break;
+                    case 2:
+                        Mix_PlayChannel(-1, gTextCharSound2, 0); // placeholder sound effect for character voice
+                        break;
+                    case 3:
+                        Mix_PlayChannel(-1, gTextCharSound3, 0); // placeholder sound effect for character voice
+                        break;
+				}
                 fightCurrentCharIndex++;
                 fightCurrentDisplay = full.substr(0, fightCurrentCharIndex);
                 fightTextTimer -= gameState.textSpeed;
@@ -221,6 +264,7 @@ void HandleIntroState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
 
     // Press Z to advance but only after animation finished
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
+        Mix_PlayChannel(-1, gSelectSound, 0);
         if (!fightTextAnimating) {
             // after the player sees the intro text, select the first action.
             gameState.Plot++;
@@ -251,6 +295,7 @@ bool AttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
 	SDL_RenderDrawRect(renderer, &gameState.FightTargetAreaRect);
 	// if the player presses Z when the TargetRect is inside the TargetAreaRect, return true.
     if (!gameState.FightAttackAttempt &&  event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z && event.key.repeat == 0) {
+        Mix_PlayChannel(-1, gSelectSound, 0); // this will change to attack sound.
 		// Only accept the initial keydown (not key-repeat events)
 		gameState.FightAttackAttempt = true; // prevent multiple inputs
         SDL_Rect ActualArea = gameState.FightTargetAreaRect;
@@ -258,13 +303,16 @@ bool AttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
         ActualArea.h += 10;
         if (SDL_HasIntersection(&gameState.FightTargetRect, &ActualArea)) {
 			//printf("HIT!\n");
+            // maybe play sound on successful hit?
             return true; // Successful hit
         }
         else {
+            // earthbound style miss sound effect here ?
             return false; // Missed
 		}
     }
 	if (gameState.FightTargetRect.x < 0 || (gameState.FightTargetAreaRect.x - 20) > gameState.FightTargetRect.x ) {
+		Mix_PlayChannel(-1, gDeSelectSound, 0); // this will change to miss sound.
 		//FightState::RESULT_DIALOGUE;
         gameState.FightAttackAttempt = true;
         return false; // Out of bounds, treat as miss
@@ -404,14 +452,17 @@ void HandlePlayerTurnMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event
     // Handle input
     if (event.type == SDL_KEYDOWN) {
         if (event.key.keysym.sym == SDLK_LEFT) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             selection--;
             if (selection < 0) selection = fightMenu.size() - 1;
         }
         else if (event.key.keysym.sym == SDLK_RIGHT) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             selection++;
             if (selection >= fightMenu.size()) selection = 0;
         }
         else if (event.key.keysym.sym == SDLK_z) {
+            Mix_PlayChannel(-1, gSelectSound, 0);
             // Handle selection
             switch (selection) {
             case 0: // Fight
@@ -496,14 +547,17 @@ void HandlePlayerMagicMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
     // Handle input
     if (event.type == SDL_KEYDOWN) {
         if (event.key.keysym.sym == SDLK_LEFT) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             selection--;
             if (selection < 0) selection = actionMenu->size() - 1;
         }
         else if (event.key.keysym.sym == SDLK_RIGHT) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             selection++;
             if (selection >= actionMenu->size()) selection = 0;
         }
         else if (event.key.keysym.sym == SDLK_z) {
+            Mix_PlayChannel(-1, gSelectSound, 0);
             // Set text based on selected action
             // The enemy will effect the gameState based on the action chosen here.
             if (gameState.TensionMeterCost[selection] > gameState.TensionMeter) {
@@ -528,6 +582,7 @@ void HandlePlayerMagicMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
             }
         }
         else if (event.key.keysym.sym == SDLK_x) {
+            Mix_PlayChannel(-1, gDeSelectSound, 0);
             // Go back to main menu
             gameState.fightState = FightState::PLAYER_TURN_MENU;
             selection = 1; // Set to Actions option
@@ -559,14 +614,17 @@ void HandlePlayerActionsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Ev
     // Handle input
     if (event.type == SDL_KEYDOWN) {
         if (event.key.keysym.sym == SDLK_LEFT) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             selection--;
             if (selection < 0) selection = actionMenu.size() - 1;
         }
         else if (event.key.keysym.sym == SDLK_RIGHT) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             selection++;
             if (selection >= actionMenu.size()) selection = 0;
         }
         else if (event.key.keysym.sym == SDLK_z) {
+			Mix_PlayChannel(-1, gSelectSound, 0);
             // Set text based on selected action
 			// The enemy will effect the gameState based on the action chosen here.
 
@@ -583,6 +641,7 @@ void HandlePlayerActionsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Ev
             }
         }
         else if (event.key.keysym.sym == SDLK_x) {
+			Mix_PlayChannel(-1, gDeSelectSound, 0);
             // Go back to main menu
             gameState.fightState = FightState::PLAYER_TURN_MENU;
             selection = 1; // Set to Actions option
@@ -639,11 +698,13 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
     // Handle input
     if (event.type == SDL_KEYDOWN) { 
         if (event.key.keysym.sym == SDLK_x) {
+			Mix_PlayChannel(-1, gDeSelectSound, 0);
             // Go back to main menu
             gameState.fightState = FightState::PLAYER_TURN_MENU;
             selection = 2; // Set to Items option
         }
         else if (event.key.keysym.sym == SDLK_z && gameState.Inventory.size() > 0) { // TODO: Add item selection and usage logic
+			Mix_PlayChannel(-1, gSelectSound, 0);
 			gameState.fightState = FightState::RESULT_DIALOGUE;
 
             //gameState.fightState = FightState::PLAYER_TURN_MENU;
@@ -675,6 +736,7 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
 
 
         if (event.key.keysym.sym == SDLK_LEFT) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             // Move left, wrapping around if necessary
             if (selection % maxColumns > 0) {
                 selection--; // Move left
@@ -684,6 +746,7 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
             }
         }
         else if (event.key.keysym.sym == SDLK_RIGHT) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             // Move right, wrapping around if necessary
             if (selection % maxColumns < maxColumns - 1 && selection < numOptions - 1) {
                 selection++; // Move right
@@ -693,10 +756,12 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
             }
         }
         else if (event.key.keysym.sym == SDLK_DOWN) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             // Move down, wrapping to the next row
             selection = (selection + maxColumns < numOptions) ? selection + maxColumns : selection;
         }
         else if (event.key.keysym.sym == SDLK_UP) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             // Move up, wrapping to the previous row
             selection = (selection - maxColumns >= 0) ? selection - maxColumns : selection;
         }
@@ -707,7 +772,7 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
 
 void HandlePlayerActionResultState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     FS_UpdateAndRenderAnimatedText(renderer, font, { 255, 255, 255 }, event);
-
+    // Mix_PlayChannel(-1, gSelectSound, 0);
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
         if (!fightTextAnimating) {
             // Move to enemy's turn

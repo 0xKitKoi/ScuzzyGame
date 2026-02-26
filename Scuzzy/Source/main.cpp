@@ -1,6 +1,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 #include <stdio.h>
 #include <string>
 #include <sstream>
@@ -91,6 +92,24 @@ SDL_Surface* gPNGSurface = NULL;
 
 //Globally used font
 TTF_Font* gFont = NULL;
+
+// Globally used music
+Mix_Music* gMusic = NULL;
+
+//The sound effects that will be used
+Mix_Chunk* gSelectSound = NULL; // player presses z
+Mix_Chunk* gDeSelectSound = NULL; // player presses x
+Mix_Chunk* gMoveSound = NULL; // player moves cursor in menu.
+
+Mix_Chunk* gTextCharSound1 = NULL; // character 1 a
+Mix_Chunk* gTextCharSound2 = NULL; // character 1 b
+Mix_Chunk* gTextCharSound3 = NULL; // character 1 c
+Mix_Chunk* gTextCharSound4 = NULL; // enemy 1 a
+Mix_Chunk* gTextCharSound5 = NULL; // enemy 1 b
+Mix_Chunk* gTextCharSound6 = NULL; // enemy 1 c
+Mix_Chunk* gTextCharSound7 = NULL; // character 2 a
+Mix_Chunk* gTextCharSound8 = NULL; // character 2 b
+Mix_Chunk* gTextCharSound9 = NULL; // character 2 c
 
 //Rendered TEXT texture
 LTexture gTextTexture;
@@ -247,6 +266,12 @@ bool init()
 				printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
 				success = false;
 			}
+			//Initialize SDL_mixer
+			if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+			{
+				printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
+				success = false;
+			}
 		}
 	}
 
@@ -285,6 +310,39 @@ void close()
 	TTF_CloseFont(gFont);
 	gFont = NULL;
 
+	//Free the sound effects
+	Mix_FreeChunk(gDeSelectSound);
+	Mix_FreeChunk(gMoveSound);
+	Mix_FreeChunk(gSelectSound);
+	Mix_FreeChunk(gTextCharSound1);
+	Mix_FreeChunk(gTextCharSound2);
+	Mix_FreeChunk(gTextCharSound3);
+	Mix_FreeChunk(gTextCharSound4);
+	Mix_FreeChunk(gTextCharSound5);
+	Mix_FreeChunk(gTextCharSound6);
+	Mix_FreeChunk(gTextCharSound7);
+	Mix_FreeChunk(gTextCharSound8);
+	Mix_FreeChunk(gTextCharSound9);
+
+	gDeSelectSound = NULL;
+	gMoveSound = NULL;
+	gSelectSound = NULL;
+	gTextCharSound1 = NULL;
+	gTextCharSound2 = NULL;
+	gTextCharSound3 = NULL;
+	gTextCharSound4 = NULL;
+	gTextCharSound5 = NULL;
+	gTextCharSound6 = NULL;
+	gTextCharSound7 = NULL;
+	gTextCharSound8 = NULL;
+	gTextCharSound9 = NULL;
+
+
+	//Free the music
+	Mix_FreeMusic(gMusic);
+	gMusic = NULL;
+
+
 	//Destroy window
 	SDL_DestroyRenderer(gRenderer);
 	SDL_DestroyWindow(gWindow);
@@ -299,6 +357,7 @@ void close()
 	//Quit SDL subsystems
 	TTF_Quit();
 	IMG_Quit();
+	Mix_Quit();
 	SDL_Quit();
 }
 
@@ -547,6 +606,20 @@ bool loadMedia()
 			success = false;
 		}
 	}
+
+	// load sound effects:
+	gSelectSound = Mix_LoadWAV("data/mus/SelectSound.wav");
+	gDeSelectSound = Mix_LoadWAV("data/mus/deSelectSound.wav");
+	gMoveSound = Mix_LoadWAV("data/mus/MoveSound.wav");
+	gTextCharSound1 = Mix_LoadWAV("data/mus/ntalk1.wav");
+	gTextCharSound2 = Mix_LoadWAV("data/mus/ntalk2.wav");
+	gTextCharSound3 = Mix_LoadWAV("data/mus/ntalk3.wav");
+	gTextCharSound4 = Mix_LoadWAV("data/mus/etalk4.wav");
+	gTextCharSound5 = Mix_LoadWAV("data/mus/etalk5.wav");
+	gTextCharSound6 = Mix_LoadWAV("data/mus/etalk6.wav");
+	gTextCharSound7 = Mix_LoadWAV("data/mus/entalk7.wav");
+	gTextCharSound8 = Mix_LoadWAV("data/mus/entalk8.wav");
+	gTextCharSound9 = Mix_LoadWAV("data/mus/entalk9.wav");
 
 	/*
 	int ls = LoadSave();
@@ -1370,6 +1443,8 @@ int main(int argc, char* args[])
 							gameState.inMenu = true;
 							break;
 						case SDLK_c:
+
+							Mix_PlayChannel(-1, gSelectSound, 0);
 							gameState.inMenu = true;
 							gameState.shouldAnimateText = false;
 							if (gameState.player) {

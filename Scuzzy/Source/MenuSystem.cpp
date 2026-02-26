@@ -8,6 +8,7 @@
 #include "Source/Item.hpp"
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 #include <stdio.h>
 
 #ifdef _WIN32
@@ -19,6 +20,10 @@
 
 //extern const int SCREEN_WIDTH;
 //extern const int SCREEN_HEIGHT;
+
+extern Mix_Chunk* gSelectSound; // player presses z
+extern Mix_Chunk* gDeSelectSound; // player presses x
+extern Mix_Chunk* gMoveSound; // player moves cursor in menu.
 
 // Define the current menu state and selected index
 MenuState currentMenu = MAIN_MENU;
@@ -133,6 +138,7 @@ int handleMenuInputGrid(SDL_Event event, std::vector<std::string>* options) {
         const int maxColumns = 4;
 
         if (event.key.keysym.sym == SDLK_LEFT) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             // Move left, wrapping around if necessary
             if (MS_selectedIndex % maxColumns > 0) {
                 MS_selectedIndex--; // Move left
@@ -142,6 +148,7 @@ int handleMenuInputGrid(SDL_Event event, std::vector<std::string>* options) {
             }
         }
         else if (event.key.keysym.sym == SDLK_RIGHT) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             // Move right, wrapping around if necessary
             if (MS_selectedIndex % maxColumns < maxColumns - 1 && MS_selectedIndex < numOptions - 1) {
                 MS_selectedIndex++; // Move right
@@ -151,10 +158,12 @@ int handleMenuInputGrid(SDL_Event event, std::vector<std::string>* options) {
             }
         }
         else if (event.key.keysym.sym == SDLK_DOWN) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             // Move down, wrapping to the next row
             MS_selectedIndex = (MS_selectedIndex + maxColumns < numOptions) ? MS_selectedIndex + maxColumns : MS_selectedIndex;
         }
         else if (event.key.keysym.sym == SDLK_UP) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             // Move up, wrapping to the previous row
             MS_selectedIndex = (MS_selectedIndex - maxColumns >= 0) ? MS_selectedIndex - maxColumns : MS_selectedIndex;
         }
@@ -173,15 +182,18 @@ int handleMenuInputGrid(SDL_Event event, std::vector<std::string>* options) {
 
     }
     else if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_z) {
+        Mix_PlayChannel(-1, gSelectSound, 0);
         gameState.selectionIndex = MS_selectedIndex;
         return MS_selectedIndex + 1;
     }
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x && currentMenu != MAIN_MENU) {
+		Mix_PlayChannel(-1, gDeSelectSound, 0);
         //gameState.inMenu = false;
 		// skip over this, erroneous
         return 0; // who fucking wrote this shit LMFAOOOOOO
     }
     else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x && currentMenu == MAIN_MENU) {
+        Mix_PlayChannel(-1, gDeSelectSound, 0);
         gameState.inMenu = false;
         if (gameState.player) {
             gameState.player->clearInputState();
@@ -190,6 +202,7 @@ int handleMenuInputGrid(SDL_Event event, std::vector<std::string>* options) {
 		return 0;
     }
     else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x) {
+        Mix_PlayChannel(-1, gDeSelectSound, 0);
         lastMenuState = currentMenu; // Save the last menu state
         currentMenu = MAIN_MENU;
 		
@@ -598,6 +611,7 @@ void handleShopMenuSelection(SDL_Event event) {
 
     if (!merchant) {
         if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x) {
+            Mix_PlayChannel(-1, gDeSelectSound, 0);
             currentMenu = MAIN_MENU;
             gameState.inMenu = false;
         }
@@ -606,6 +620,7 @@ void handleShopMenuSelection(SDL_Event event) {
 
     // Exit shop
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x) {
+        Mix_PlayChannel(-1, gDeSelectSound, 0);
         //currentMenu = lastMenuState;
         //lastMenuState = currentMenu;
         currentMenu = MAIN_MENU;
@@ -620,9 +635,11 @@ void handleShopMenuSelection(SDL_Event event) {
 
     // Attempt purchase on Z release
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
+        
         int sel = MS_selectedIndex;
         if (sel < 0 || sel >= (int)merchant->m_Stock.size()) return;
         if (!merchant->canAfford(sel)) {
+            Mix_PlayChannel(-1, gDeSelectSound, 0);
             gameState.Text = { std::string("You don't have enough money for ") + merchant->m_Stock[sel].name + "." };
             gameState.textIndex = 0;
             lastMenuState = SHOP_MENU;
@@ -632,6 +649,7 @@ void handleShopMenuSelection(SDL_Event event) {
 
         bool ok = merchant->purchase(sel);
         if (ok) {
+            Mix_PlayChannel(-1, gSelectSound, 0);
             gameState.Text = { std::string("You bought ") + merchant->m_Stock[sel].name + "." };
             gameState.textIndex = 0;
             lastMenuState = SHOP_MENU;
@@ -648,6 +666,7 @@ void handleMainMenuSelection(SDL_Event event) {
 		return; // Ignore repeated key events
 	}
     if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_x && currentMenu != MAIN_MENU) {
+        Mix_PlayChannel(-1, gDeSelectSound, 0);
         gameState.inMenu = false;
         gameState.player->clearInputState();
         gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
@@ -697,6 +716,7 @@ void handleInventoryMenuSelection(SDL_Event event) {
         // no items
         //printf("No items what are we doign here");
 		if (event.key.keysym.sym == SDLK_x) {
+			Mix_PlayChannel(-1, gDeSelectSound, 0);
             lastMenuState = currentMenu;
 			currentMenu = MAIN_MENU;
 			MS_selectedIndex = 0;
@@ -712,14 +732,18 @@ void handleInventoryMenuSelection(SDL_Event event) {
     //}
 
     if (event.type == SDL_KEYDOWN) {
+        
         if (event.key.keysym.sym == SDLK_LEFT) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             MS_selectedIndex = (MS_selectedIndex > 0) ? MS_selectedIndex - 1 : options.size() - 1;
         }
         else if (event.key.keysym.sym == SDLK_RIGHT) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             MS_selectedIndex = (MS_selectedIndex < options.size() - 1) ? MS_selectedIndex + 1 : 0;
         }
 
         if (event.key.keysym.sym == SDLK_z) {
+            Mix_PlayChannel(-1, gSelectSound, 0);
             lastMenuState = currentMenu;
             currentMenu = ITEM_OPTIONS_MENU;  // Enter item options
             gameState.selectionIndex = MS_selectedIndex;
@@ -730,6 +754,7 @@ void handleInventoryMenuSelection(SDL_Event event) {
             MS_selectedIndex = 0;
         }
         else if (event.key.keysym.sym == SDLK_x) {
+			Mix_PlayChannel(-1, gDeSelectSound, 0);
             lastMenuState = currentMenu;
             currentMenu = MAIN_MENU;  // Back to main menu
             MS_selectedIndex = 0;
@@ -789,12 +814,15 @@ void handleItemOptionsMenuSelection(SDL_Event event) {
 
     if (event.type == SDL_KEYDOWN) {
         if (event.key.keysym.sym == SDLK_UP) {
+			Mix_PlayChannel(-1, gMoveSound, 0);
             MS_selectedIndex = (MS_selectedIndex > 0) ? MS_selectedIndex - 1 : options.size() - 1;
         }
         else if (event.key.keysym.sym == SDLK_DOWN) {
+			Mix_PlayChannel(-1, gMoveSound, 0);
             MS_selectedIndex = (MS_selectedIndex < options.size() - 1) ? MS_selectedIndex + 1 : 0;
         }
         else if (event.key.keysym.sym == SDLK_z) { // Confirm selection
+			Mix_PlayChannel(-1, gSelectSound, 0);
             switch (MS_selectedIndex + 1) {
             case 1: // Use
                 //std::cout << "Attempt to use item: " << GetItemnameFromIndex(gameState.Inventory.at( gameState.selectionIndex)) << std::endl;
@@ -839,6 +867,7 @@ void handleItemOptionsMenuSelection(SDL_Event event) {
             }
         }
         else if (event.key.keysym.sym == SDLK_x) { // Cancel action
+			Mix_PlayChannel(-1, gDeSelectSound, 0);
             if (gameState.DebugMode) {
                 printf("\nCancelling item option selection, returning to inventory.");
             }
@@ -851,6 +880,7 @@ void handleItemOptionsMenuSelection(SDL_Event event) {
 
 void handleStatsMenu(SDL_Event event) {
     if (event.key.keysym.sym == SDLK_x) {
+		Mix_PlayChannel(-1, gDeSelectSound, 0);
         lastMenuState = currentMenu;
         currentMenu = MAIN_MENU;  // Enter item options
     }
@@ -896,6 +926,7 @@ void handleDialogue(SDL_Event event) {
 
 
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
+        Mix_PlayChannel(-1, gSelectSound, 0);
         // If we don't have any valid text, cancel the dialog state
         if (gameState.Text.empty() || gameState.textIndex < 0 || static_cast<size_t>(gameState.textIndex) >= gameState.Text.size()) {
             gameState.textAvailable = false;
@@ -947,6 +978,8 @@ void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) {
 
     // If the current line exists, update and render it
     if (gameState.currentCharIndex < gameState.Text.at(gameState.textIndex).size()) {
+        // somewhere here, add logic to play one of three character voice sounds for each character in string.
+
         // Update text animation if needed
         if (gameState.shouldAnimateText && gameState.textAnimating) {
             gameState.textTimer += 1.0f / 60.0f;//60.0f; // Assuming 60 FPS
@@ -1002,16 +1035,20 @@ void handleQuestionInput(SDL_Event event) {
 	// gameState.callbackNPC has a callback function called handleChoice(int choice)
     if (event.type == SDL_KEYDOWN) {
         if (event.key.keysym.sym == SDLK_LEFT) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             MS_selectedIndex = (MS_selectedIndex > 0) ? MS_selectedIndex - 1 : gameState.callbackNPC->m_Choices.size() - 1;
         }
         else if (event.key.keysym.sym == SDLK_RIGHT) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
             MS_selectedIndex = (MS_selectedIndex < gameState.callbackNPC->m_Choices.size() - 1) ? MS_selectedIndex + 1 : 0;
         }
         else if (event.key.keysym.sym == SDLK_z) { // Confirm selection
+            Mix_PlayChannel(-1, gSelectSound, 0);
             gameState.callbackNPC->handleChoice(MS_selectedIndex);  /*(MS_selectedIndex + 1); // Notify the NPC about the selection (1-based index)*/
             //return MS_selectedIndex + 1; // Return the selected option index (1-based)
         }
         else if (event.key.keysym.sym == SDLK_x) { // Cancel action
+            Mix_PlayChannel(-1, gDeSelectSound, 0);
             //return 0; // Indicate cancellation
 			// we can tell the npc that the player cancelled by sending a -1 or something, up to implementation
             gameState.callbackNPC->handleChoice(-1);

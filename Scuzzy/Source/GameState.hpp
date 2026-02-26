@@ -71,6 +71,7 @@ struct GameState {
 	Timer fightTurnTimer;
 	Uint32 turnTimeLimit = 5000; // 5 seconds per turn
 	Uint32 lastTurnTime = 0;
+	uint32_t textSoundEffectTick = 0; // for animating text character by character
     int fightLayer1 = 1;
     int fightLayer2 = 0;
     float alpha1 = 1.0f;
