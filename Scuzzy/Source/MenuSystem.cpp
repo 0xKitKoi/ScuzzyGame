@@ -606,9 +606,9 @@ void handleShopMenuSelection(SDL_Event event) {
 
     // Exit shop
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x) {
-        currentMenu = lastMenuState;
+        //currentMenu = lastMenuState;
         //lastMenuState = currentMenu;
-        //currentMenu = MAIN_MENU;
+        currentMenu = MAIN_MENU;
         gameState.inMenu = false;
         if (gameState.player) {
             gameState.player->clearInputState();
