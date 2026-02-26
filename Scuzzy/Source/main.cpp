@@ -1493,6 +1493,7 @@ int main(int argc, char* args[])
 						if (gameState.textAvailable) {
 							//gameState.player->clearInputState(); // prevent player input from being buffered and triggering after dialogue ends.
 							player.clearInputState();
+							gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
 							// either text or an NPC!
 							/*
 								if (gameState.callbackNPC != nullptr) {
@@ -1510,9 +1511,11 @@ int main(int argc, char* args[])
 								// this is a menu
 								//renderMenuSideBySide(gRenderer, gFont);
 								handleMenuInputSideBySide(e);
+								gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
 							}
 							else {
 								handleDialogue(e);
+								gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
 							}
 							
 						}

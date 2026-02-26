@@ -636,58 +636,87 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 
 
 		
+		//if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {
+		//	// Adjust the velocity and update direction/state
+		//	switch (e.key.keysym.sym) {
+		//	case SDLK_UP:
+		//		m_VelY -= MaxVelocity;
+		//		keyUpPressed = true;
+		//		currentState = State::Walking;
+		//		currentDirection = Direction::Up;
+		//		break;
+		//	case SDLK_DOWN:
+		//		m_VelY += MaxVelocity;
+		//		keyDownPressed = true;
+		//		currentState = State::Walking;
+		//		currentDirection = Direction::Down;
+		//		break;
+		//	case SDLK_LEFT:
+		//		m_VelX -= MaxVelocity;
+		//		keyLeftPressed = true;
+		//		currentState = State::Walking;
+		//		currentDirection = Direction::Left;
+		//		break;
+		//	case SDLK_RIGHT:
+		//		m_VelX += MaxVelocity;
+		//		keyRightPressed = true;
+		//		currentState = State::Walking;
+		//		currentDirection = Direction::Right;
+		//		break;
+		//	}
+		//}
+
+		//// If a key was released
+		///*else */if (e.type == SDL_KEYUP /* && e.key.repeat == 0*/ ) {
+		//	// Adjust the velocity and update key states
+		//	switch (e.key.keysym.sym) {
+		//	case SDLK_UP:
+		//		m_VelY += MaxVelocity;
+		//		keyUpPressed = false;
+		//		break;
+		//	case SDLK_DOWN:
+		//		m_VelY -= MaxVelocity;
+		//		keyDownPressed = false;
+		//		break;
+		//	case SDLK_LEFT:
+		//		m_VelX += MaxVelocity;
+		//		keyLeftPressed = false;
+		//		break;
+		//	case SDLK_RIGHT:
+		//		m_VelX -= MaxVelocity;
+		//		keyRightPressed = false;
+		//		break;
+		//	}
+		//}
+
+		// so the player can hold a button down and open a menu, making it impossible for this to consume the SDL_KeyUP event.
+		// this makes it so that when the player quickly presses directions and opens the menu at the same time, when exiting the menu,
+		// the player glides because the m_VelX and m_VelY is non zero.
+		// this is my workaround for that horrible bug. 
 		if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {
-			// Adjust the velocity and update direction/state
-			switch (e.key.keysym.sym) {
-			case SDLK_UP:
-				m_VelY -= MaxVelocity;
-				keyUpPressed = true;
-				currentState = State::Walking;
-				currentDirection = Direction::Up;
-				break;
-			case SDLK_DOWN:
-				m_VelY += MaxVelocity;
-				keyDownPressed = true;
-				currentState = State::Walking;
-				currentDirection = Direction::Down;
-				break;
-			case SDLK_LEFT:
-				m_VelX -= MaxVelocity;
-				keyLeftPressed = true;
-				currentState = State::Walking;
-				currentDirection = Direction::Left;
-				break;
-			case SDLK_RIGHT:
-				m_VelX += MaxVelocity;
-				keyRightPressed = true;
-				currentState = State::Walking;
-				currentDirection = Direction::Right;
-				break;
+			switch (e.key.keysym.sym) { 
+			case SDLK_UP:    keyUpPressed = true; break;
+			case SDLK_DOWN:  keyDownPressed = true; break;
+			case SDLK_LEFT:  keyLeftPressed = true; break;
+			case SDLK_RIGHT: keyRightPressed = true; break;
 			}
 		}
 
-		// If a key was released
-		/*else */if (e.type == SDL_KEYUP /* && e.key.repeat == 0*/ ) {
-			// Adjust the velocity and update key states
+		if (e.type == SDL_KEYUP) {
 			switch (e.key.keysym.sym) {
-			case SDLK_UP:
-				m_VelY += MaxVelocity;
-				keyUpPressed = false;
-				break;
-			case SDLK_DOWN:
-				m_VelY -= MaxVelocity;
-				keyDownPressed = false;
-				break;
-			case SDLK_LEFT:
-				m_VelX += MaxVelocity;
-				keyLeftPressed = false;
-				break;
-			case SDLK_RIGHT:
-				m_VelX -= MaxVelocity;
-				keyRightPressed = false;
-				break;
+			case SDLK_UP:    keyUpPressed = false; break;
+			case SDLK_DOWN:  keyDownPressed = false; break;
+			case SDLK_LEFT:  keyLeftPressed = false; break;
+			case SDLK_RIGHT: keyRightPressed = false; break;
 			}
 		}
+		m_VelX = 0;
+		m_VelY = 0;
+
+		if (keyUpPressed)    m_VelY -= MaxVelocity;
+		if (keyDownPressed)  m_VelY += MaxVelocity;
+		if (keyLeftPressed)  m_VelX -= MaxVelocity;
+		if (keyRightPressed) m_VelX += MaxVelocity;
 		
 
 
@@ -893,6 +922,8 @@ void Player::reset(Vector2f initPos) {
 	//printf("Player::reset called.\n");
 	m_PosX = initPos.x;
 	m_PosY = initPos.y;
+	m_VelX = 0;
+	m_VelY = 0;
 	currentState = State::Idle;
 	//currentDirection = Direction::Down;
 	currentFrame = 0; // animtion frame count.
