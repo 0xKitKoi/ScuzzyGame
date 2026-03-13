@@ -201,7 +201,7 @@ void FS_UpdateAndRenderAnimatedText(SDL_Renderer* renderer, TTF_Font* font, SDL_
             while (fightTextTimer >= gameState.textSpeed && fightCurrentCharIndex < (int)full.size()) {
 
 				// make sure to wait until the next character is actually added before playing sound, so we don't get a burst of sounds when skipping
-				if (gameState.textSoundEffectTick == 0 || SDL_GetTicks() - gameState.textSoundEffectTick >= 50) { // 50ms cooldown between character sounds
+				if (gameState.textSoundEffectTick == 0 || SDL_GetTicks() - gameState.textSoundEffectTick >= 100) { // 50ms cooldown between character sounds
 					gameState.textSoundEffectTick = SDL_GetTicks();
                     // play one of three character voice sounds for each character in string here, maybe based on the character index to add variety?
                     int soundSel = chance(1, 3);
@@ -218,19 +218,19 @@ void FS_UpdateAndRenderAnimatedText(SDL_Renderer* renderer, TTF_Font* font, SDL_
                     }
                     gameState.textSoundEffectTick = SDL_GetTicks();
                 }
-				// play one of three character voice sounds for each character in string here, maybe based on the character index to add variety?
-				int soundSel = chance(1, 3);
-                switch (soundSel) {
-                    case 1:
-                        Mix_PlayChannel(-1, gTextCharSound1, 0); // placeholder sound effect for character voice
-                        break;
-                    case 2:
-                        Mix_PlayChannel(-1, gTextCharSound2, 0); // placeholder sound effect for character voice
-                        break;
-                    case 3:
-                        Mix_PlayChannel(-1, gTextCharSound3, 0); // placeholder sound effect for character voice
-                        break;
-				}
+				//// play one of three character voice sounds for each character in string here, maybe based on the character index to add variety?
+				//int soundSel = chance(1, 3);
+    //            switch (soundSel) {
+    //                case 1:
+    //                    Mix_PlayChannel(-1, gTextCharSound1, 0); // placeholder sound effect for character voice
+    //                    break;
+    //                case 2:
+    //                    Mix_PlayChannel(-1, gTextCharSound2, 0); // placeholder sound effect for character voice
+    //                    break;
+    //                case 3:
+    //                    Mix_PlayChannel(-1, gTextCharSound3, 0); // placeholder sound effect for character voice
+    //                    break;
+				//}
                 fightCurrentCharIndex++;
                 fightCurrentDisplay = full.substr(0, fightCurrentCharIndex);
                 fightTextTimer -= gameState.textSpeed;

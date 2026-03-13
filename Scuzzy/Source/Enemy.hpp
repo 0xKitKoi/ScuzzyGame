@@ -44,7 +44,8 @@ public:
 	//std::string m_EnemyFightSprite = "data/Error.png";
 	std::shared_ptr<LTexture> m_EnemyFightSpriteSheet;
 	std::shared_ptr<LTexture> m_EnemySoulSpriteSheet;
-	std::vector<SDL_Rect> m_EnemySoulSpriteClips = { { 0,0,32,32 }, { 32,0,32,32 }, { 32*2,0,32,32 }, { 32*3,0,32,32 } };
+	std::vector<SDL_Rect> m_EnemySoulSpriteClips = { { 32 * 0,0,32,32 }, { 32 * 1,0,32,32 }, { 32 * 2,0,32,32 }, { 32 * 0, 32 * 1, 32, 32 }, { 32 * 1, 32 * 1, 32, 32 }, { 32 * 2, 32 * 1, 32, 32 }, { 32 * 0, 32 * 2, 32, 32 }, { 32 * 1, 32 * 2, 32, 32 } };
+		//{ { 0,0,32,32 }, { 32,0,32,32 }, { 32*2,0,32,32 }, { 32*3,0,32,32 } };
 	std::vector<SDL_Rect> m_EnemySpriteClips;
 	std::vector<std::string> m_EnemyDialogue;
 	std::vector<std::string> m_Actions;

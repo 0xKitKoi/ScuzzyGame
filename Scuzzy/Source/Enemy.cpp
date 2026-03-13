@@ -133,6 +133,9 @@ void Enemy::Update(float deltaT, int screenheight, int screenwidth ) {
 	}
         */
         lastFrameTime += deltaT * 1000.0f;
+        frameDuration = 100;
+		float scaled = this->HP / float(this->m_MaxHP);
+		frameDuration = 100 * (1.0f + (1.0f - scaled)); // as HP gets lower, frame duration gets shorter, making the animation faster and more frantic.
         while (lastFrameTime >= frameDuration) {
             currentFrameCount = (currentFrameCount + 1) % /*this->m_Entity->FRAME_COUNT*/ 4;
             //lastFrameTime = 0;

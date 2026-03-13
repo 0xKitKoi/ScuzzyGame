@@ -615,7 +615,7 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 	if (!gameState.inFight) {
 		frameDuration = 100;
 	}
-	else { frameDuration = 500; }
+	else { frameDuration = 400; }
 	while (lastFrameTime >= frameDuration) {
 		currentFrame = (currentFrame + 1) % 4;
 		lastFrameTime -= frameDuration;  // Subtract instead of setting to 0
