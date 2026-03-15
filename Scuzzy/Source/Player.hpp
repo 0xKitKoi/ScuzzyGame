@@ -65,6 +65,7 @@ public:
 	Vector2f m_HeartPos; // = { float(screenWidth) / 2.0f - 32.0f, float(screenheight) / 2.0f - 32.0f };
 	Vector2f m_HeartVelocity;
 	SDL_Rect m_HeartClips[4] = { SDL_Rect{0,0,32,32}, SDL_Rect{32,0,32,32}, SDL_Rect{32 * 2, 0, 32, 32}, SDL_Rect{0,32,32,32} };
+	SDL_Rect m_HeartGlowClips[4] = { SDL_Rect{32,32,32,32}, SDL_Rect{32*2,32,32,32}, SDL_Rect{0, 32*2, 32, 32}, SDL_Rect{32,32*2,32,32} };
 	LTexture CurrentSprite; // need to access for fading.
 	SDL_Rect m_HeartCollider;
 	SDL_Rect m_HeartTensionCollider;

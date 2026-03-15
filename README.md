@@ -34,26 +34,29 @@ sudo apt install cmake build-essential
 sudo apt install -y \
   libsdl2-dev \
   libsdl2-image-dev \
-  libsdl2-ttf-dev
+  libsdl2-ttf-dev \
+  libsdl2-mixer-dev
 
 # For Fedora-based systems:
 sudo dnf install -y \
   SDL2-devel \
   SDL2_image-devel \
-  SDL2_ttf-devel
+  SDL2_ttf-devel \
+  SDL2_mixer-devel
 
 # For Arch-based systems:
 sudo pacman -S --noconfirm \
   sdl2 \
   sdl2_image \
-  sdl2_ttf
+  sdl2_ttf \
+  sdl2_mixer
 ```
 
 we use premake5 to make the build scripts:
 [Premake Releases](https://github.com/premake/premake-core/releases)
 
 ```bash
-wget https://github.com/premake/premake-core/releases/download/v5.0.0-beta7/premake-5.0.0-beta7-src.zip
+wget https://github.com/premake/premake-core/releases/download/v5.0.0-beta8/premake-5.0.0-beta8-linux.tar.gz
 ```
 untar or unzip it and use it like so:
 ```bash

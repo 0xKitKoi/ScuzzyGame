@@ -49,4 +49,8 @@ void handleQuestionInput(SDL_Event event);
 void renderDialogue(SDL_Renderer* renderer, TTF_Font* font);
 void handleDialogue(SDL_Event event);
 
+void renderMenuSideBySide(SDL_Renderer* renderer, TTF_Font* font);
+void handleMenuInputSideBySide(SDL_Event event);
+
+
 #endif

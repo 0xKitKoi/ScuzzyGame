@@ -1057,3 +1057,147 @@ void handleQuestionInput(SDL_Event event) {
     }
     //return -1; // No selection made
 }
+
+
+
+std::vector<std::string> menuOptions = {
+	"Start Game",
+	"Options",
+	"Exit"
+};
+int selectedIndex = 0;
+void renderMenu(SDL_Renderer* renderer, TTF_Font* font) {
+	//renderTextBox(renderer);
+    MS_renderTextBox(renderer);
+	SDL_Color white = { 255, 255, 255 };
+	SDL_Color red = { 179, 0, 0 };
+
+	for (int i = 0; i < menuOptions.size(); i++) {
+		SDL_Color color = (i == selectedIndex) ? red : white;
+		//renderText(renderer, font, menuOptions[i], 60, 410 + (i * 40), color);
+        MS_renderText(renderer, font, menuOptions[i], 60, 410 + (i * 40), color);
+	}
+}
+
+void handleMenuInput(SDL_Event event) {
+	if (event.type == SDL_KEYDOWN) {
+		if (event.key.keysym.sym == SDLK_UP) {
+			selectedIndex = (selectedIndex > 0) ? selectedIndex - 1 : menuOptions.size() - 1;
+		}
+		else if (event.key.keysym.sym == SDLK_DOWN) {
+			selectedIndex = (selectedIndex < menuOptions.size() - 1) ? selectedIndex + 1 : 0;
+		}
+		else if (event.key.keysym.sym == SDLK_z) {
+			// Perform action based on selectedIndex
+			if (selectedIndex == 0) {
+				// Start Game
+				gameState.inMenu = false;
+			}
+			else if (selectedIndex == 1) {
+				// Options
+				gameState.inMenu = false;
+			}
+			else if (selectedIndex == 2) {
+				// Exit
+				gameState.inMenu = false;
+			}
+		}
+	}
+}
+
+
+
+void renderMenuSideBySide(SDL_Renderer* renderer, TTF_Font* font) {
+	// Get screen dimensions
+	int screenWidth, screenHeight;
+	SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+
+	// Render the text box at the bottom of the screen
+	//renderTextBox(renderer);
+    MS_renderTextBox(renderer);
+
+	// Calculate text rendering position and dynamic spacing
+	int boxWidth = screenWidth * 0.9;
+	int xOffset = screenWidth * 0.05 + 10;  // Start slightly inside the text box
+	int yOffset = screenHeight - 275;       // Place the text inside the box
+
+	int totalTextWidth = 0;
+	//int numOptions = menuOptions.size();
+	int numOptions = gameState.Text.size();
+
+	// Clamp selectedIndex to valid range for these options
+	if (numOptions > 0 && (selectedIndex < 0 || selectedIndex >= numOptions)) {
+		selectedIndex = 0;
+	}
+
+	// Calculate total width of all the text
+	for (const auto& option : gameState.Text) {
+		//totalTextWidth += getTextWidth(font, option);
+		int textWidth = 0;
+		int textHeight = 0;
+		TTF_SizeText(font, option.c_str(), &textWidth, &textHeight);
+		totalTextWidth += textWidth;
+	}
+
+	// Calculate remaining space and distribute it as spacing between options
+	int remainingSpace = boxWidth - totalTextWidth;
+	int spacing = remainingSpace / (numOptions + 1);
+
+	// Render each option side by side with dynamic spacing
+	int currentX = xOffset + spacing;
+
+	SDL_Color white = { 255, 255, 255 };  // Normal text color
+	SDL_Color red = { 237, 28, 36 };   // Highlighted text color
+
+	for (int i = 0; i < numOptions; i++) {
+		SDL_Color color = (i == selectedIndex) ? red : white;
+
+		//renderText(renderer, font, gameState.Text[i], currentX, yOffset, color);
+        MS_renderText(renderer, font, gameState.Text[i], currentX, yOffset, color);
+
+		//currentX += getTextWidth(font, menuOptions[i]) + spacing;
+		int textWidth = 0;
+		int textHeight = 0;
+		TTF_SizeText(font, gameState.Text[i].c_str(), &textWidth, &textHeight);
+		currentX += textWidth + spacing;
+	}
+}
+
+void handleMenuInputSideBySide(SDL_Event event) {
+	// If there is no text to show, ignore input
+	if (gameState.Text.empty()) return;
+
+	if (event.type == SDL_KEYDOWN) {
+		if (event.key.keysym.sym == SDLK_LEFT) {
+			// Move left, wrapping around if necessary
+			selectedIndex = (selectedIndex > 0) ? selectedIndex - 1 : static_cast<int>(gameState.Text.size()) - 1;
+		}
+		else if (event.key.keysym.sym == SDLK_RIGHT) {
+			// Move right, wrapping around if necessary
+			selectedIndex = (selectedIndex < static_cast<int>(gameState.Text.size()) - 1) ? selectedIndex + 1 : 0;
+		}
+		else if (event.key.keysym.sym == SDLK_z) {
+			// Perform action based on selected option
+			
+			//if (selectedIndex == 0) {
+				// Start Game
+			//	gameState.inMenu = false;
+			//}
+			//else if (selectedIndex == 1) {
+				// Options
+			//	gameState.inMenu = false;
+			//}
+			//else if (selectedIndex == 2) {
+				// Exit
+			//	gameState.inMenu = false;
+			//}
+			
+			gameState.selectionIndex = selectedIndex + 1; // 0 is not selected anything yet!
+			gameState.inMenu = false;
+			if (gameState.callbackNPC) {
+				gameState.callbackNPC->handleChoice(gameState.selectionIndex); // tell the NPC who triggered a choice the selection.
+			}
+			
+		}
+	}
+}

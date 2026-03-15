@@ -621,56 +621,7 @@ bool loadMedia()
 	gTextCharSound8 = Mix_LoadWAV("data/mus/entalk8.wav");
 	gTextCharSound9 = Mix_LoadWAV("data/mus/entalk9.wav");
 
-	/*
-	int ls = LoadSave();
-	if (ls) {
-		if (SaveData.room == "test") {
-			if (!Map.loadFromFile("data/concept art.bmp")) // "data/concept art.bmp" data/startingalley.png
-			{
-				printf("Failed to load sprite sheet texture!\n");
-				success = false;
-			}
-		}
-		if (SaveData.room == "Level1") {
-			if (!Map.loadFromFile("data/fight convepts.png"))
-			{
-				printf("Failed to load sprite sheet texture!\n");
-				success = false;
-			}
-			std::string levelstats = "LEVEL STATS: ";
-			levelstats += std::to_string(Map.getHeight());
-			levelstats += "x";
-			levelstats += std::to_string(Map.getWidth());
-			printf(levelstats.c_str());
-		}
-		if (SaveData.room == "Level2") {
-			if (!Map.loadFromFile("data/startingalley.png"))
-			{
-				printf("Failed to load sprite sheet texture!\n");
-				success = false;
-			}
-			SaveData.pos.x = 100;
-			SaveData.pos.y = 100;
-			SaveData.room = "Level2";
-			std::string levelstats = "LEVEL STATS: ";
-			levelstats += std::to_string(Map.getHeight());
-			levelstats += "x";
-			levelstats += std::to_string(Map.getWidth());
-			printf(levelstats.c_str());
-		}
-	}
-	else {
-		// Couldn't load save data. Assume game is starting for first time.
-		if (!Map.loadFromFile("data/Error.png"))
-		{
-			printf("Failed to load sprite sheet texture!\n");
-			success = false;
-		}
-		//SaveData.pos.x = 700;
-		//SaveData.pos.y = 700;
-		//SaveData.room = "test";
-	}
-	*/
+
 	LoadSave();
 	LoadLevel(SaveData.room, &Map);
 	levelHeight = Map.getHeight();
@@ -680,72 +631,9 @@ bool loadMedia()
 	return success;
 }
 
+
+
 /*
-bool checkCollision(SDL_Rect a, SDL_Rect b)
-{
-	//The sides of the rectangles
-	int leftA, leftB;
-	int rightA, rightB;
-	int topA, topB;
-	int bottomA, bottomB;
-
-	//Calculate the sides of rect A
-	leftA = a.x;
-	rightA = a.x + a.w;
-	topA = a.y;
-	bottomA = a.y + a.h;
-
-	//Calculate the sides of rect B
-	leftB = b.x;
-	rightB = b.x + b.w;
-	topB = b.y;
-	bottomB = b.y + b.h;
-
-	//If any of the sides from A are outside of B
-	if (bottomA <= topB)
-	{
-		return false;
-	}
-
-	if (topA >= bottomB)
-	{
-		return false;
-	}
-
-	if (rightA <= leftB)
-	{
-		return false;
-	}
-
-	if (leftA >= rightB)
-	{
-		return false;
-	}
-
-	//If none of the sides from A are outside B
-	return true;
-}
-
-void checkCollisions(Player& player) {
-	int playerX = player.GetPosX() / GRID_CELL_SIZE;
-	int playerY = player.GetPosY() / GRID_CELL_SIZE;
-
-	for (int x = playerX - 1; x <= playerX + 1; ++x) {
-		for (int y = playerY - 1; y <= playerY + 1; ++y) {
-			if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT) {
-				for (const auto& box : grid[x][y]) {
-					if (SDL_HasIntersection(&player.GetCollider(), &box)) {
-						// Handle collision
-
-					}
-				}
-			}
-		}
-	}
-}
-*/
-
-
 void assignToGrid(const SDL_Rect& box) {
 	// The idea of this is to only pass the vector of rects containing collision boxes to the player ONLY if the player is around them.
 	// there's probably a better way to do this.
@@ -766,13 +654,14 @@ void assignToGrid(const SDL_Rect& box) {
 			grid[x][y].push_back(box);
 		}
 	}
-}
+}*/
 
 SDL_Rect leftWall;
 SDL_Rect topWall;
 SDL_Rect rightWall;
 SDL_Rect bottomWall;
 
+// TEMPORARY COLLISION BOXES TEST
 void initializeCollisionBoxes() {
 	//	TODO: Level loading.
 	// 
@@ -780,58 +669,34 @@ void initializeCollisionBoxes() {
 	// this is just a box made of collision boxes for player debugging. 
 	// Left wall
 	//SDL_Rect leftWall;
-	leftWall.x = 300;
-	leftWall.y = 600;
-	leftWall.w = 40;
-	leftWall.h = 400;
+	leftWall = {300, 600, 40, 400};
 	collisionBoxes.push_back(&leftWall);
 
 	// Top wall
 	//SDL_Rect topWall;
-	topWall.x = leftWall.x;
-	topWall.y = leftWall.y;
-	topWall.w = leftWall.w + 300;
-	topWall.h = 40;
+	topWall = {leftWall.x, leftWall.y, leftWall.w + 300, 40};
 	collisionBoxes.push_back(&topWall);
 
 	// Right wall
 	//SDL_Rect rightWall;
-	rightWall.x = leftWall.x + 300;
-	rightWall.y = leftWall.y;
-	rightWall.w = leftWall.w;
-	rightWall.h = leftWall.h;
+	rightWall = {leftWall.x + 300, leftWall.y, leftWall.w, leftWall.h};
 	collisionBoxes.push_back(&rightWall);
 
 	// Bottom wall
 	//SDL_Rect bottomWall;
-	bottomWall.x = leftWall.x;
-	bottomWall.y = leftWall.y + leftWall.h - 40;
-	bottomWall.w = topWall.w;
-	bottomWall.h = 40;
+	bottomWall = {leftWall.x, leftWall.y + leftWall.h - 40, topWall.w, 40};
 	collisionBoxes.push_back(&bottomWall);
 }
 
-
+/*
 void initializeCollisionGrid() {
 	// The idea of this is to only pass the vector of rects containing collision boxes to the player ONLY if the player is around them.
 	// there's probably a better way to do this.
 	for (const auto& box : collisionBoxes) {
 		assignToGrid(*box);
 	}
-}
+}*/
 
-
-/*
-void renderCollisionBoxes(SDL_Renderer* gRenderer, const std::vector<SDL_Rect>& collisionBoxes) {
-	// Set the render draw color for walls (black in this case)
-	SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
-
-	// Iterate through all collision boxes and draw them
-	for (const auto& wall : collisionBoxes) {
-		SDL_RenderDrawRect(gRenderer, &wall);
-	}
-}
-*/
 
 //void renderCollisionBoxes(SDL_Renderer* gRenderer, const std::vector<SDL_Rect>& collisionBoxes, const SDL_Rect& camera) {
 void renderCollisionBoxes(SDL_Renderer* gRenderer, const SDL_Rect& camera) {
@@ -887,285 +752,6 @@ std::vector<SDL_Rect> getSurroundingCollisionBoxes(Player& player, const std::ve
 	}
 
 	return surroundingBoxes;
-}
-
-
-/*
-void renderTextBox(SDL_Renderer* renderer, int x, int y, int width, int height) {
-	SDL_Rect box = { x, y, width, height };
-
-	// Render black background
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-	SDL_RenderFillRect(renderer, &box);
-
-	// Render deep red border
-	// #660010
-	SDL_SetRenderDrawColor(renderer, 237, 28, 36, 255);
-	SDL_RenderDrawRect(renderer, &box);
-}*/
-
-
-
-
-void renderTextBox(SDL_Renderer* renderer) {
-	int boxWidth = screenwidth * 0.9;  // 90% of the screen width
-	int boxHeight = 300;               // Fixed height for the text box
-	int xPos = (screenwidth - boxWidth) / 2;  // Center the box horizontally
-	int yPos = screenheight- boxHeight - 20; // Place the box 20 pixels above the bottom
-
-	// Set the color for the text box (e.g., black)
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-	SDL_Rect textBoxRect = { xPos, yPos, boxWidth, boxHeight };
-	SDL_RenderFillRect(renderer, &textBoxRect);
-
-	// Draw a red border around the text box
-	SDL_SetRenderDrawColor(renderer, 103, 0, 0, 255);
-	SDL_RenderDrawRect(renderer, &textBoxRect);
-}
-
-void renderText(SDL_Renderer* renderer, TTF_Font* font, std::string text, int x, int y, SDL_Color color) {
-	SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
-	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-	SDL_Rect dstRect = { x, y, surface->w, surface->h };
-	SDL_RenderCopy(renderer, texture, NULL, &dstRect);
-
-	SDL_FreeSurface(surface);
-	SDL_DestroyTexture(texture);
-}
-
-//int dialogueIndex = 0;
-/*
-std::vector<std::string> dialogue = {
-	"Hello, welcome to the game.",
-	"We hope you enjoy your journey.",
-	"Press Z to continue."
-};*/
-//void handleDialogue(SDL_Event event) {
-//
-//	// ok this could be the sign NPC or the Merchant.
-//	if (gameState.callbackNPC != nullptr) {
-//		// this is not the sign NPC.
-//	}
-//
-//
-//	if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
-//		// If we don't have any valid text, cancel the dialog state
-//		if (gameState.Text.empty() || gameState.textIndex < 0 || static_cast<size_t>(gameState.textIndex) >= gameState.Text.size()) {
-//			gameState.textAvailable = false;
-//			return;
-//		}
-//		if (gameState.shouldAnimateText && gameState.textAnimating) {
-//			// If text is still animating, show the full text immediately
-//			gameState.currentDisplayText = gameState.Text[gameState.textIndex];
-//			gameState.textAnimating = false;
-//		}
-//		else if (gameState.textIndex < gameState.Text.size() - 1) {
-//			// Move to next line and start animating if needed
-//			gameState.textIndex++;
-//			if (gameState.shouldAnimateText) {
-//				gameState.currentCharIndex = 0;
-//				gameState.textTimer = 0.0f;
-//				gameState.textAnimating = true;
-//				gameState.currentDisplayText = "";
-//			}
-//		}
-//		else {
-//			// Dialogue finished
-//			gameState.textIndex = 0;
-//			gameState.textAvailable = false;
-//			gameState.textAnimating = false;
-//		}
-//	}
-//}
-//
-//
-//void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) {
-//	// Get screen dimensions
-//	int screenWidth, screenHeight;
-//	SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
-//
-//	// Render the text box at the bottom of the screen
-//	renderTextBox(renderer);
-//
-//	// Calculate text position inside the text box
-//	int boxWidth = screenWidth * 0.9;
-//	int xOffset = screenWidth * 0.05 + 20;  // Small margin inside the box
-//	int yOffset = screenHeight - 275;       // Positioning inside the text box
-//
-//	// Ensure we have valid text to display
-//	if (gameState.Text.empty() || gameState.textIndex < 0 || static_cast<size_t>(gameState.textIndex) >= gameState.Text.size()) {
-//		// Nothing to render
-//		return;
-//	}
-//
-//	// If the current line exists, update and render it
-//	if (gameState.currentCharIndex < gameState.Text.at(gameState.textIndex).size()) {
-//		// Update text animation if needed
-//		if (gameState.shouldAnimateText && gameState.textAnimating) {
-//			gameState.textTimer += 1.0f / 60.0f;//60.0f; // Assuming 60 FPS
-//			if (gameState.textTimer >= gameState.textSpeed) {
-//				gameState.textTimer = 0.0f;
-//				if (gameState.currentCharIndex < gameState.Text.at(gameState.textIndex).length()) {
-//					gameState.currentDisplayText += gameState.Text.at(gameState.textIndex).at(gameState.currentCharIndex);
-//					gameState.currentCharIndex++;
-//				}
-//				else {
-//					gameState.textAnimating = false;
-//				}
-//			}
-//		}
-//
-//
-//	}
-//	// Render the current text
-//	SDL_Color white = { 255, 255, 255 };  // Normal text color
-//	if (gameState.shouldAnimateText && gameState.textAnimating) {
-//		renderText(renderer, font, gameState.currentDisplayText, xOffset, yOffset, white);
-//	}
-//	else {
-//		renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, white);
-//	}
-//}
-
-
-
-std::vector<std::string> menuOptions = {
-	"Start Game",
-	"Options",
-	"Exit"
-};
-int selectedIndex = 0;
-
-void renderMenu(SDL_Renderer* renderer, TTF_Font* font) {
-	renderTextBox(renderer);
-	SDL_Color white = { 255, 255, 255 };
-	SDL_Color red = { 179, 0, 0 };
-
-	for (int i = 0; i < menuOptions.size(); i++) {
-		SDL_Color color = (i == selectedIndex) ? red : white;
-		renderText(renderer, font, menuOptions[i], 60, 410 + (i * 40), color);
-	}
-}
-
-void handleMenuInput(SDL_Event event) {
-	if (event.type == SDL_KEYDOWN) {
-		if (event.key.keysym.sym == SDLK_UP) {
-			selectedIndex = (selectedIndex > 0) ? selectedIndex - 1 : menuOptions.size() - 1;
-		}
-		else if (event.key.keysym.sym == SDLK_DOWN) {
-			selectedIndex = (selectedIndex < menuOptions.size() - 1) ? selectedIndex + 1 : 0;
-		}
-		else if (event.key.keysym.sym == SDLK_z) {
-			// Perform action based on selectedIndex
-			if (selectedIndex == 0) {
-				// Start Game
-				gameState.inMenu = false;
-			}
-			else if (selectedIndex == 1) {
-				// Options
-				gameState.inMenu = false;
-			}
-			else if (selectedIndex == 2) {
-				// Exit
-				gameState.inMenu = false;
-			}
-		}
-	}
-}
-
-
-
-void renderMenuSideBySide(SDL_Renderer* renderer, TTF_Font* font) {
-	// Get screen dimensions
-	int screenWidth = SCREEN_WIDTH, screenHeight = SCREEN_HEIGHT;
-	SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
-
-	// Render the text box at the bottom of the screen
-	renderTextBox(renderer);
-
-	// Calculate text rendering position and dynamic spacing
-	int boxWidth = screenWidth * 0.9;
-	int xOffset = screenWidth * 0.05 + 10;  // Start slightly inside the text box
-	int yOffset = screenHeight - 275;       // Place the text inside the box
-
-	int totalTextWidth = 0;
-	//int numOptions = menuOptions.size();
-	int numOptions = gameState.Text.size();
-
-	// Clamp selectedIndex to valid range for these options
-	if (numOptions > 0 && (selectedIndex < 0 || selectedIndex >= numOptions)) {
-		selectedIndex = 0;
-	}
-
-	// Calculate total width of all the text
-	for (const auto& option : gameState.Text) {
-		//totalTextWidth += getTextWidth(font, option);
-		int textWidth = 0;
-		int textHeight = 0;
-		TTF_SizeText(font, option.c_str(), &textWidth, &textHeight);
-		totalTextWidth += textWidth;
-	}
-
-	// Calculate remaining space and distribute it as spacing between options
-	int remainingSpace = boxWidth - totalTextWidth;
-	int spacing = remainingSpace / (numOptions + 1);
-
-	// Render each option side by side with dynamic spacing
-	int currentX = xOffset + spacing;
-
-	SDL_Color white = { 255, 255, 255 };  // Normal text color
-	SDL_Color red = { 237, 28, 36 };   // Highlighted text color
-
-	for (int i = 0; i < numOptions; i++) {
-		SDL_Color color = (i == selectedIndex) ? red : white;
-
-		renderText(renderer, font, gameState.Text[i], currentX, yOffset, color);
-
-		//currentX += getTextWidth(font, menuOptions[i]) + spacing;
-		int textWidth = 0;
-		int textHeight = 0;
-		TTF_SizeText(font, gameState.Text[i].c_str(), &textWidth, &textHeight);
-		currentX += textWidth + spacing;
-	}
-}
-
-void handleMenuInputSideBySide(SDL_Event event) {
-	// If there is no text to show, ignore input
-	if (gameState.Text.empty()) return;
-
-	if (event.type == SDL_KEYDOWN) {
-		if (event.key.keysym.sym == SDLK_LEFT) {
-			// Move left, wrapping around if necessary
-			selectedIndex = (selectedIndex > 0) ? selectedIndex - 1 : static_cast<int>(gameState.Text.size()) - 1;
-		}
-		else if (event.key.keysym.sym == SDLK_RIGHT) {
-			// Move right, wrapping around if necessary
-			selectedIndex = (selectedIndex < static_cast<int>(gameState.Text.size()) - 1) ? selectedIndex + 1 : 0;
-		}
-		else if (event.key.keysym.sym == SDLK_z) {
-			// Perform action based on selected option
-			/*
-			if (selectedIndex == 0) {
-				// Start Game
-				gameState.inMenu = false;
-			}
-			else if (selectedIndex == 1) {
-				// Options
-				gameState.inMenu = false;
-			}
-			else if (selectedIndex == 2) {
-				// Exit
-				gameState.inMenu = false;
-			}
-			*/
-			gameState.selectionIndex = selectedIndex + 1; // 0 is not selected anything yet!
-			gameState.inMenu = false;
-			if (gameState.callbackNPC) {
-				gameState.callbackNPC->handleChoice(gameState.selectionIndex); // tell the NPC who triggered a choice the selection.
-			}
-			
-		}
-	}
 }
 
 
@@ -1315,7 +901,6 @@ int main(int argc, char* args[])
 
 			GameStart();
 			
-			//std::vector<std::shared_ptr<Entity>> Entities; // made global because everything needs to see all entities for collision detection.
 			//std::unique_ptr<Player> player = std::make_unique<Player>(playerinitpos, Entities);
 			Player player(playerinitpos, Entities);
 			gameState.player = &player;
@@ -1324,23 +909,9 @@ int main(int argc, char* args[])
 			player.m_FightSpriteSheet = heart;
 
 			
-			/*
-			    Parent parent;
-
-				// Create a Child and pass the parent to it
-				std::shared_ptr<Child> child = std::make_shared<Child>(parent);
-
-				// Set the child in the parent
-				parent.setChild(std::move(child));
-
-				// Call the child's function through the parent
-				parent.callChildFunction();
-			*/
-
-
 
 			// WALL
-			SDL_Rect wall = { 300, 600, 40, 400 };
+			//SDL_Rect wall = { 300, 600, 40, 400 };
 			//assignToGrid(wall);
 
 			//std::vector<SDL_Rect> collisionBoxes;
@@ -1470,58 +1041,6 @@ int main(int argc, char* args[])
 						break;
 					}
 
-					/*if (e.key.keysym.scancode == SDL_SCANCODE_F10) {
-						SaveGame(player.GetPosX(), player.GetPosY());
-					}*/
-					/*if (e.key.keysym.scancode == SDL_SCANCODE_F11) {
-						LoadSave();
-					}*/
-
-					//if (e.key.keysym.scancode == SDL_SCANCODE_F4) {
-					//	/*
-					//	gameState.Text = {
-					//		"Hello, welcome to the game.",
-					//		"We hope you enjoy your journey.",
-					//		"Press Z to continue."
-					//		};
-					//	*/
-					//	gameState.Text = {
-					//		// 100 char limit per line
-					//		"AAAA BBBB CCCC DDDD EEEE FFFF GGGG HHHH IIII JJJJ KKKK LLLL MMMM NNNN OOOO PPPP QQQQ RRRR SSSS TTTT UUUU VVVV WWWW XXXX"
-					//	};
-
-					//	gameState.textAvailable = true;
-					//}
-					//if (e.key.keysym.scancode == SDL_SCANCODE_F5) {
-					//	gameState.Text = { "Start", "Options", "Quit" };
-					//	gameState.inMenu = true;
-					//}
-					//if (e.key.keysym.scancode == SDL_SCANCODE_C) {
-					//	// opejn a menu
-					//	/*
-					//	gameState.Text = { "Talk", "Items" };
-					//	gameState.inMenu = true;
-					//	gameState.OpenedMenu = true;
-					//	*/
-
-					//	gameState.inMenu = true;
-
-					//	MS_renderMenu(gRenderer, gFont);
-					//	//SDL_RenderPresent(gRenderer);
-					//}
-
-
-					//if (gameState.dead) {
-					//	// render the death png
-					//	// auto barrel = std::make_shared<Entity>(Vector2f(2322, 258), SDL_Rect{ 0,0,128,128 }, SDL_Rect{ 0,0,128,128 }, getTexture("data/barrel_nuclear.png"), 1, clips, 1);
-					//	Entities.clear();
-					//	LTexture deathScreen;
-					//	deathScreen.loadFromFile("data/Death.png");
-					//	deathScreen.render(0, 0, &camera);
-					//	continue;
-
-					//}
-
 
 					if (gameState.dead) {
 							SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0);
@@ -1584,8 +1103,7 @@ int main(int argc, char* args[])
 							*/
 							if (gameState.OpenedMenu) {
 								// this is a menu
-								//renderMenuSideBySide(gRenderer, gFont);
-								handleMenuInputSideBySide(e);
+								renderMenuSideBySide(gRenderer, gFont);
 								gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
 							}
 							else {
@@ -1652,12 +1170,6 @@ int main(int argc, char* args[])
 
 
 				// Starting Point!
-
-				//if (gameState.dead) {
-				//	//handleDeath(e, player);
-				//	// dont bother with the rest of the application loop.
-				//	continue;
-				//}
 
 				if (gameState.LoadingScreen) {
 					// fade to black, load map texture based on room name, and fade back in.
@@ -1770,25 +1282,6 @@ int main(int argc, char* args[])
 					SDL_RenderClear(gRenderer);
 					SDL_SetRenderDrawColor(gRenderer, 0, 0, 20, 0xFF);
 					SDL_RenderClear(gRenderer);
-					//int offsetX = 0, offsetY = 0;
-					//camera.centerOn(player.GetPosX(), player.GetPosY());
-					//camera.centerOn(player.GetPosX() - camera.x, player.GetPosY() - camera.y);
-					//camera.centerOn(player.GetPosX(), player.GetPosY());
-					//    camera.centerOn(player.GetPosX() + player.SpriteWidth / 2.0f,
-                    //player.GetPosY() + player.SpriteHeight / 2.0f);
-
-					//if (windowHeight > levelHeight) {
-					//	//MapoffsetX = (windowWidth - levelWidth) / 2;
-					//	MapoffsetY = (windowHeight - levelHeight) / 2;
-					//}
-					//else {MapoffsetX = 0;}
-					//if (windowWidth > levelWidth) {
-					//	MapoffsetX = (windowWidth - levelWidth) / 2;
-					//	
-					//}
-					//else {MapoffsetY = 0;}
-
-					//Map.render(MapoffsetX, MapoffsetY, &camera);
 
 
 					MapoffsetY = 0;
@@ -1881,16 +1374,13 @@ int main(int argc, char* args[])
 					SDL_RenderCopy(gRenderer, Map.getTexture(), &srcRect, &dstRect);	
 
 					/*
+					    // Debug info for Camera rects
 					    printf("Camera: (%.1f, %.1f) | Player: (%d, %d)\n", 
-           camera.x, camera.y, player.m_PosX, player.m_PosY);
-							printf("Map Offset: (%d, %d)\n", center_offset_x, center_offset_y);
-							printf("SrcRect: (%d, %d, %d, %d)\n", srcRect.x, srcRect.y, srcRect.w, srcRect.h);
-							printf("DstRect: (%d, %d, %d, %d)\n", dstRect.x, dstRect.y, dstRect.w, dstRect.h);
+           						camera.x, camera.y, player.m_PosX, player.m_PosY);
+						printf("Map Offset: (%d, %d)\n", center_offset_x, center_offset_y);
+						printf("SrcRect: (%d, %d, %d, %d)\n", srcRect.x, srcRect.y, srcRect.w, srcRect.h);
+						printf("DstRect: (%d, %d, %d, %d)\n", dstRect.x, dstRect.y, dstRect.w, dstRect.h);
 					*/
-
-
-
-
 
 
 
@@ -2232,42 +1722,6 @@ int main(int argc, char* args[])
 					gameState.enemy->Update(deltaTime, SCREEN_HEIGHT, SCREEN_WIDTH);
 
 
-					/*
-					try {
-        				bgLayer1 = std::make_shared<BackgroundLayer>(gameState.fightLayer1);
-        				if (!bgLayer1->isValid()) {
-            				std::cerr << "Error: Failed to load layer1 (" << gameState.fightLayer1 << ")\n";
-            				return 1;
-        				}
-    				} catch (const std::exception &e) {
-        				std::cerr << "Error: Failed to load layer1 (" << gameState.fightLayer1 << "): " << e.what() << "\n";
-        				return 1;
-    				}
-
-    				// Set alpha blending based on whether we have 2 layers
-    				float alpha1 = 1.0f;
-    				float alpha2 = 0.0f;
-    
-    				if (gameState.fightLayer2 != 0) {
-        				try {
-            				bgLayer2 = std::make_shared<BackgroundLayer>(gameState.fightLayer2);
-            				if (bgLayer2->isValid()) {
-                				alpha1 = 0.5f;
-                				alpha2 = 0.5f;
-            				} else {
-                				std::cerr << "Warning: Failed to load layer2 (" << gameState.fightLayer2 << ")\n";
-                				std::cerr << "Continuing with layer1 only\n";
-                				gameState.fightLayer2 = 0;
-                				alpha1 = 1.0f;
-            				}
-        				} catch (const std::exception &e) {
-            					std::cerr << "Warning: Failed to load layer2 (" << gameState.fightLayer2 << "): " << e.what() << "\n";
-            					std::cerr << "Continuing with layer1 only\n";
-            					gameState.fightLayer2 = 0;
-            					alpha1 = 1.0f;
-        				}
-    				}
-					*/
 
         			// Clear framebuffer
         			memset(framebuffer.data(), 0, framebuffer.size());
@@ -2325,38 +1779,7 @@ int main(int argc, char* args[])
 							SDL_Delay(SCREEN_TICKS_PER_FRAME - frameTicks);
 						}
 					*/
-
-
-					
-
-					// Get this from Enemy ID.
-					//gameState.enemy->m_EnemyFightSpriteSheet->render((SCREEN_WIDTH/2)-128, (SCREEN_HEIGHT/2)-128*2, &rect);
-					//std::vector <SDL_Rect *> boundaries;
-					//SDL_Rect test = { 0, 0, SCREEN_WIDTH, 100 };
-					//boundaries.push_back(&test); // top TEST BOUNDARY
-					// so i cant call these here, it HAS to be where SDL Polls for events to populate e. checks. 
-					//player.handleEvent(e); // player heart controls
-					//FS_HandleInput(gRenderer, gFont, e); // Give control to FightSystem
-					//
-					//
-					// NO it dies have to be here as well as in the event polling loop to catch all events. otherwise the heart is not rendered..? wtfff
-					// the application loop right now is this:
-					/*
-					main()
-						while not quit
-							while poll event
-								handle event for player
-								handle event for fightsystem
-							if not in fight
-								render overworld, etc
-							else
-								HERE!
-								update enemy
-								update player input func ?
-								hand over to Fight System State Machine ? (SDL_Event e is an argument)
-								render fight system
-					
-					*/ 					
+			
 
 					player.handleEvent(e, deltaTime);
 					FS_HandleInput(gRenderer, gFont, e); // Give control to FightSystem
@@ -2366,46 +1789,6 @@ int main(int argc, char* args[])
 					//Update screen
 					SDL_RenderPresent(gRenderer);
 				}
-
-
-
-
-
-				//if (gameState.textAvailable) {
-				//	renderDialogue(gRenderer, gFont);
-				//	player.currentState = State::Idle;
-				//}
-				//else if (gameState.OpenedMenu) {
-				//	renderMenuSideBySide(gRenderer, gFont);
-				//	player.currentState = State::Idle;
-
-				//}
-				//else if (gameState.inMenu) {
-				//	//renderMenuSideBySide(gRenderer, gFont);
-				//	MS_renderMenu(gRenderer, gFont);
-				//	player.currentState = State::Idle;
-				//}
-
-				//if (gameState.checkFlag) {
-				//	bool someone = false;
-				//	for (const auto& entity : Entities) {
-				//		if (SDL_HasIntersection(&player.m_CheckBox, &entity->m_Collider)) { // &entity->m_Collider
-				//			printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
-				//			printf(std::to_string(entity->m_EntityID).c_str());
-				//			someone = true;
-				//			if (entity->m_NPC) {
-				//				entity->m_NPC->m_checked = true;
-				//			}
-				//		}
-				//	}
-				//	if (!someone) {
-				//		gameState.Text.clear();
-				//		gameState.Text.push_back("Who are you talking to..?");
-				//		gameState.textAvailable = true;
-				//	}
-				//	gameState.checkFlag = false;
-				//}
-
 
 
 
