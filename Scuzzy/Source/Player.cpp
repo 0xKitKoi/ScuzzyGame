@@ -58,6 +58,7 @@ Player::Player(Vector2f initPos, std::vector<std::shared_ptr<Entity>>& entityVec
 	m_CheckBox.h = SpriteHeight;
 	m_CheckBox.w = SpriteWidth;
 	m_HeartCollider = { screenwidth /2, screenheight/2, 32, 32 };
+	m_HeartTensionCollider = { screenwidth / 2, screenheight / 2, 32, 32 };
 
 	m_VelX = 0;
 	m_VelY = 0;
@@ -213,7 +214,7 @@ Player::~Player() {
 void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 	if (gameState.HP <= 0) {	return; 	}
 
-	if (gameState.inMenu || gameState.inFight || gameState.wonFight) {
+	if (gameState.inMenu || gameState.inFight ) {
 		reset({ float(m_PosX), float(m_PosY) }); // this is a bug fix for movement gliding errors.
 		return;
 	}
@@ -556,6 +557,7 @@ void Player::reset(Vector2f initPos) {
 	m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };
 	m_HeartCollider = { int(m_HeartPos.x) + 16, int(m_HeartPos.y) + 16, 20, 20 };
 	gameState.dead = false;
+	printf("Player reset to position (%d, %d)\n", m_PosX, m_PosY);
 
 }
 

@@ -134,6 +134,7 @@ public:
 			gameState.textIndex = 0;
             gameState.textAvailable = true;
 			gameState.inMenu = false;
+			//gameState.callbackNPC = nullptr;  // fuck ass bug
             break;
         case 0: // 0th index of options
             //gameState.Text = { "WHAT??? NO!!! DONT TALK TO STRANGERS!!!" };
@@ -147,6 +148,7 @@ public:
             gameState.textIndex = 0;
 			gameState.textAvailable = true;
             gameState.inMenu = false;
+			/*gameState.callbackNPC = nullptr;*/
 		default:
 			printf("\n [!] ERROR: MerchantNPC::handleChoice() received invalid choice index: %d", choice);
         }

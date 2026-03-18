@@ -1136,15 +1136,15 @@ int main(int argc, char* args[])
 					}
 				}
 
-				if (wasInMenu && !gameState.inMenu) {
-					if (gameState.player) {
-						gameState.player->clearInputState();
-						gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) });
-					}
-					SDL_PumpEvents();
-					SDL_FlushEvent(SDL_KEYDOWN);
-					SDL_FlushEvent(SDL_KEYUP);
-				}
+				//if (wasInMenu && !gameState.inMenu) {
+				//	if (gameState.player) {
+				//		gameState.player->clearInputState();
+				//		gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) });
+				//	}
+				//	SDL_PumpEvents();
+				//	SDL_FlushEvent(SDL_KEYDOWN);
+				//	SDL_FlushEvent(SDL_KEYUP);
+				//}
 				wasInMenu = gameState.inMenu;
 
 				//Calculate and correct fps

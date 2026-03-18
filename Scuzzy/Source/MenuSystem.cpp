@@ -1046,12 +1046,15 @@ void handleQuestionInput(SDL_Event event) {
             Mix_PlayChannel(-1, gSelectSound, 0);
             gameState.callbackNPC->handleChoice(MS_selectedIndex);  /*(MS_selectedIndex + 1); // Notify the NPC about the selection (1-based index)*/
             //return MS_selectedIndex + 1; // Return the selected option index (1-based)
+			currentMenu = MAIN_MENU;
         }
         else if (event.key.keysym.sym == SDLK_x) { // Cancel action
             Mix_PlayChannel(-1, gDeSelectSound, 0);
             //return 0; // Indicate cancellation
 			// we can tell the npc that the player cancelled by sending a -1 or something, up to implementation
             gameState.callbackNPC->handleChoice(-1);
+			gameState.callbackNPC = nullptr; // Clear the callback NPC reference. BUGFIX.
+			currentMenu = MAIN_MENU;
 
         }
     }
@@ -1196,6 +1199,8 @@ void handleMenuInputSideBySide(SDL_Event event) {
 			gameState.inMenu = false;
 			if (gameState.callbackNPC) {
 				gameState.callbackNPC->handleChoice(gameState.selectionIndex); // tell the NPC who triggered a choice the selection.
+				gameState.callbackNPC = nullptr;
+				// If the NPC wants to be called back again, that's its fucking problem. 
 			}
 			
 		}

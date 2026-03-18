@@ -35,6 +35,7 @@ public:
 	/// @param Damage how hard
 	Projectile(/*LTexture* */ std::shared_ptr<LTexture> SpriteSheet, SDL_Rect SpriteClip, Vector2f Position, Vector2f Velocity, int Damage) : m_SpriteSheet(SpriteSheet), m_SpriteClip(SpriteClip),
 		m_Position(Position), m_Velocity(Velocity), m_Damage(Damage) {
+		m_Collider = { int(m_Position.x), int(m_Position.y), m_SpriteClip.w, m_SpriteClip.h };
 	}
 	virtual void Update(float deltaT, Vector2f PlayerPos);
 	

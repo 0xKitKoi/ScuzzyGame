@@ -163,7 +163,6 @@ xcopy /Q /E /Y /I $(SolutionDir)\Scuzzy\data ..\bin\Release\data</Command>
     <ClCompile Include="Source\Projectile.cpp" />
     <ClCompile Include="Source\ROMGraphics.cpp" />
     <ClCompile Include="Source\Rom.cpp" />
-    <ClCompile Include="Source\TextBox.cpp" />
     <ClCompile Include="Source\Timer.cpp" />
     <ClCompile Include="Source\main.cpp" />
   </ItemGroup>
