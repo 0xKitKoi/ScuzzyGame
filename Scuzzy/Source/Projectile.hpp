@@ -5,9 +5,12 @@
 #include "Source/Entity.hpp"
 #include "Source/Math.hpp"
 #include "Source/GameState.hpp"
+#include <SDL_mixer.h>
 //extern GameState gameState;
 
 extern float lerp(float x, float y, float t);
+
+extern Mix_Chunk* gPlayerHurtSound;
 
 
 class Projectile {
@@ -74,6 +77,7 @@ public:
 				gameState.DamageTaken += m_Damage;
 				m_Active = false; // deactivate on hit
 				//gameState.TensionMeter -= 5;
+				Mix_PlayChannel(-1, gPlayerHurtSound, 0);
 				gameState.TensionMeter += 5; // cant decide if projectiles should increase or decrease tension on hit
 				m_TensionHit = true;
 			}
@@ -110,6 +114,7 @@ public:
 			gameState.DamageTaken += m_Damage;
 			m_Active = false; // deactivate on hit
 			//gameState.TensionMeter -= 5;
+			Mix_PlayChannel(-1, gPlayerHurtSound, 0);
 			gameState.TensionMeter += 5; // cant decide if projectiles should increase or decrease tension on hit
 			m_TensionHit = true;
 		}
@@ -146,6 +151,7 @@ public:
 				}
 				m_TensionHit = true;
 				//gameState.HP -= m_Damage;
+				Mix_PlayChannel(-1, gPlayerHurtSound, 0);
 				gameState.DamageTaken += m_Damage;
 				m_Active = false; // deactivate on hit
 				//gameState.TensionMeter -= 5;

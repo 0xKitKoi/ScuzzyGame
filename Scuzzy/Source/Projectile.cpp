@@ -1,8 +1,11 @@
 
 #include "Source/GameState.hpp"
 #include "Source/Projectile.hpp"
+#include <SDL_mixer.h>
 
 extern float lerp(float x, float y, float t);
+
+extern Mix_Chunk* gPlayerHurtSound; // player gets hurt
 
 //Projectile::Projectile(LTexture* SpriteSheet, SDL_Rect SpriteClip, Vector2f Position, Vector2f Velocity, int Damage) : m_SpriteSheet(SpriteSheet), m_SpriteClip(SpriteClip),
 //m_Position(Position), m_Velocity(Velocity), m_Damage(Damage) {}
@@ -49,6 +52,8 @@ void Projectile::Update(float deltaT, Vector2f PlayerPos) { // DEFAULT UPDATE FU
 				gameState.HP = 0;
 			}
 			gameState.DamageTaken += m_Damage;
+			Mix_PlayChannel(-1, gPlayerHurtSound, 0); // play hit sound on impact
+
 			m_Active = false; // deactivate on hit
 			m_TensionHit = true;
 			//gameState.TensionMeter -= 5;

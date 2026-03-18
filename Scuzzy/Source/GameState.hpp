@@ -82,6 +82,8 @@ struct GameState {
 	SDL_Rect FightTargetRect = { 500,500,10,40 };
 	SDL_Rect FightTargetAreaRect = { 300,500,20,40 };
     bool FightAttackAttempt = false;
+	bool FightAttackAreaSetX = false;
+	bool FightAttackMoveDirection = false; // false = left, true = right. this is for the attack mechanic to determine which direction the target area moves in.
 
 
     // Flags

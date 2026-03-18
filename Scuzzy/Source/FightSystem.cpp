@@ -23,6 +23,9 @@ extern Mix_Chunk* gTextCharSound1; // character 1 a
 extern Mix_Chunk* gTextCharSound2; // character 1 b
 extern Mix_Chunk* gTextCharSound3; // character 1 c
 
+extern Mix_Chunk* gPlayerHurtSound; // player gets hurt
+extern Mix_Chunk* gPlayerAttackSound; // player attacks
+
 
 // Modern random number generator
 std::mt19937 rng;
@@ -97,6 +100,18 @@ void FS_renderTextBox(SDL_Renderer* renderer) {
     SDL_RenderFillRect(renderer, &textBoxTemp);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderFillRect(renderer, &blacktemp);
+}
+
+void FS_RenderFightBox(SDL_Renderer* renderer, SDL_Rect fightBox) {
+	SDL_Rect blacktemp = fightBox; // this is inside the red box to be a background
+	blacktemp.x = blacktemp.x + 5;
+	blacktemp.y = blacktemp.y + 5;
+	blacktemp.w = blacktemp.w - 10;
+	blacktemp.h = blacktemp.h - 10;
+	SDL_SetRenderDrawColor(renderer, 103, 0, 0, 255);
+	SDL_RenderFillRect(renderer, &fightBox);
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+	SDL_RenderFillRect(renderer, &blacktemp);
 }
 
 // Render text at a specific position
@@ -284,37 +299,95 @@ bool AttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
 	// timing based attack mechanic
 	// create a SDL_Rect for the target
 	// create a SDL_Rect for the target area.
-	// move the TargetRect across the screen.
+	// move the TargetRect across the screen. 
     int randomSpeedMultiplier = chance(1, 2);
-	gameState.FightTargetRect.x -= 5 * randomSpeedMultiplier; // move right by 10 pixels per frame, adjust speed as needed
+
+	// if targetX is closer to the left, the FightTargetRect needs to move left from the right. and vice versa.
+	if (!gameState.FightAttackAreaSetX) {
+		// generate random point on the number line for the target area, between 20% and 70% of the way across.
+		int targetX = chance(gameState.screenwidth * 0.2, gameState.screenwidth * 0.7);
+		if (targetX < gameState.screenwidth / 2) {
+			//gameState.FightTargetRect.x -= 10 * randomSpeedMultiplier; // move right by 10 pixels per frame, adjust speed as needed
+			gameState.FightAttackMoveDirection = false;
+			gameState.FightTargetRect.x = gameState.screenwidth - 100; // start near the right edge
+		}
+		else {
+			//gameState.FightTargetRect.x += 10 * randomSpeedMultiplier;
+			gameState.FightAttackMoveDirection = true;
+			gameState.FightTargetRect.x = 100; // start near the left edge
+		}
+		//gameState.FightTargetAreaRect.x = targetX;
+		gameState.FightTargetAreaRect.x = targetX;
+		gameState.FightAttackAreaSetX = true;
+	}
+	if (gameState.FightAttackMoveDirection) {
+		gameState.FightTargetRect.x += 8 * randomSpeedMultiplier; // move right by 10 pixels per frame, adjust speed as needed
+	}
+	else {
+		gameState.FightTargetRect.x -= 8 * randomSpeedMultiplier; // move left by 10 pixels per frame, adjust speed as needed
+	}
+
     // render it
-    FS_renderTextBox(renderer);
+    //FS_renderTextBox(renderer); // Replaced this with a dedicated fight box. 
+	int screenWidth, screenHeight;
+	SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+	int boxWidth = screenWidth * 0.9;  // 90% of the screen width
+	int boxHeight = 300;               // Fixed height for the text box
+	int xPos = (screenWidth - boxWidth) / 2;  // Center the box horizontally
+	int yPos = screenHeight - boxHeight - 20; // Place the box 20 pixels above the bottom
+
+	SDL_Rect fightBoxTemp = { xPos, yPos, boxWidth, boxHeight };
+	FS_RenderFightBox(renderer, fightBoxTemp);
+
+	// render number line imagery
+	SDL_Rect lineRect = { fightBoxTemp.x + 200, fightBoxTemp.y + fightBoxTemp.h / 2 + 10, fightBoxTemp.w - 500 , 5 };
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White for number line
+	SDL_RenderFillRect(renderer, &lineRect);
+
+	for (int i = 0; i <= 10; i++) {
+		SDL_Rect tickRect = { lineRect.x + i * (lineRect.w / 10) - 2, lineRect.y - 5, 4, 20 };
+		SDL_RenderFillRect(renderer, &tickRect);
+		SDL_RenderFillRect(renderer, &tickRect);
+		// if this is where the target area is, render it here.
+	}
+
+
 	SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green for target area
 	SDL_RenderDrawRect(renderer, &gameState.FightTargetRect);
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red for target
 	SDL_RenderDrawRect(renderer, &gameState.FightTargetAreaRect);
 	// if the player presses Z when the TargetRect is inside the TargetAreaRect, return true.
     if (!gameState.FightAttackAttempt &&  event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z && event.key.repeat == 0) {
-        Mix_PlayChannel(-1, gSelectSound, 0); // this will change to attack sound.
+        //Mix_PlayChannel(-1, gSelectSound, 0); // this will change to attack sound.
+		Mix_PlayChannel(-1, gPlayerAttackSound, 0); // play attack sound on attempt
 		// Only accept the initial keydown (not key-repeat events)
 		gameState.FightAttackAttempt = true; // prevent multiple inputs
         SDL_Rect ActualArea = gameState.FightTargetAreaRect;
-        ActualArea.w += 10;
-        ActualArea.h += 10;
+		ActualArea.x -= 10; // expand the hitbox a bit to make it more forgiving
+        ActualArea.w += 20;
+        ActualArea.h += 20;
         if (SDL_HasIntersection(&gameState.FightTargetRect, &ActualArea)) {
 			//printf("HIT!\n");
             // maybe play sound on successful hit?
-            return true; // Successful hit
+			Mix_PlayChannel(-1, gPlayerAttackSound, 0);
+            
+			gameState.FightAttackAreaSetX = false; // reset for next attack
+			return true; // Successful hit
         }
         else {
             // earthbound style miss sound effect here ?
-            return false; // Missed
+            
+			gameState.FightAttackAreaSetX = false; // reset for next attack
+			return false; // Missed
 		}
     }
-	if (gameState.FightTargetRect.x < 0 || (gameState.FightTargetAreaRect.x - 20) > gameState.FightTargetRect.x ) {
+	if (gameState.FightTargetRect.x - 20 < fightBoxTemp.x && !gameState.FightAttackMoveDirection || gameState.FightTargetRect.x + 20 > fightBoxTemp.w && gameState.FightAttackMoveDirection  /* || (gameState.FightTargetAreaRect.x - 20) > gameState.FightTargetRect.x */ ) {
 		Mix_PlayChannel(-1, gDeSelectSound, 0); // this will change to miss sound.
 		//FightState::RESULT_DIALOGUE;
         gameState.FightAttackAttempt = true;
+		gameState.FightAttackAreaSetX = false; // reset for next attack
+		// pause slightly.
+		_sleep(200); // 200ms pause on miss, adjust as needed
         return false; // Out of bounds, treat as miss
     }
 	return false; // No input yet
@@ -379,6 +452,7 @@ void HandleAttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
                 if (damage == 1 || damage == 10) {
                     FS_QueueFightText("SMAAASHHH!!!!!!\n");
                     gameState.enemy->HP -= 2; // critical hit does double damage
+					// play crit sound here soon.
                 }
                 else {
                     FS_QueueFightText("You hit the " + gameState.enemy->m_Name + "! \n");

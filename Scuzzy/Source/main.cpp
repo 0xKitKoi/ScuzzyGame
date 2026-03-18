@@ -101,6 +101,9 @@ Mix_Chunk* gSelectSound = NULL; // player presses z
 Mix_Chunk* gDeSelectSound = NULL; // player presses x
 Mix_Chunk* gMoveSound = NULL; // player moves cursor in menu.
 
+Mix_Chunk* gPlayerHurtSound = NULL; // player gets hurt
+Mix_Chunk* gPlayerAttackSound = NULL; // player attacks
+
 Mix_Chunk* gTextCharSound1 = NULL; // character 1 a
 Mix_Chunk* gTextCharSound2 = NULL; // character 1 b
 Mix_Chunk* gTextCharSound3 = NULL; // character 1 c
@@ -314,6 +317,8 @@ void close()
 	Mix_FreeChunk(gDeSelectSound);
 	Mix_FreeChunk(gMoveSound);
 	Mix_FreeChunk(gSelectSound);
+	Mix_FreeChunk(gPlayerAttackSound);
+	Mix_FreeChunk(gPlayerHurtSound);
 	Mix_FreeChunk(gTextCharSound1);
 	Mix_FreeChunk(gTextCharSound2);
 	Mix_FreeChunk(gTextCharSound3);
@@ -611,6 +616,11 @@ bool loadMedia()
 	gSelectSound = Mix_LoadWAV("data/mus/SelectSound.wav");
 	gDeSelectSound = Mix_LoadWAV("data/mus/deSelectSound.wav");
 	gMoveSound = Mix_LoadWAV("data/mus/MoveSound.wav");
+
+	gPlayerHurtSound = Mix_LoadWAV("data/mus/hurt.wav");
+	gPlayerAttackSound = Mix_LoadWAV("data/mus/wham.wav");
+	
+
 	gTextCharSound1 = Mix_LoadWAV("data/mus/ntalk1.wav");
 	gTextCharSound2 = Mix_LoadWAV("data/mus/ntalk2.wav");
 	gTextCharSound3 = Mix_LoadWAV("data/mus/ntalk3.wav");
@@ -620,6 +630,7 @@ bool loadMedia()
 	gTextCharSound7 = Mix_LoadWAV("data/mus/entalk7.wav");
 	gTextCharSound8 = Mix_LoadWAV("data/mus/entalk8.wav");
 	gTextCharSound9 = Mix_LoadWAV("data/mus/entalk9.wav");
+
 
 
 	LoadSave();
