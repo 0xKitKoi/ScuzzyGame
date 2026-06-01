@@ -330,6 +330,16 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 }
 
 
+
+
+bool ContainsRect(const SDL_Rect& outer, const SDL_Rect& inner)
+{
+	return inner.x >= outer.x &&
+		inner.y >= outer.y &&
+		inner.x + inner.w <= outer.x + outer.w &&
+		inner.y + inner.h <= outer.y + outer.h;
+}
+
 /// <summary>
 /// Handles user input. Currently only handles movement. 
 /// </summary>
@@ -521,8 +531,47 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 		if (m_HeartVelocity.y < -MaxVelocity) {
 			m_HeartVelocity.y = -MaxVelocity;
 		}
+
+
+		int originalHeartX = m_HeartPos.x;
+		int originalHeartY = m_HeartPos.y;
+		m_HeartCollider = { int(m_HeartPos.x) + 8, int(m_HeartPos.y) + 8, 15, 15 };
+
 		m_HeartPos.x += m_HeartVelocity.x * deltaTime;
+		m_HeartCollider.x = int(m_HeartPos.x)+8;
+		//for (const auto& edge : dodgeBoxEdges) {
+		//	if (SDL_HasIntersection(&m_HeartCollider, &edge)) {
+		//		m_HeartPos.x = originalHeartX+8; // Revert position
+		//		break;
+		//	}
+		//}
+		//m_HeartCollider = { int(m_HeartPos.x) + 8, int(m_HeartPos.y) + 8, 15, 15 };
+		//if (!SDL_HasIntersection(&m_HeartCollider, &gameState.dodgeBox)) {
+		//	m_HeartPos.x = originalHeartX; // Revert position
+		//}
+		if (!ContainsRect(gameState.dodgeBox, m_HeartCollider))
+		{
+			m_HeartPos.x = originalHeartX;
+			m_HeartCollider.x = (int)m_HeartPos.x+8;
+		}
+
 		m_HeartPos.y += m_HeartVelocity.y * deltaTime;
+		m_HeartCollider.y = int(m_HeartPos.y)+8;
+		//if (!SDL_HasIntersection(&m_HeartCollider ,&gameState.dodgeBox)) {
+		//	m_HeartPos.y = originalHeartY; // Revert position
+		//}
+		//for (const auto& edge : dodgeBoxEdges) {
+		//	if (SDL_HasIntersection(&m_HeartCollider, &edge)) {
+		//		m_HeartPos.y = originalHeartY; // Revert position
+		//		m_HeartCollider.y = (int)m_HeartPos.y +8;
+		//		break;
+		//	}
+		//}
+		if (!ContainsRect(gameState.dodgeBox, m_HeartCollider))
+		{
+			m_HeartPos.y = originalHeartY;
+			m_HeartCollider.y = (int)m_HeartPos.y +8;
+		}
 		
 
 		m_HeartCollider = { int(m_HeartPos.x) +8, int(m_HeartPos.y) +8, 15, 15 };

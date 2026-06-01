@@ -1054,6 +1054,49 @@ void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event
   //  }
 }
 
+void DrawThickRect(SDL_Renderer* renderer,
+	const SDL_Rect& rect,
+	int thickness)
+{
+	SDL_Rect top =
+	{
+		rect.x,
+		rect.y,
+		rect.w,
+		thickness
+	};
+
+	SDL_Rect bottom =
+	{
+		rect.x,
+		rect.y + rect.h - thickness,
+		rect.w,
+		thickness
+	};
+
+	SDL_Rect left =
+	{
+		rect.x,
+		rect.y,
+		thickness,
+		rect.h
+	};
+
+	SDL_Rect right =
+	{
+		rect.x + rect.w - thickness,
+		rect.y,
+		thickness,
+		rect.h
+	};
+
+	SDL_RenderFillRect(renderer, &top);
+	SDL_RenderFillRect(renderer, &bottom);
+	SDL_RenderFillRect(renderer, &left);
+	SDL_RenderFillRect(renderer, &right);
+}
+
+
 void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     // render fight
     // get attack from enemy
@@ -1067,7 +1110,17 @@ void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event ev
 	// tension meter that builds up as you dodge attacks, when full your next attack does more damage?
 	// tension meter that helps you get access to actions?
 	// silly mode needs to be acheived in actions, and locking them behind tension meter is kinda cool. 
-    // ROLLING HP METER line earthbound too. 
+    // ROLLING HP METER line earthbound too.
+
+
+
+	// Undertale style bounding box for dodge mechanic.
+
+	//SDL_Rect dodgeBox = { int(gameState.screenwidth * 0.40), int(gameState.screenheight * 0.35), 400,400 };
+	///SDL_RenderDrawRect(renderer, &dodgeBox);
+	gameState.dodgeBox = { int(gameState.screenwidth * 0.40), int(gameState.screenheight * 0.35), 400,400 };
+	DrawThickRect(renderer, gameState.dodgeBox, 5);
+
     if (!gameState.fightTurnTimer.isStarted()) {
         gameState.fightTurnTimer.start();   
 		gameState.lastTurnTime = SDL_GetTicks();
