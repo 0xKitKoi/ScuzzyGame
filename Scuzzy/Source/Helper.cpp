@@ -58,6 +58,51 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 		}
 		else {
 
+
+			Vector2f PuddlePos(1400, 700);
+			SDL_Rect puddleRect = { 0, 0, 200, 200 };
+			clips.clear();
+			clips.push_back({ 0, 0, 200, 200 });
+			clips.push_back({ 0,200,200, 200 });
+			clips.push_back({ 0,200*2,200, 200 });
+			clips.push_back({ 200,0,200, 200 });
+			clips.push_back({ 200,200,200, 200 });
+			clips.push_back({ 200,200*2,200, 200 });
+			clips.push_back({ 200*2,0,200, 200 });
+			clips.push_back({ 200 * 2,200,200, 200 });
+			clips.push_back({ 200 * 2,200*2,200, 200 });
+			SDL_Rect puddleCB = { PuddlePos.x, PuddlePos.y, 200, 200 };
+			auto PuddleEntity = std::make_shared<Entity>(PuddlePos, puddleCB, puddleRect, getTexture("data/Puddle.png"), 7, clips, 69);
+			Entities.push_back(PuddleEntity);
+			Vector2f PuddleOutPos(400, 200);
+			std::shared_ptr<NPC> PuddleNPC = std::make_shared<DoorNPC>(PuddleEntity, "Level1", PuddleOutPos);
+			PuddleNPC->m_Entity = PuddleEntity;
+			PuddleEntity->setNPC(PuddleNPC);
+			collisionBoxes.push_back(&PuddleEntity->m_Collider);
+			/*
+						// DOOR TEST
+			clips.clear();
+			Vector2f doorPos(400, 300);
+			entityRect = { 0,0,128,128 };
+			tmp = { 0,0,128,128 };
+			clips.push_back(tmp);
+			tmp = { 128,0,128,128 };
+			clips.push_back(tmp);
+			entity_cb = { int(entityPos.x + 25), int(entityPos.y + 25), int(entityRect.w - 45), int(entityRect.h - 55) }; // custom per entity but whatever
+			auto Doorentity = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
+			Entities.push_back(Doorentity); // vector of all entities to render.
+			Vector2f outpos(400, 200);
+			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity, "Level1", outpos);
+			doornpc->m_Entity = Doorentity;
+			Doorentity->setNPC(doornpc);
+			collisionBoxes.push_back(&Doorentity->m_Collider);
+
+			*/
+
+
+
+
+
 			// Merchant Test:
 			Vector2f shopguyPOS = { 1200, 600 };
 			SDL_Rect shopguyRect = {0, 0, 128, 128} ;
