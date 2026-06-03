@@ -36,6 +36,9 @@ int LevelIDFromName(std::string name) {
 	else if (name == "MLEM") {
 		return 3;
 	}
+	else if (name == "MAGICANT") {
+		return 4;
+	}
 	else {
 		return -1;
 	}
@@ -59,26 +62,32 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 		else {
 
 
-			Vector2f PuddlePos(1400, 700);
-			SDL_Rect puddleRect = { 0, 0, 200, 200 };
-			clips.clear();
-			clips.push_back({ 0, 0, 200, 200 });
-			clips.push_back({ 0,200,200, 200 });
-			clips.push_back({ 0,200*2,200, 200 });
-			clips.push_back({ 200,0,200, 200 });
-			clips.push_back({ 200,200,200, 200 });
-			clips.push_back({ 200,200*2,200, 200 });
-			clips.push_back({ 200*2,0,200, 200 });
-			clips.push_back({ 200 * 2,200,200, 200 });
-			clips.push_back({ 200 * 2,200*2,200, 200 });
-			SDL_Rect puddleCB = { PuddlePos.x, PuddlePos.y, 200, 200 };
-			auto PuddleEntity = std::make_shared<Entity>(PuddlePos, puddleCB, puddleRect, getTexture("data/Puddle.png"), 7, clips, 69);
-			Entities.push_back(PuddleEntity);
-			Vector2f PuddleOutPos(400, 200);
-			std::shared_ptr<NPC> PuddleNPC = std::make_shared<DoorNPC>(PuddleEntity, "Level1", PuddleOutPos);
-			PuddleNPC->m_Entity = PuddleEntity;
-			PuddleEntity->setNPC(PuddleNPC);
-			collisionBoxes.push_back(&PuddleEntity->m_Collider);
+			//Vector2f PuddlePos(1400, 700);
+			//SDL_Rect puddleRect = { 0, 0, 200, 200 };
+			//clips.clear();
+			//clips.push_back({ 0, 0, 200, 200 });
+			//clips.push_back({ 0,200,200, 200 });
+			//clips.push_back({ 0,200*2,200, 200 });
+			//clips.push_back({ 200,0,200, 200 });
+			//clips.push_back({ 200,200,200, 200 });
+			//clips.push_back({ 200,200*2,200, 200 });
+			//clips.push_back({ 200*2,0,200, 200 });
+			//clips.push_back({ 200 * 2,200,200, 200 });
+			//clips.push_back({ 200 * 2,200*2,200, 200 });
+			//SDL_Rect puddleCB = { PuddlePos.x, PuddlePos.y, 200, 200 };
+			//auto PuddleEntity = std::make_shared<Entity>(PuddlePos, puddleCB, puddleRect, getTexture("data/Puddle.png"), 7, clips, 69);
+			//Entities.push_back(PuddleEntity);
+			//PuddleEntity->moving = true;
+			//Vector2f PuddleOutPos(400, 200);
+			//std::shared_ptr<NPC> PuddleNPC = std::make_shared<DoorNPC>(PuddleEntity, "MAGICANT", PuddleOutPos);
+			//PuddleNPC->m_Entity = PuddleEntity;
+			//PuddleEntity->setNPC(PuddleNPC);
+			//collisionBoxes.push_back(&PuddleEntity->m_Collider);
+
+
+
+
+
 			/*
 						// DOOR TEST
 			clips.clear();
@@ -427,7 +436,173 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			doornpc->m_Entity = Doorentity;
 			Doorentity->setNPC(doornpc);
 			collisionBoxes.push_back(&Doorentity->m_Collider);
+
+
+
+			Vector2f PuddlePos(1025, 420);
+			SDL_Rect puddleRect = { 0, 0, 200, 200 };
+			clips.clear();
+			clips.push_back({ 0, 0, 200, 200 });
+			clips.push_back({ 0,200,200, 200 });
+			clips.push_back({ 0,200 * 2,200, 200 });
+			clips.push_back({ 200,0,200, 200 });
+			clips.push_back({ 200,200,200, 200 });
+			clips.push_back({ 200,200 * 2,200, 200 });
+			clips.push_back({ 200 * 2,0,200, 200 });
+			clips.push_back({ 200 * 2,200,200, 200 });
+			clips.push_back({ 200 * 2,200 * 2,200, 200 });
+			SDL_Rect puddleCB = { PuddlePos.x, PuddlePos.y, 200, 200 };
+			auto PuddleEntity = std::make_shared<Entity>(PuddlePos, puddleCB, puddleRect, getTexture("data/Puddle.png"), 7, clips, 69);
+			Entities.push_back(PuddleEntity);
+			PuddleEntity->moving = true;
+			Vector2f PuddleOutPos(400, 200);
+			std::shared_ptr<NPC> PuddleNPC = std::make_shared<DoorNPC>(PuddleEntity, "MAGICANT", PuddleOutPos);
+			PuddleNPC->m_Entity = PuddleEntity;
+			PuddleEntity->setNPC(PuddleNPC);
+			collisionBoxes.push_back(&PuddleEntity->m_Collider);
 		}
+		break;
+
+	case 4:
+		if (!Map->loadFromFile("data/Magicant.png"))
+		{
+			printf("Failed to load sprite sheet texture!\n");
+		}
+		else {
+			// Exit Puddle
+			Vector2f PuddlePos(500, 700);
+			SDL_Rect puddleRect = { 0, 0, 200, 200 };
+			clips.clear();
+			clips.push_back({ 0, 0, 200, 200 });
+			clips.push_back({ 0,200,200, 200 });
+			clips.push_back({ 0,200 * 2,200, 200 });
+			clips.push_back({ 200,0,200, 200 });
+			clips.push_back({ 200,200,200, 200 });
+			clips.push_back({ 200,200 * 2,200, 200 });
+			clips.push_back({ 200 * 2,0,200, 200 });
+			clips.push_back({ 200 * 2,200,200, 200 });
+			clips.push_back({ 200 * 2,200 * 2,200, 200 });
+			SDL_Rect puddleCB = { PuddlePos.x, PuddlePos.y, 200, 200 };
+			auto PuddleEntity = std::make_shared<Entity>(PuddlePos, puddleCB, puddleRect, getTexture("data/Puddle.png"), 7, clips, 69);
+			Entities.push_back(PuddleEntity);
+			Vector2f PuddleOutPos(400, 200);
+			std::shared_ptr<NPC> PuddleNPC = std::make_shared<DoorNPC>(PuddleEntity, "test", PuddleOutPos);
+			PuddleNPC->m_Entity = PuddleEntity;
+			PuddleEntity->moving = true;
+			PuddleEntity->setNPC(PuddleNPC);
+			collisionBoxes.push_back(&PuddleEntity->m_Collider);
+
+			// Fragment Sheet
+			Vector2f FragmentPos(330, 520);
+			SDL_Rect FragmentRect = { 0, 0, 200, 200 };
+			clips.clear();
+			clips.push_back({ 0, 0, 200, 200 });
+			clips.push_back({ 0,200,200, 200 });
+			SDL_Rect FragmentCB = { FragmentPos.x, FragmentPos.y, 200, 200 };
+			auto FragmentSheetEntity = std::make_shared<Entity>(FragmentPos, FragmentCB, FragmentRect, getTexture("data/InstanceSheet.png"), 2, clips, 133);
+			Entities.push_back(FragmentSheetEntity);
+			std::vector<std::string> FragmentDialogue = { "Looking at the sheets, you see an instance of a memory.", "You feel exactly like how you felt at that slice of time.", "You are disgusted with yourself. Absolutely."};
+			std::shared_ptr<NPC> FragmentNPC = std::make_shared<SIGNNPC>(FragmentDialogue, FragmentSheetEntity);
+			FragmentNPC->m_Entity = FragmentSheetEntity;
+			FragmentSheetEntity->moving = true;
+			FragmentSheetEntity->setNPC(FragmentNPC);
+			collisionBoxes.push_back(&FragmentSheetEntity->m_Collider);
+
+			// Fragment NPC1
+			FragmentPos = { 430, 240 };
+			FragmentRect = { 0, 0, 200, 200 };
+			clips.clear();
+			clips.push_back({ 0, 0, 200, 200 });
+			clips.push_back({ 0,200,200, 200 });
+			FragmentCB = { int(FragmentPos.x), int(FragmentPos.y), 200, 200 };
+			auto Fragment1Entity = std::make_shared<Entity>(FragmentPos, FragmentCB, FragmentRect, getTexture("data/fragment1.png"), 2, clips, 21);
+			Entities.push_back(Fragment1Entity);
+			std::vector<std::string> Fragment1Dialogue = { "You hear noise that sounds like your voice. You cant make out what they are saying. ", "They, being you. Parts of you.", "You think you heard this but not sure: \"....believe he did that..\""};
+			std::shared_ptr<NPC> Fragment1NPC = std::make_shared<SIGNNPC>(Fragment1Dialogue, Fragment1Entity);
+			Fragment1NPC->m_Entity = Fragment1Entity;
+			Fragment1Entity->moving = true;
+			Fragment1Entity->setNPC(Fragment1NPC);
+			//collisionBoxes.push_back(&Fragment1Entity->m_Collider);
+
+
+			// Fragment NPC2
+			FragmentPos = { 630, 240 };
+			FragmentRect = { 0, 0, 200, 200 };
+			clips.clear();
+			clips.push_back({ 0, 0, 200, 200 });
+			clips.push_back({ 0,200,200, 200 });
+			FragmentCB = { int(FragmentPos.x), int(FragmentPos.y), 200, 200 };
+			auto Fragment2Entity = std::make_shared<Entity>(FragmentPos, FragmentCB, FragmentRect, getTexture("data/fragment2.png"), 2, clips, 22);
+			Entities.push_back(Fragment2Entity);
+			std::vector<std::string> Fragment2Dialogue = { "You cant make out the words.", "You can tell that it is talking down on what you did.", "Even though they agreed with you in the moment."};
+			std::shared_ptr<NPC> Fragment2NPC = std::make_shared<SIGNNPC>(Fragment2Dialogue, Fragment2Entity);
+			Fragment2NPC->m_Entity = Fragment2Entity;
+			Fragment2Entity->moving = true;
+			Fragment2Entity->setNPC(Fragment2NPC);
+			//collisionBoxes.push_back(&Fragment1Entity->m_Collider);
+
+
+			// Fragment NPC3
+			FragmentPos = { 830, 240 };
+			FragmentRect = { 0, 0, 200, 200 };
+			clips.clear();
+			clips.push_back({ 0, 0, 200, 200 });
+			FragmentCB = { int(FragmentPos.x), int(FragmentPos.y), 200, 200 };
+			auto Fragment3Entity = std::make_shared<Entity>(FragmentPos, FragmentCB, FragmentRect, getTexture("data/fragment3.png"), 1, clips, 23);
+			Entities.push_back(Fragment3Entity);
+			std::vector<std::string> Fragment3Dialogue = { "you stayed silent, trying to get enough context to the conversation to join.", "You could not join. in this instant, you dont know anything before this."};
+			std::shared_ptr<NPC> Fragment3NPC = std::make_shared<SIGNNPC>(Fragment3Dialogue, Fragment3Entity);
+			Fragment3NPC->m_Entity = Fragment3Entity;
+			Fragment3Entity->setNPC(Fragment3NPC);
+			//collisionBoxes.push_back(&Fragment1Entity->m_Collider);
+
+
+			// Fragment NPC4
+			FragmentPos = { 130, 240 };
+			FragmentRect = { 0, 0, 200, 200 };
+			clips.clear();
+			clips.push_back({ 0, 0, 200, 200 });
+			FragmentCB = { int(FragmentPos.x), int(FragmentPos.y), 200, 200 };
+			auto Fragment4Entity = std::make_shared<Entity>(FragmentPos, FragmentCB, FragmentRect, getTexture("data/fragment4.png"), 1, clips, 24);
+			Entities.push_back(Fragment4Entity);
+			std::vector<std::string> Fragment4Dialogue = { "The deeper we went the more time had stopped existing. Time was emulated.", " For time did not exist in this void of unrendered thoughts... and judgement of what we confirmed existed."};
+			std::shared_ptr<NPC> Fragment4NPC = std::make_shared<SIGNNPC>(Fragment4Dialogue, Fragment4Entity);
+			Fragment4NPC->m_Entity = Fragment4Entity;
+			Fragment4Entity->setNPC(Fragment4NPC);
+			//collisionBoxes.push_back(&Fragment1Entity->m_Collider);
+
+			// Fragment NPC5
+			FragmentPos = { 580, 150 };
+			FragmentRect = { 0, 0, 200, 200 };
+			clips.clear();
+			clips.push_back({ 0, 0, 200, 200 });
+			FragmentCB = { int(FragmentPos.x), int(FragmentPos.y), 200, 200 };
+			auto Fragment5Entity = std::make_shared<Entity>(FragmentPos, FragmentCB, FragmentRect, getTexture("data/fragment5.png"), 1, clips, 25);
+			Entities.push_back(Fragment5Entity);
+			std::vector<std::string> Fragment5Dialogue = { "We had no bodies. We were faces. Each face ended with increased transparency over distance from the nose.", " Each face was connected to the ones to each side of it.", " In this semi-circle given the third axis. Like a sphere cut in half.", " I knew not who loomed above. But I felt them at the edge of my perception." };
+			std::shared_ptr<NPC> Fragment5NPC = std::make_shared<SIGNNPC>(Fragment5Dialogue, Fragment5Entity);
+			Fragment5NPC->m_Entity = Fragment5Entity;
+			Fragment5Entity->setNPC(Fragment5NPC);
+			//collisionBoxes.push_back(&Fragment1Entity->m_Collider);
+
+
+			// Fragment NPC6
+			FragmentPos = { 280, 150 };
+			FragmentRect = { 0, 0, 200, 200 };
+			clips.clear();
+			clips.push_back({ 0, 0, 200, 200 });
+			FragmentCB = { int(FragmentPos.x), int(FragmentPos.y), 200, 200 };
+			auto Fragment6Entity = std::make_shared<Entity>(FragmentPos, FragmentCB, FragmentRect, getTexture("data/fragment6.png"), 1, clips, 26);
+			Entities.push_back(Fragment6Entity);
+			std::vector<std::string> Fragment6Dialogue = { "I learned the topic of the conversation through context clues and tone.", "I asked no questions because even though i knew nothing, my previous self was not connected to what I was.", "Instead, it was in the middle of the group. We were surrounding who I was.", " We were discussing my actions. My thoughts. My perspective. Everything was exposed. ", " I felt no shame because again, I was detached from who I was. Yet connected from previous association.", " We saw everything. My impulses and ignorance. My lies. We saw how weak I really was." };
+			std::shared_ptr<NPC> Fragment6NPC = std::make_shared<SIGNNPC>(Fragment6Dialogue, Fragment6Entity);
+			Fragment6NPC->m_Entity = Fragment6Entity;
+			Fragment6Entity->setNPC(Fragment6NPC);
+			//collisionBoxes.push_back(&Fragment1Entity->m_Collider);
+
+		}
+
+
 		break;
 	default:
 		if (!Map->loadFromFile("data/Error.png"))

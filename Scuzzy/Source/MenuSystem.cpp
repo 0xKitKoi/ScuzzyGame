@@ -999,7 +999,9 @@ void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) {
     }
     // Render the current text
     SDL_Color white = { 255, 255, 255 };  // Normal text color
-    if (gameState.shouldAnimateText && gameState.textAnimating) {
+	// HEY! when gameState.currentDisplayText.length() is zero, we cant try to generate the size of nothing for the sdl surface,
+	// which means crash. 
+    if (gameState.shouldAnimateText && gameState.textAnimating && gameState.currentDisplayText.length() != 0) {
         MS_renderText(renderer, font, gameState.currentDisplayText, xOffset, yOffset, white);
     }
     else {

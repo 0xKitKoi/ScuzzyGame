@@ -1295,6 +1295,13 @@ int main(int argc, char* args[])
 					SDL_RenderClear(gRenderer);
 
 
+					if (gameState.room == "MAGICANT") {
+						//#b6d63e
+						SDL_SetRenderDrawColor(gRenderer, 0xb6, 0xd6, 0x3e, 0xFA);
+						SDL_RenderClear(gRenderer);
+					}
+
+
 					MapoffsetY = 0;
 					MapoffsetX = 0;
 					bool smol = false;

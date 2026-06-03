@@ -9,13 +9,15 @@ extern int MS_selectedIndex;
 
 class DoorNPC : public NPC {
 public:
+	bool m_Unlocked = false;
+
     DoorNPC(std::shared_ptr<Entity> entity, std::string room, Vector2f Location) : NPC(entity, gameState.Text) { // needs a vector to shutup
         m_Location = Location;
         m_room = room;
     }
     //void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) override {
     void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override { 
-        if (m_checked) {
+        if (m_checked && m_Unlocked) {
 			printf("Loading new room: %s\n", m_room.c_str());
             gameState.room = m_room;
 			gameState.LoadingScreen = true;\
@@ -28,6 +30,20 @@ public:
 			gameState.player->SetPosY(m_Location.y);
 			gameState.player->reset({ m_Location.x, m_Location.y });
         }
+		else if (!m_Unlocked && m_checked) {
+			////////////////// TEST DOOR LOCKING MECHANIC //////////////////
+			// this needs to be replaced with a mech to trigger door unlocking.
+			m_Unlocked = true;
+
+			gameState.Text = { "You can't go through the puddle yet. There are actions you have not taken." };
+			gameState.textIndex = 0;
+			gameState.textAvailable = true;
+			gameState.shouldAnimateText = true;
+			gameState.textAnimating = true;
+			gameState.currentDisplayText = "";
+			m_checked = false;
+
+		}
     }
 };
 
