@@ -144,7 +144,8 @@ int handleMenuInputGrid(SDL_Event event, std::vector<std::string>* options) {
                 MS_selectedIndex--; // Move left
             }
             else {
-                MS_selectedIndex = (MS_selectedIndex + maxColumns) % numOptions; // Wrap to the end of the row
+                //MS_selectedIndex = (MS_selectedIndex + maxColumns) % numOptions; // Wrap to the end of the row
+				MS_selectedIndex = (MS_selectedIndex - 1 + numOptions) % numOptions;
             }
         }
         else if (event.key.keysym.sym == SDLK_RIGHT) {
@@ -190,6 +191,7 @@ int handleMenuInputGrid(SDL_Event event, std::vector<std::string>* options) {
 		Mix_PlayChannel(-1, gDeSelectSound, 0);
         //gameState.inMenu = false;
 		// skip over this, erroneous
+		MS_selectedIndex = 0;
         return 0; // who fucking wrote this shit LMFAOOOOOO
     }
     else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x && currentMenu == MAIN_MENU) {
@@ -198,7 +200,7 @@ int handleMenuInputGrid(SDL_Event event, std::vector<std::string>* options) {
         if (gameState.player) {
             gameState.player->clearInputState();
         }
-		//MS_selectedIndex = 0;
+		MS_selectedIndex = 0;
 		return 0;
     }
     else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x) {
@@ -682,9 +684,9 @@ void handleMainMenuSelection(SDL_Event event) {
         gameState.inMenu = false;
         gameState.player->clearInputState();
         gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
+		MS_selectedIndex = 0;
         return;
     }
-
 
     switch (handleMenuInputGrid(event, &options)) {
     case 0:
@@ -747,7 +749,7 @@ void handleInventoryMenuSelection(SDL_Event event) {
         
         if (event.key.keysym.sym == SDLK_LEFT) {
             Mix_PlayChannel(-1, gMoveSound, 0);
-            MS_selectedIndex = (MS_selectedIndex > 0) ? MS_selectedIndex - 1 : options.size() - 1;
+            MS_selectedIndex = (MS_selectedIndex > 0) ? MS_selectedIndex - 1 : /*options.size() - 1*/ 0;
         }
         else if (event.key.keysym.sym == SDLK_RIGHT) {
             Mix_PlayChannel(-1, gMoveSound, 0);
