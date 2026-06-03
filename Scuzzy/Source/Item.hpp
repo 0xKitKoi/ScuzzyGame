@@ -3,6 +3,8 @@
 #define ITEM_H
 
 #include <string>
+//#include "Source/GameState.hpp"
+//#include "TestNPC.hpp"
 
 class GameState; // Forward declaration
 
@@ -35,11 +37,13 @@ public:
 
 class Key : public Item {
 public:
-    Key() {
+    Key(int DoorID) {
+		m_DoorID = DoorID;
         m_ItemID = 2;
         m_ItemName = "Key";
         m_ItemDescription = "A small key that unlocks doors.";
     }
+	int m_DoorID = 0;
     int Use() override;
 };
 

@@ -75,13 +75,15 @@ public:
 	std::shared_ptr<NPC> m_NPC;
 	std::vector<SDL_Rect> m_Clips;
 
+	std::shared_ptr<LTexture> m_Texture;
+
 private:
 	float angle = 0;
 	Vector2f scale = Vector2f(1, 1);
 	SDL_Rect currentFrame;
 	//SDL_Texture* m_Texture;
 	//LTexture m_Texture; // Sprite sheet.
-	std::shared_ptr<LTexture> m_Texture;
+	
 	
 	
 

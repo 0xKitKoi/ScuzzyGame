@@ -401,7 +401,7 @@ void GameStart() {
 	CheckBox = { (int)playerinitpos.x,(int)playerinitpos.y, 20,20};
 	gameState.room = SaveData.room;
 	//gameState.Inventory = PopulateInventory(SaveData.items);
-	PopulateInventory(SaveData.items);
+	//PopulateInventory(SaveData.items); // DEPRECATED
 	gameState.kills = SaveData.kills;
 	gameState.money = SaveData.money;
 	gameState.textAvailable = false;
@@ -415,99 +415,49 @@ void GameStart() {
 
 
 
+void SaveGame(int x, int y)
+{
+	std::ofstream file("save");
 
+	if (!file)
+	{
+		printf("Failed to open save file.\n");
+		return;
+	}
 
+	file << x << ' ' << y << '\n';
+	file << gameState.room << '\n';
+	file << SaveData.kills << '\n';
+	file << SaveData.money << '\n';
+	file << gameState.HP << '\n';
 
-void SaveGame(int x, int y) {
-	printf("Saving.\n");
-	std::ofstream saveFile("save");
-	if (saveFile.is_open()) {
-		SaveData.pos.x = x;
-		SaveData.pos.y = y;
-		SaveData.room = gameState.room;
-		//SaveData.items = gameState.Inventory;
-		SaveInventory(SaveData.items);
-		saveFile << SaveData.pos.x << " " << SaveData.pos.y << "\n";
-		saveFile << SaveData.room << "\n";
-		saveFile << SaveData.kills << "\n";
-		saveFile << SaveData.money << "\n";
-		saveFile << gameState.HP << "\n";
-		
-		saveFile << SaveData.items.size();
-		if (SaveData.items.size() > 0) {
-			for (int i = 0; i < SaveData.items.size(); i++) {
-				saveFile << SaveData.items.at(i) << " ";
-			}
-			saveFile << "\n";
-			saveFile.close();
+	file << gameState.Inventory.size() << '\n';
+
+	for (const auto& item : gameState.Inventory)
+	{
+		file << item->m_ItemID;
+
+		if (auto key = std::dynamic_pointer_cast<Key>(item))
+		{
+			file << ' ' << key->m_DoorID; // if this item is a key, also save the door ID it corresponds to.
 		}
+
+		file << '\n';
 	}
-	else {
-		printf("Couldn't save.");
-	}
-	return;
+
+	printf("Saved.\n");
 }
 
-int LoadSave() {
-    std::ifstream saveFile("save");
-    if (saveFile.is_open()) {
-        // Check if reads are successful
-        if (!(saveFile >> SaveData.pos.x >> SaveData.pos.y)) {
-            printf("Error reading position data.\n");
-            saveFile.close();
-            return 0;
-        }
-        saveFile.ignore();
-        
-        if (!(saveFile >> SaveData.room)) {
-            printf("Error reading room data.\n");
-            saveFile.close();
-            return 0;
-        }
-        saveFile.ignore();
-        
-        if (!(saveFile >> SaveData.kills)) {
-            printf("Error reading kills data.\n");
-            saveFile.close();
-            return 0;
-        }
-        saveFile.ignore();
-        
-        if (!(saveFile >> SaveData.money)) {
-            printf("Error reading money data.\n");
-            saveFile.close();
-            return 0;
-        }
-        saveFile.ignore();
-        
-        if (!(saveFile >> gameState.HP)) {
-            printf("Error reading HP data.\n");
-            saveFile.close();
-            return 0;
-        }
-        saveFile.ignore();
-        
-        int items;
-        if (!(saveFile >> items)) {
-            printf("Error reading items count.\n");
-            saveFile.close();
-            return 0;
-        }
-        
-        SaveData.items.resize(items);
-        for (int i = 0; i < items; i++) {
-            if (!(saveFile >> SaveData.items[i])) {
-                printf("Error reading item %d.\n", i);
-                saveFile.close();
-                return 0;
-            }
-        }
-        saveFile.close();
-		//gameState.CurrentSave = SaveData;
-        return 1; // Success
-    }
-    else {
-        printf("Could not read save data.\n");
+
+bool LoadSave()
+{
+	std::ifstream file("save");
+
+	if (!file)
+	{
+		printf("No save found.\n");
+		//return false;
+		printf("Could not read save data.\n");
         SaveData.pos.x = 700;
         SaveData.pos.y = 700;
         SaveData.room = "test";
@@ -519,8 +469,180 @@ int LoadSave() {
         SaveData.items.push_back(0);
         SaveGame(SaveData.pos.x, SaveData.pos.y);
         return 0;
-    }
+	}
+
+	gameState.Inventory.clear();
+
+	if (!(file >> SaveData.pos.x >> SaveData.pos.y))
+		return false;
+
+	file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+	std::getline(file, SaveData.room);
+
+	SaveData.kills = 0;
+	SaveData.money = 0;
+
+	if (!(file >> SaveData.kills))
+		return false;
+
+	if (!(file >> SaveData.money))
+		return false;
+
+	if (!(file >> gameState.HP))
+		return false;
+
+	size_t itemCount;
+
+	if (!(file >> itemCount))
+		return false;
+
+	for (size_t i = 0; i < itemCount; i++)
+	{
+		int itemID;
+
+		if (!(file >> itemID))
+			return false;
+
+		switch (itemID)
+		{
+		case 1: // BandAid
+		{
+			gameState.Inventory.push_back(
+				std::make_shared<BandAid>());
+			break;
+		}
+
+		case 2: // Key
+		{
+			int doorID;
+
+			if (!(file >> doorID))
+				return false;
+
+			auto key = std::make_shared<Key>(doorID);
+			key->m_DoorID = doorID;
+
+			gameState.Inventory.push_back(key);
+			break;
+		}
+
+		default:
+			printf("Unknown item ID: %d\n", itemID);
+			return false;
+		}
+	}
+
+	gameState.room = SaveData.room;
+
+	printf("Loaded save.\n");
+	return true;
 }
+
+
+////////////////////void SaveGame(int x, int y) {
+////////////////////	printf("Saving.\n");
+////////////////////	std::ofstream saveFile("save");
+////////////////////	if (saveFile.is_open()) {
+////////////////////		SaveData.pos.x = x;
+////////////////////		SaveData.pos.y = y;
+////////////////////		SaveData.room = gameState.room;
+////////////////////		//SaveData.items = gameState.Inventory;
+////////////////////		SaveInventory(SaveData.items);
+////////////////////		saveFile << SaveData.pos.x << " " << SaveData.pos.y << "\n";
+////////////////////		saveFile << SaveData.room << "\n";
+////////////////////		saveFile << SaveData.kills << "\n";
+////////////////////		saveFile << SaveData.money << "\n";
+////////////////////		saveFile << gameState.HP << "\n";
+////////////////////		
+////////////////////		saveFile << SaveData.items.size();
+////////////////////		if (SaveData.items.size() > 0) {
+////////////////////			for (int i = 0; i < SaveData.items.size(); i++) {
+////////////////////				saveFile << SaveData.items.at(i) << " ";
+////////////////////			}
+////////////////////			saveFile << "\n";
+////////////////////			saveFile.close();
+////////////////////		}
+////////////////////	}
+////////////////////	else {
+////////////////////		printf("Couldn't save.");
+////////////////////	}
+////////////////////	return;
+////////////////////}
+////////////////////
+////////////////////int LoadSave() {
+////////////////////    std::ifstream saveFile("save");
+////////////////////    if (saveFile.is_open()) {
+////////////////////        // Check if reads are successful
+////////////////////        if (!(saveFile >> SaveData.pos.x >> SaveData.pos.y)) {
+////////////////////            printf("Error reading position data.\n");
+////////////////////            saveFile.close();
+////////////////////            return 0;
+////////////////////        }
+////////////////////        saveFile.ignore();
+////////////////////        
+////////////////////        if (!(saveFile >> SaveData.room)) {
+////////////////////            printf("Error reading room data.\n");
+////////////////////            saveFile.close();
+////////////////////            return 0;
+////////////////////        }
+////////////////////        saveFile.ignore();
+////////////////////        
+////////////////////        if (!(saveFile >> SaveData.kills)) {
+////////////////////            printf("Error reading kills data.\n");
+////////////////////            saveFile.close();
+////////////////////            return 0;
+////////////////////        }
+////////////////////        saveFile.ignore();
+////////////////////        
+////////////////////        if (!(saveFile >> SaveData.money)) {
+////////////////////            printf("Error reading money data.\n");
+////////////////////            saveFile.close();
+////////////////////            return 0;
+////////////////////        }
+////////////////////        saveFile.ignore();
+////////////////////        
+////////////////////        if (!(saveFile >> gameState.HP)) {
+////////////////////            printf("Error reading HP data.\n");
+////////////////////            saveFile.close();
+////////////////////            return 0;
+////////////////////        }
+////////////////////        saveFile.ignore();
+////////////////////        
+////////////////////        int items;
+////////////////////        if (!(saveFile >> items)) {
+////////////////////            printf("Error reading items count.\n");
+////////////////////            saveFile.close();
+////////////////////            return 0;
+////////////////////        }
+////////////////////        
+////////////////////        SaveData.items.resize(items);
+////////////////////        for (int i = 0; i < items; i++) {
+////////////////////            if (!(saveFile >> SaveData.items[i])) {
+////////////////////                printf("Error reading item %d.\n", i);
+////////////////////                saveFile.close();
+////////////////////                return 0;
+////////////////////            }
+////////////////////        }
+////////////////////        saveFile.close();
+////////////////////		//gameState.CurrentSave = SaveData;
+////////////////////        return 1; // Success
+////////////////////    }
+////////////////////    else {
+////////////////////        printf("Could not read save data.\n");
+////////////////////        SaveData.pos.x = 700;
+////////////////////        SaveData.pos.y = 700;
+////////////////////        SaveData.room = "test";
+////////////////////        gameState.room = "test";
+////////////////////        SaveData.items.clear();
+////////////////////        SaveData.kills = 0;
+////////////////////        SaveData.money = 0;
+////////////////////        gameState.HP = 10;
+////////////////////        SaveData.items.push_back(0);
+////////////////////        SaveGame(SaveData.pos.x, SaveData.pos.y);
+////////////////////        return 0;
+////////////////////    }
+////////////////////}
 
 
 /*

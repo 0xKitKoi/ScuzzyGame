@@ -7,6 +7,12 @@
 #include "Source/Item.hpp"
 #include "Source/BackgroundLayer.h"
 #include <memory>
+// forward declarations ONLY
+//class NPC;
+//class Enemy;
+//class Player;
+//class Item;
+//class Entity;
 
 //enum class FightState {
 //    INTRO,              // Initial dialogue when fight starts

@@ -612,7 +612,7 @@ void handleShopMenuSelection(SDL_Event event) {
     if (!merchant) {
         if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_x) {
             Mix_PlayChannel(-1, gDeSelectSound, 0);
-            currentMenu = MAIN_MENU;
+            //currentMenu = MAIN_MENU;
             gameState.inMenu = false;
         }
         return;
@@ -657,6 +657,18 @@ void handleShopMenuSelection(SDL_Event event) {
             return;
         }
     }
+
+	// left right
+	if (event.type == SDL_KEYDOWN) {
+		if (event.key.keysym.sym == SDLK_LEFT) {
+			Mix_PlayChannel(-1, gMoveSound, 0);
+			MS_selectedIndex = (MS_selectedIndex > 0) ? MS_selectedIndex - 1 : std::min((int)merchant->m_Stock.size() - 1, 11);
+		}
+		else if (event.key.keysym.sym == SDLK_RIGHT) {
+			Mix_PlayChannel(-1, gMoveSound, 0);
+			MS_selectedIndex = (MS_selectedIndex < std::min((int)merchant->m_Stock.size() - 1, 11)) ? MS_selectedIndex + 1 : 0;
+		}
+	}
 }
 
 void handleMainMenuSelection(SDL_Event event) {
@@ -1048,7 +1060,7 @@ void handleQuestionInput(SDL_Event event) {
             Mix_PlayChannel(-1, gSelectSound, 0);
             gameState.callbackNPC->handleChoice(MS_selectedIndex);  /*(MS_selectedIndex + 1); // Notify the NPC about the selection (1-based index)*/
             //return MS_selectedIndex + 1; // Return the selected option index (1-based)
-			currentMenu = MAIN_MENU;
+			//currentMenu = MAIN_MENU;
         }
         else if (event.key.keysym.sym == SDLK_x) { // Cancel action
             Mix_PlayChannel(-1, gDeSelectSound, 0);

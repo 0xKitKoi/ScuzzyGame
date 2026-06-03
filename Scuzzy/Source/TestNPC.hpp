@@ -1,23 +1,76 @@
-#include "Source/Entity.hpp"
-#include "Source/NPC.hpp"
-#include "Source/Item.hpp"
+//#include "Source/Entity.hpp"
+//#include "Source/NPC.hpp"
+//#include "Source/Item.hpp"
 #include "Source/MenuSystem.hpp"
 #include <vector>
 #include <string>
 
+// forward declarations ONLY
+class Entity;
+class NPC;
+class Item;
+
 extern int MS_selectedIndex;
+
+class Puddle : public NPC {
+public:
+	bool m_Unlocked = false;
+	int m_PuddleID = -1;
+
+	Puddle(std::shared_ptr<Entity> entity, std::string room, Vector2f Location, int PuddleID = -1) : NPC(entity, gameState.Text) { // needs a vector to shutup
+		m_Location = Location;
+		m_room = room;
+		m_PuddleID = PuddleID;
+	}
+	//void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) override {
+	void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override {
+		if (m_checked && m_Unlocked) {
+			printf("Loading new room: %s\n", m_room.c_str());
+			gameState.room = m_room;
+			gameState.LoadingScreen = true; \
+				gameState.DoneLoading = false;
+			gameState.fade = true;
+			gameState.textAvailable;
+			gameState.callbackNPC = this;
+			m_checked = false;
+			gameState.player->SetPosX(m_Location.x);
+			gameState.player->SetPosY(m_Location.y);
+			gameState.player->reset({ m_Location.x, m_Location.y });
+		}
+		else if (!m_Unlocked && m_checked) {
+			////////////////// TEST Puddle LOCKING MECHANIC //////////////////
+			// this needs to be replaced with a mech to trigger Puddle unlocking.
+			m_Unlocked = true;
+
+			gameState.Text = { "You can't go through the puddle yet. There are actions you have not taken." };
+			gameState.textIndex = 0;
+			gameState.textAvailable = true;
+			gameState.shouldAnimateText = true;
+			gameState.textAnimating = true;
+			gameState.currentDisplayText = "";
+			m_checked = false;
+
+		}
+	}
+};
+
 
 class DoorNPC : public NPC {
 public:
-	bool m_Unlocked = false;
+	bool m_Unlocked = true;
+	int m_DoorID = 0;
 
-    DoorNPC(std::shared_ptr<Entity> entity, std::string room, Vector2f Location) : NPC(entity, gameState.Text) { // needs a vector to shutup
+    DoorNPC(std::shared_ptr<Entity> entity, std::string room, Vector2f Location, int DoorID = -1) : NPC(entity, gameState.Text) { // needs a vector to shutup
         m_Location = Location;
         m_room = room;
+		m_DoorID = DoorID;
     }
     //void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) override {
     void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override { 
         if (m_checked && m_Unlocked) {
+			//m_Entity->moving = true;
+			m_Entity->m_SpriteRect = m_Entity->m_Clips[1]; // this is the open door sprite
+			m_Entity->m_Texture->render(m_Entity->m_PosX, m_Entity->m_PosY, &m_Entity->m_Clips[1]); // render the open door sprite when the door is unlocked and checked. this is a quick and dirty way to show the door opening, but it works for now. ideally we would have an animation of the door opening, but that can be added later.
 			printf("Loading new room: %s\n", m_room.c_str());
             gameState.room = m_room;
 			gameState.LoadingScreen = true;\
@@ -33,9 +86,10 @@ public:
 		else if (!m_Unlocked && m_checked) {
 			////////////////// TEST DOOR LOCKING MECHANIC //////////////////
 			// this needs to be replaced with a mech to trigger door unlocking.
-			m_Unlocked = true;
+			//m_Unlocked = true;
+			
 
-			gameState.Text = { "You can't go through the puddle yet. There are actions you have not taken." };
+			gameState.Text = { "This Door is locked. There are actions you have not yet taken." };
 			gameState.textIndex = 0;
 			gameState.textAvailable = true;
 			gameState.shouldAnimateText = true;
@@ -193,7 +247,7 @@ public:
             newItem = std::make_shared<BandAid>();
             break;
         case 2:
-            newItem = std::make_shared<Key>();
+            newItem = std::make_shared<Key>(81); // HEY! This is important. Keys now go to doors. DoorID here is 81. 
             break;
         default:
             newItem = std::make_shared<Item>();

@@ -128,7 +128,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			Entities.push_back(MerchantGuy);	
 			collisionBoxes.push_back(&MerchantGuy->m_Collider);
 			std::vector<std::string> SHOPdialogue = {"GETT OUUTA ME HEADD!!!"};
-			std::vector<MerchantNPC::ShopItem> stock = { MerchantNPC::ShopItem{2, 2, "test"} };
+			std::vector<MerchantNPC::ShopItem> stock = {MerchantNPC::ShopItem{2, 2, "test"}, MerchantNPC::ShopItem{1, 2, "weenie"} };
 			std::shared_ptr<MerchantNPC> shopdood = std::make_shared<MerchantNPC>(SHOPdialogue, MerchantGuy, stock);
 			MerchantGuy->setNPC(shopdood);
 
@@ -202,10 +202,16 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			auto Doorentity = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
 			Entities.push_back(Doorentity); // vector of all entities to render.
 			Vector2f outpos(400, 200);
-			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity, "Level1", outpos);
+			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity, "Level1", outpos, 81); // DOOR ID 81 added. important for keys!
+			
 			doornpc->m_Entity = Doorentity;
 			Doorentity->setNPC(doornpc);
 			collisionBoxes.push_back(&Doorentity->m_Collider);
+			//Doorentity->m_NPC->m_Unlocked = false; // testing locked door
+			std::shared_ptr<DoorNPC> door =
+				std::dynamic_pointer_cast<DoorNPC>(doornpc);
+			door->m_Unlocked = false; // testing locked door, Cast back to DoorNPC.
+			//MerchantNPC sells key with ID 81, so this door should unlock when the player buys the key from the merchant and uses it.
 
 
 
@@ -672,27 +678,27 @@ std::string GetItemDescription(int ID) {
 	}
 }
 
-void PopulateInventory(std::vector<int> itemIDs) {
-	for (int id : itemIDs) {
-		std::shared_ptr<Item> newItem;
-		switch (id) {
-		case 0:
-			printf("Loaded Healing Item into inventory.\n");
-			newItem = std::make_shared<BandAid>();
-			break;
-		case 1:
-			printf("Loaded Key Item into inventory.\n");
-			newItem = std::make_shared<Key>();
-			break;
-		default:
-			printf("Unknown item ID %d in save data.\n", id);
-			newItem = std::make_shared<Item>();
-			break;
-		}
-		
-		gameState.Inventory.push_back(newItem);
-	}
-}
+//void PopulateInventory(std::vector<int> itemIDs) {
+//	for (int id : itemIDs) {
+//		std::shared_ptr<Item> newItem;
+//		switch (id) {
+//		case 0:
+//			printf("Loaded Healing Item into inventory.\n");
+//			newItem = std::make_shared<BandAid>();
+//			break;
+//		case 1:
+//			printf("Loaded Key Item into inventory.\n");
+//			newItem = std::make_shared<Key>();
+//			break;
+//		default:
+//			printf("Unknown item ID %d in save data.\n", id);
+//			newItem = std::make_shared<Item>();
+//			break;
+//		}
+//		
+//		gameState.Inventory.push_back(newItem);
+//	}
+//}
 
 void SaveInventory(std::vector<int>& outItemIDs) {
 	outItemIDs.clear();
