@@ -386,8 +386,8 @@ bool AttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
 		//FightState::RESULT_DIALOGUE;
         gameState.FightAttackAttempt = true;
 		gameState.FightAttackAreaSetX = false; // reset for next attack
-		// pause slightly.
-		_sleep(200); // 200ms pause on miss, adjust as needed
+        // pause slightly.
+        SDL_Delay(200); // 200ms pause on miss, adjust as needed
         return false; // Out of bounds, treat as miss
     }
 	return false; // No input yet

@@ -39,6 +39,9 @@ int LevelIDFromName(std::string name) {
 	else if (name == "MAGICANT") {
 		return 4;
 	}
+	else if (name == "testtiled") {
+		return 5;
+	}
 	else {
 		return -1;
 	}
@@ -296,7 +299,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			auto Doorentity2 = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
 			Entities.push_back(Doorentity2); // vector of all entities to render.
 			Vector2f outpos(540, 300);//(1000, 960);
-			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity2, "MLEM", outpos);
+			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity2, "MAGICANT", outpos);
 			doornpc->m_Entity = Doorentity2;
 			Doorentity2->setNPC(doornpc);
 			collisionBoxes.push_back(&Doorentity2->m_Collider);
@@ -492,7 +495,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			auto PuddleEntity = std::make_shared<Entity>(PuddlePos, puddleCB, puddleRect, getTexture("data/Puddle.png"), 7, clips, 69);
 			Entities.push_back(PuddleEntity);
 			Vector2f PuddleOutPos(400, 200);
-			std::shared_ptr<NPC> PuddleNPC = std::make_shared<DoorNPC>(PuddleEntity, "test", PuddleOutPos);
+			std::shared_ptr<NPC> PuddleNPC = std::make_shared<DoorNPC>(PuddleEntity, "testtiled", PuddleOutPos);
 			PuddleNPC->m_Entity = PuddleEntity;
 			PuddleEntity->moving = true;
 			PuddleEntity->setNPC(PuddleNPC);
@@ -607,9 +610,40 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			//collisionBoxes.push_back(&Fragment1Entity->m_Collider);
 
 		}
+		break;
 
+	case 5:
+		if (!Map->loadFromFile("data/TESTTILED.png"))
+		{
+			printf("Failed to load sprite sheet texture!\n");
+		}
+		else {
+						// Exit Puddle
+			Vector2f PuddlePos(500, 700);
+			SDL_Rect puddleRect = { 0, 0, 200, 200 };
+			clips.clear();
+			clips.push_back({ 0, 0, 200, 200 });
+			clips.push_back({ 0,200,200, 200 });
+			clips.push_back({ 0,200 * 2,200, 200 });
+			clips.push_back({ 200,0,200, 200 });
+			clips.push_back({ 200,200,200, 200 });
+			clips.push_back({ 200,200 * 2,200, 200 });
+			clips.push_back({ 200 * 2,0,200, 200 });
+			clips.push_back({ 200 * 2,200,200, 200 });
+			clips.push_back({ 200 * 2,200 * 2,200, 200 });
+			SDL_Rect puddleCB = { PuddlePos.x, PuddlePos.y, 200, 200 };
+			auto PuddleEntity = std::make_shared<Entity>(PuddlePos, puddleCB, puddleRect, getTexture("data/Puddle.png"), 7, clips, 69);
+			Entities.push_back(PuddleEntity);
+			Vector2f PuddleOutPos(400, 200);
+			std::shared_ptr<NPC> PuddleNPC = std::make_shared<DoorNPC>(PuddleEntity, "test", PuddleOutPos);
+			PuddleNPC->m_Entity = PuddleEntity;
+			PuddleEntity->moving = true;
+			PuddleEntity->setNPC(PuddleNPC);
+			collisionBoxes.push_back(&PuddleEntity->m_Collider);
+		}
 
 		break;
+
 	default:
 		if (!Map->loadFromFile("data/Error.png"))
 		{
