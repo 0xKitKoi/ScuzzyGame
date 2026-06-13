@@ -112,6 +112,8 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			*/
 
 
+			// CutScene trigger.
+
 
 
 
@@ -613,7 +615,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 		break;
 
 	case 5:
-		if (!Map->loadFromFile("data/TESTTILED.png"))
+		if (!Map->loadFromFile("data/sewertest.png"))
 		{
 			printf("Failed to load sprite sheet texture!\n");
 		}

@@ -56,12 +56,24 @@ public:
 	void setEnemy(std::shared_ptr<Enemy> newChild);
 	void setNPC(std::shared_ptr<NPC> newchild);
 
+	// CutScene related functions
+    	Vector2f m_targetPosition{ 0.0f, 0.0f };
+    	bool m_isLerping = false;
+		float m_MoveSpeed;
+    void MoveTo(Vector2f target, float speed = 300.0f) {
+        m_targetPosition = target;
+        m_MoveSpeed  = speed;
+        m_isLerping   = true;
+    }
+
 
 	int currentFrameCount = 0;
 	Uint32 lastFrameTime = 0;
 	Uint32 frameDuration = 100; // Time each frame is displayed (milliseconds)
 	int FRAME_COUNT; // number of frames in animation.
 	bool moving = false;
+	bool m_AnimationFinished = false;
+	bool m_PlayAnimationOnce = false;
 
 	SDL_Rect m_SpriteRect = {0,0,0,0};
 	//Vector2f m_Pos; // did not play nice. ints for now.

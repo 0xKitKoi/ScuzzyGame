@@ -65,14 +65,35 @@ std::shared_ptr<LTexture> Entity::getTex() //SDL_Texture* Entity::getTex
 /// </summary>
 /// <param name="deltaTime">Scales movement and animations with time.</param>
 /// <param name="CameraRect">Renders entity based on camera's perspective.</param>
-/// <param name="PlayerPos">Player's position for collision detection. enemy chasing coming soon..?</param>
+/// <param name="PlayerPos">Player's position for collision detection + enemy chasing</param>
 //void Entity::Update(float deltaTime, SDL_Rect CameraRect, SDL_Rect PlayerPos)
 void Entity::Update(float deltaTime, Camera CameraRect, SDL_Rect PlayerPos)
 {
 	SDL_Rect srcRect;
 
+	if (m_isLerping) { // used for CutScenes. this should not interfere with Enemy/NPC.Update() calls.
+		float dx = m_targetPosition.x - m_PosX;
+		float dy = m_targetPosition.y - m_PosY;
+		float dist = sqrtf(dx*dx + dy*dy);
+		float step = m_MoveSpeed * deltaTime;
+
+		if (dist <= step) {
+			// Close enough — snap and stop
+			m_PosX = m_targetPosition.x;
+			m_PosY = m_targetPosition.y;
+			m_isLerping = false;
+			moving = false; // this is for animation frame stopping. 
+		} else {
+			// Normalize direction, advance by step
+			m_PosX += (dx / dist) * step;
+			m_PosY += (dy / dist) * step;
+		}
+	}
+
+
+
 	if (m_Enemy) {
-		SDL_Rect bruh = PlayerPos;
+		SDL_Rect bruh = PlayerPos; // need to target center of player
 		bruh.x = bruh.x + bruh.w / 2;
 		bruh.y = bruh.y + bruh.h / 2;
 		bruh.w = bruh.w / 2;
@@ -81,15 +102,17 @@ void Entity::Update(float deltaTime, Camera CameraRect, SDL_Rect PlayerPos)
 	}
 	if (m_NPC) {
 		m_NPC->Update(deltaTime, CameraRect, PlayerPos);
-		
 	}
 
-	if (moving) {
+	if (moving && !m_AnimationFinished) {
 		// Calculates index of frame to use in animation.
 		lastFrameTime += deltaTime * 1000.0f;
 		if (lastFrameTime >= frameDuration) {
 			currentFrameCount = (currentFrameCount + 1) % FRAME_COUNT;
 			lastFrameTime = 0;
+			if (m_PlayAnimationOnce && currentFrameCount == 0) {
+				m_AnimationFinished = true;
+			}	
 		}
 	}
 	srcRect = m_Clips[currentFrameCount]; // render the sprite at index of animation

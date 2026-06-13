@@ -24,6 +24,7 @@
 #include "Helper.hpp"
 #include "Source/Rom.h"
 #include "Source/BackgroundLayer.h"
+#include "Source/CutSceneManager.hpp"
 
 const std::string romPath = "data/truncated_backgrounds.dat";
 
@@ -1113,6 +1114,11 @@ int main(int argc, char* args[])
 					if (e.type == SDL_QUIT)
 					{
 						quit = true;
+					}
+					if ( /*gameState.inMenu || gameState.inFight || gameState.textAvailable || gameState.dead || */ gameState.inCutScene) {
+						//player.clearInputState(); // prevent input buffering from menu/fight/text to player control.
+						// dont let the player move or do shit in a cutscene.
+						continue;
 					}
 
 

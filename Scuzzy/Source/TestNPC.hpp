@@ -2,6 +2,7 @@
 //#include "Source/NPC.hpp"
 //#include "Source/Item.hpp"
 #include "Source/MenuSystem.hpp"
+#include "Source/CutSceneManager.hpp"
 #include <vector>
 #include <string>
 
@@ -261,9 +262,24 @@ public:
 };
 
 
-/*
-    // Create different types of NPCs
-    VillagerNPC villager({"Hi!", "Need help?", "Bye"});
-    MerchantNPC merchant({"Buy something?", "See my stock", "Leave"});
+class TriggerNPC : public NPC {
+public:
 
-*/  
+    SDL_Rect m_PovBox;
+    std::vector<CutsceneAction> m_Cutscenes;
+
+    TriggerNPC(std::shared_ptr<Entity> entity, SDL_Rect povBox, std::vector<CutsceneAction> cutscenes) : NPC(entity, {}), m_PovBox(povBox), m_Cutscenes(cutscenes) {}
+    //void Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) override {
+    void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override {
+        // if player is in POV box, trigger the cutscene.
+        if (SDL_HasIntersection(&m_PovBox, &PlayerPos)) {
+            if (!gameState.inCutScene) { // only trigger if not already in a cutscene
+                gameState.inCutScene = true;
+                gameState.cutsceneManager.m_Actions = m_Cutscenes; // set the cutscene actions to this trigger's cutscenes.
+                gameState.cutsceneManager.StartCutscene();
+            }
+        }
+    }
+
+
+};

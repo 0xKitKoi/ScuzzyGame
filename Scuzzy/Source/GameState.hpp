@@ -6,6 +6,7 @@
 #include "Source/Timer.hpp"
 #include "Source/Item.hpp"
 #include "Source/BackgroundLayer.h"
+#include "Source/CutSceneManager.hpp"
 #include <memory>
 // forward declarations ONLY
 //class NPC;
@@ -62,6 +63,8 @@ struct GameState {
 	Player* player = nullptr;
     float deltaTime;
 
+    CutSceneManager cutsceneManager;
+
 	int DamageTaken = 0;
     bool dead = false;
 
@@ -103,6 +106,7 @@ struct GameState {
 	int TensionMeter = 0;
     std::vector<int> TensionMeterCost = { 0, 5, 10 }; // this is a test of mana costs for magic abilities in fights. I dont know if i want to have a lot of magic in my fights so for now its ok to set the mana costs manually here. 
 
+    bool inCutScene = false;
 	bool LoadingScreen = false; // Loading screen for room transitions
 	bool DoneLoading = false;
     bool fade = true;
