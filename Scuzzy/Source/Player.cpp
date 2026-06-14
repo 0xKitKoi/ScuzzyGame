@@ -299,20 +299,22 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 		}
 	}
 
-
-	if (m_PosX < 0) {
-		m_PosX = originalX;
-	}
-	if (m_PosX + SpriteWidth > gameState.levelWidth) {
-		m_PosX = originalX;
-	}
-	if (m_PosY < 0) {
-		m_PosY = originalY;
-	}
-	if (m_PosY + SpriteHeight > gameState.levelHeight) {
-		m_PosY = originalY;
-	}
-
+	
+				if (m_PosX < 0) {
+					m_PosX = originalX;
+				}
+				
+				if (m_PosX + SpriteWidth > gameState.levelWidth * gameState.mapScaling) {
+					m_PosX = originalX;
+				}
+				if (m_PosY < 0) {
+					m_PosY = originalY;
+				}
+				//printf("Boundary check: PosY=%d SpriteH=%d levelH=%d\n", m_PosY, SpriteHeight, gameState.levelHeight);
+				if (m_PosY + SpriteHeight > gameState.levelHeight * gameState.mapScaling) {
+					m_PosY = originalY;
+				}
+	
 	m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };
 
 	// Debug.
@@ -326,7 +328,7 @@ void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
 		printf("[!] Failed to render text texture! Player::Update()\n");
 	}
 
-	camera.centerOn(m_PosX , m_PosY );
+	//camera.centerOn(m_PosX , m_PosY );
 }
 
 
@@ -688,8 +690,13 @@ void Player::render(int camX, int camY) {
 
 
 	//SpriteSheet.render(m_PosX - camX /* + MapoffsetX*/, m_PosY - camY /* + MapoffsetY*/, &srcRect);
-	SDL_Rect renderQuad = camera.worldToScreen({ (m_PosX), (m_PosY), (SpriteWidth), (SpriteHeight) });
+	//float scale = gameState.mapScaling;
+	////SDL_Rect renderQuad = camera.worldToScreen({ (m_PosX), (m_PosY), (SpriteWidth), (SpriteHeight) }, scale);
 	//SpriteSheet.render(renderQuad.x, renderQuad.y, &srcRect);
+	////SDL_RenderCopy(gRenderer, SpriteSheet.getTexture(), &srcRect, &renderQuad);
+	int screenX = (m_PosX - camera.x);	
+	int screenY = (m_PosY - camera.y);
+	SDL_Rect renderQuad = { screenX, screenY, SpriteWidth, SpriteHeight };
 	SDL_RenderCopy(gRenderer, SpriteSheet.getTexture(), &srcRect, &renderQuad);
 }
 

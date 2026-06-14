@@ -64,7 +64,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 		}
 		else {
 
-
+			gameState.mapScaling = 1.0f;
 			//Vector2f PuddlePos(1400, 700);
 			//SDL_Rect puddleRect = { 0, 0, 200, 200 };
 			//clips.clear();
@@ -127,7 +127,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			Entities.push_back(triggerEntity);
 			//collisionBoxes.push_back(&triggerEntity->m_Collider);
 			std::vector<std::unique_ptr<CutsceneAction>> cutsceneActions;
-			cutsceneActions.push_back(std::make_unique<DialogueAction>(gameState, std::vector<std::string>{"You stepped on a cutscene trigger!"}));
+			cutsceneActions.push_back(std::make_unique<DialogueAction>(gameState, std::vector<std::string>{"You stepped on a cutscene trigger!", "you stepped on it so hard that it died."}));
 			cutsceneActions.push_back(std::make_unique<MoveEntityAction>(triggerEntity.get(), Vector2f(800, 300), 100.0f));
 			std::shared_ptr<NPC> triggerNPC = std::make_shared<TriggerNPC>(triggerEntity, triggerCB, std::move(cutsceneActions));
 			triggerEntity->setNPC(triggerNPC);
@@ -305,6 +305,10 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			printf("Failed to load sprite sheet texture!\n");
 		}
 		else {
+
+			gameState.mapScaling = 1.1f;
+
+
 			// DOOR TEST
 			Vector2f entityPos(450, 770);
 			SDL_Rect entityRect = { 0,0,128,128 };
@@ -433,6 +437,8 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			printf("Failed to load sprite sheet texture!\n");
 		}
 		else {
+			gameState.mapScaling = 1.2f;
+
 			// DOOR TEST
 			Vector2f entityPos(950, 490);
 			SDL_Rect entityRect = { 0,0,128,128 };
@@ -499,6 +505,8 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			printf("Failed to load sprite sheet texture!\n");
 		}
 		else {
+			gameState.mapScaling = 1.0f;
+
 			// Exit Puddle
 			Vector2f PuddlePos(500, 700);
 			SDL_Rect puddleRect = { 0, 0, 200, 200 };
@@ -639,8 +647,9 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			printf("Failed to load sprite sheet texture!\n");
 		}
 		else {
+			gameState.mapScaling = 1.5f;
 						// Exit Puddle
-			Vector2f PuddlePos(500, 700);
+			Vector2f PuddlePos(500, 500);
 			SDL_Rect puddleRect = { 0, 0, 200, 200 };
 			clips.clear();
 			clips.push_back({ 0, 0, 200, 200 });
@@ -672,11 +681,13 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 		}
 		break;
 	}
-	leveldimentions.x = Map->getHeight();
-	leveldimentions.y = Map->getWidth(); // callers problem to load level dimensions. i aint doing all that.
-	camera.mapWidth = leveldimentions.y;
-	camera.mapHeight = leveldimentions.x;
-	//gameState.player->AllEntities = Entities; // TODO: make the player look up the entities vector on its own instead of having to set it every time we load a level. maybe make it a reference or smthn.
+	leveldimentions.x = Map->getWidth();
+	leveldimentions.y = Map->getHeight();
+	gameState.levelWidth = Map->getWidth();
+	gameState.levelHeight = Map->getHeight();
+	printf("LoadLevel: Map dimensions = %d x %d\n", Map->getWidth(), Map->getHeight());
+	camera.mapWidth = Map->getWidth();
+	camera.mapHeight = Map->getHeight();
 	return leveldimentions;
 }
 

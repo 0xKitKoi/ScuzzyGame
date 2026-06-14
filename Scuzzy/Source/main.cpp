@@ -889,44 +889,76 @@ std::vector<SDL_Rect> getSurroundingCollisionBoxes(Player& player, const std::ve
 }
 
 
-
-// Camera calculation with centering
+/*
+			// Camera calculation with centering
+			void update_camera(int player_x, int player_y, int map_width, int map_height) {
+				// Start with player-centered camera
+				camera.x = player_x - screenwidth / 2;
+				camera.y = player_y - screenheight / 2;
+				
+				// Apply boundaries for maps larger than screen
+				if (map_width > screenwidth) {
+					// Normal camera clamping for wide maps
+					if (camera.x < 0) camera.x = 0;
+					if (camera.x > map_width - screenwidth) {
+						camera.x = map_width - screenwidth;
+					}
+				} else {
+					// Center the map horizontally
+					camera.x = -center_offset_x;
+				}
+				
+				if (map_height > screenheight) {
+					// Normal camera clamping for tall maps
+					if (camera.y < 0) camera.y = 0;
+					if (camera.y > map_height - screenheight) {
+						camera.y = map_height - screenheight;
+					}
+				} else {
+					// Center the map vertically
+					camera.y = -center_offset_y;
+				}
+			}
+*/
 void update_camera(int player_x, int player_y, int map_width, int map_height) {
-    // Start with player-centered camera
-    camera.x = player_x - screenwidth / 2;
-    camera.y = player_y - screenheight / 2;
-    
-    // Apply boundaries for maps larger than screen
-    if (map_width > screenwidth) {
-        // Normal camera clamping for wide maps
-        if (camera.x < 0) camera.x = 0;
-        if (camera.x > map_width - screenwidth) {
-            camera.x = map_width - screenwidth;
-        }
-    } else {
-        // Center the map horizontally
-        camera.x = -center_offset_x;
+    float scale = gameState.mapScaling;
+    int scaledMapW = map_width * scale;
+    int scaledMapH = map_height * scale;
+    int scaledViewW = screenwidth / scale;
+    int scaledViewH = screenheight / scale;
+	printf("scale=%.1f scaledMapW=%d scaledMapH=%d scaledViewW=%d scaledViewH=%d screenW=%d screenH=%d playerX=%d playerY=%d camX=%.1f camY=%.1f\n",
+        scale, scaledMapW, scaledMapH, scaledViewW, scaledViewH, screenwidth, screenheight, player_x, player_y, camera.x, camera.y);
+
+    camera.x = player_x - scaledViewW / 2;
+    camera.y = player_y - scaledViewH / 2;
+
+    // Compare SCALED map size against screen size
+	if (scaledMapW > screenwidth) {
+		if (camera.x < 0) camera.x = 0;
+		if (camera.x > Map.getWidth() - scaledViewW)  // clamp in world space
+			camera.x = Map.getWidth() - scaledViewW;
+	} else {
+        // map is still smaller than screen even after scaling — center it
+        camera.x = -(scaledViewW - map_width) / 2;
     }
-    
-    if (map_height > screenheight) {
-        // Normal camera clamping for tall maps
-        if (camera.y < 0) camera.y = 0;
-        if (camera.y > map_height - screenheight) {
-            camera.y = map_height - screenheight;
-        }
-    } else {
-        // Center the map vertically
-        camera.y = -center_offset_y;
-    }
+
+		if (scaledMapH > screenheight) {
+			if (camera.y < 0) camera.y = 0;
+			if (camera.y > Map.getHeight() - scaledViewH)
+				camera.y = Map.getHeight() - scaledViewH;
+		} else {
+			// map shorter than screen — center it, don't let camera go negative
+			camera.y = -((screenheight / scale) - Map.getHeight()) / 2.0f;
+			camera.y = std::max(camera.y, 0.0f); // never go above map top
+		}
 }
-
-
 
 
 
 
 // Rendering function
 void render_map(SDL_Renderer* renderer , LTexture& map_texture) {
+	printf("render_map() called. it should not be.\n");
 	int map_width = map_texture.getWidth();
 	int map_height = map_texture.getHeight();
     SDL_Rect src_rect = {0, 0, map_width, map_height};
@@ -963,6 +995,7 @@ void render_map(SDL_Renderer* renderer , LTexture& map_texture) {
 
 // Alternative simpler approach - unified rendering
 void render_map_unified(SDL_Renderer* renderer, LTexture* map_texture) {
+	printf("render_map_unified() called. it should not be.\n");
     SDL_Rect src_rect, dest_rect;
 	int map_width = map_texture->getWidth();
 	int map_height = map_texture->getHeight();
@@ -1348,10 +1381,19 @@ int main(int argc, char* args[])
 							count += 1;
 						}
 
-						// when done, load the new map, and fade back in.
 						Vector2f mapdim = LoadLevel(gameState.room, &Map);
-						levelHeight = mapdim.y;
-						levelWidth = mapdim.x;
+						levelHeight = Map.getHeight();
+						levelWidth = Map.getWidth();
+
+						// Recalculate offsets and scale for new map
+						float scale = gameState.mapScaling;
+						int scaledMapW = Map.getWidth() * scale;
+						int scaledMapH = Map.getHeight() * scale;
+						center_offset_x = (scaledMapW < screenwidth) ? (screenwidth - scaledMapW) / 2 : 0;
+						center_offset_y = (scaledMapH < screenheight) ? (screenheight - scaledMapH) / 2 : 0;
+						gameState.MapoffsetX = center_offset_x;
+						gameState.MapoffsetY = center_offset_y;
+
 						gameState.DoneLoading = true;
 					}
 					while (gameState.fade) { // fade IN
@@ -1415,7 +1457,7 @@ int main(int argc, char* args[])
 							//Render front blended
 							Map.setAlpha(a);
 							//Map.render(offsetX, offsetY, &camera);
-							SDL_Rect mapScreenPos = camera.worldToScreen({0, 0, Map.getWidth(), Map.getHeight()});
+							SDL_Rect mapScreenPos = camera.WorldToScreen({0, 0, Map.getWidth(), Map.getHeight()});
 							SDL_Rect what = {camera.x, camera.y, camera.width, camera.height};
     						SDL_RenderCopy(gRenderer, Map.getTexture(), &what, &mapScreenPos);
 
@@ -1493,20 +1535,44 @@ int main(int argc, char* args[])
 					printf("MapoffsetX: %d, MapoffsetY: %d\n", MapoffsetX, MapoffsetY);
 					printf("scaledWidth: %d, scaledHeight: %d\n", scaledWidth, scaledHeight);
 					*/
+
+					//														center_offset_x = 0;
+				//															center_offset_y = 0;
+				//															// If map is smaller than screen, center it
+				//															if (Map.getWidth() < screenwidth) {
+				//																center_offset_x = (screenwidth - Map.getWidth()) / 2;
+				//															}
+//
+//																			if (Map.getHeight() < screenheight) {
+//																				center_offset_y = (screenheight - Map.getHeight()) / 2;
+//																			}
+//																			gameState.MapoffsetX = center_offset_x;
+//																			gameState.MapoffsetY = center_offset_y;
+//																			gameState.levelHeight = Map.getHeight();
+//																			gameState.levelWidth = Map.getWidth();
 					center_offset_x = 0;
 					center_offset_y = 0;
-					// If map is smaller than screen, center it
-					if (Map.getWidth() < screenwidth) {
-    					center_offset_x = (screenwidth - Map.getWidth()) / 2;
+
+					float scale = gameState.mapScaling;
+					int scaledMapW = Map.getWidth() * scale;
+					int scaledMapH = Map.getHeight() * scale;
+
+					if (scaledMapW < screenwidth) {
+						center_offset_x = (screenwidth - scaledMapW) / 2;
+					}
+					if (scaledMapH < screenheight) {
+						center_offset_y = (screenheight - scaledMapH) / 2;
 					}
 
-					if (Map.getHeight() < screenheight) {
-    					center_offset_y = (screenheight - Map.getHeight()) / 2;
-					}
 					gameState.MapoffsetX = center_offset_x;
 					gameState.MapoffsetY = center_offset_y;
-					gameState.levelHeight = Map.getHeight();
-					gameState.levelWidth = Map.getWidth();
+					//gameState.levelHeight = scaledMapH;
+					//gameState.levelWidth = scaledMapW;
+
+
+
+
+
 					//MapoffsetX = center_offset_x;
 					//MapoffsetY = center_offset_y;
 					//////update_camera(player.GetPosX(), player.GetPosY(), Map.getWidth(), Map.getHeight());
@@ -1519,26 +1585,69 @@ int main(int argc, char* args[])
 
 
 
+															/*
+															// Which part of the map texture to show (source rectangle)
+															SDL_Rect srcRect = {
+																(int)std::max(0.0f, camera.x),
+																(int)std::max(0.0f, camera.y),
+																std::min(camera.width, Map.getWidth()),
+																std::min(camera.height, Map.getHeight())
+															};
+															
+															// Where to draw it on screen (destination rectangle)
+															SDL_Rect dstRect = {
+																(camera.x < 0) ? (int)-camera.x : 0,  // Offset if map is smaller
+																(camera.y < 0) ? (int)-camera.y : 0,
+																srcRect.w,
+																srcRect.h
+															};
+															
+															SDL_RenderCopy(gRenderer, Map.getTexture(), &srcRect, &dstRect);	
+															*/
 
-					// Which part of the map texture to show (source rectangle)
+					update_camera(player.GetPosX(), player.GetPosY(), Map.getWidth(), Map.getHeight());
+					printf("AFTER update_camera: camX=%.1f camY=%.1f\n", camera.x, camera.y);
+
+					float mapScale = gameState.mapScaling; // or whatever scale factor matches Tiled's appearance
+					camera.zoom = mapScale; // set camera zoom for worldToScreen calculations
+					//SDL_RenderSetScale(gRenderer, mapScale, mapScale);
+
+					int scaledViewW = (int)(screenwidth / mapScale);
+					int scaledViewH = (int)(screenheight / mapScale);
+
 					SDL_Rect srcRect = {
 						(int)std::max(0.0f, camera.x),
 						(int)std::max(0.0f, camera.y),
-						std::min(camera.width, Map.getWidth()),
-						std::min(camera.height, Map.getHeight())
+						std::min(scaledViewW, Map.getWidth() - (int)std::max(0.0f, camera.x)),
+						std::min(scaledViewH, Map.getHeight() - (int)std::max(0.0f, camera.y))
 					};
-					
-					// Where to draw it on screen (destination rectangle)
+
 					SDL_Rect dstRect = {
-						(camera.x < 0) ? (int)-camera.x : 0,  // Offset if map is smaller
-						(camera.y < 0) ? (int)-camera.y : 0,
+						(camera.x < 0) ? (int)(-camera.x) : 0,
+						(camera.y < 0) ? (int)(-camera.y) : 0,
 						srcRect.w,
 						srcRect.h
 					};
-					
-					SDL_RenderCopy(gRenderer, Map.getTexture(), &srcRect, &dstRect);	
 
-					/*
+					//SDL_RenderCopy(gRenderer, Map.getTexture(), &srcRect, &dstRect);
+
+					SDL_Rect mapQuad =
+					{
+						int((0 - camera.x) * gameState.mapScaling),
+						int((0 - camera.y) * gameState.mapScaling),
+						Map.getWidth() * gameState.mapScaling,
+						Map.getHeight() * gameState.mapScaling
+					};
+
+					SDL_RenderCopy(gRenderer, Map.getTexture(), NULL, &mapQuad);
+
+
+
+
+
+
+					//SDL_RenderSetScale(gRenderer, 1.0f, 1.0f);
+										/*
 					    // Debug info for Camera rects
 					    printf("Camera: (%.1f, %.1f) | Player: (%d, %d)\n", 
            						camera.x, camera.y, player.m_PosX, player.m_PosY);
@@ -1546,7 +1655,6 @@ int main(int argc, char* args[])
 						printf("SrcRect: (%d, %d, %d, %d)\n", srcRect.x, srcRect.y, srcRect.w, srcRect.h);
 						printf("DstRect: (%d, %d, %d, %d)\n", dstRect.x, dstRect.y, dstRect.w, dstRect.h);
 					*/
-
 
 
 					gTextTexture.render(0, 0); // render any text.
@@ -1565,7 +1673,7 @@ int main(int argc, char* args[])
 
 					//SDL_RenderDrawRect(gRenderer, &player.GetColliderAddress());
 					SDL_Rect renderBox = {
-						player.GetCollider().x - camera.x,
+						player.GetCollider().x - camera.x ,
 						player.GetCollider().y - camera.y,
 						player.GetCollider().w,
 						player.GetCollider().h
@@ -1673,97 +1781,99 @@ int main(int argc, char* args[])
 					//SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
 
-					for (auto& box : Entities) { // const?
-						if (box->m_Enemy != NULL) {
-							if (!box->m_Enemy->alive) {
-								continue;
-							}
-						}
-						// Calculate the intersection between the box and the camera
+					// ===============================
+					// ENTITY FOV DEBUG RENDER
+					// ===============================
+					SDL_Rect cameraRect = { camera.x, camera.y, camera.width, camera.height };
+					for (auto& box : Entities)
+					{
+						if (box->m_Enemy && !box->m_Enemy->alive)
+							continue;
+
+						
+
 						SDL_Rect intersectedBox;
-						SDL_Rect cameraRect = { camera.x, camera.y, camera.width, camera.height };
-						if (SDL_IntersectRect(&box->m_FOV, &cameraRect, &intersectedBox)) {
-							// Adjust box position relative to camera
-							SDL_Rect renderBox = {
-								box->m_FOV.x - cameraRect.x,
-								box->m_FOV.y - cameraRect.y,
-								box->m_FOV.w,
-								box->m_FOV.h 
+						if (SDL_IntersectRect(&box->m_FOV, &cameraRect, &intersectedBox))
+						{
+							SDL_Rect renderBox =
+							{
+								int((box->m_FOV.x - camera.x)),
+								int((box->m_FOV.y - camera.y)),
+								int(box->m_FOV.w ),
+								int(box->m_FOV.h )
 							};
 
-							// Draw the box
 							SDL_RenderDrawRect(gRenderer, &renderBox);
 						}
 					}
 
-					renderCollisionBoxes(gRenderer, {int(camera.x), int(camera.y), camera.width, camera.height});
-					//SDL_RenderDrawRect(gRenderer, &player.m_CheckBox);
-
-					//player.render(camera.x, camera.y); // moved so player renders above everything else. might have to come back to this.
-
-
-
-					//collisionBoxes.push_back(player.GetCollider());
-					//SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
-					// Update every entity.
-					for (int i = 0; i < Entities.size(); i++) {
-						if (Entities[i]->m_Enemy != NULL) {
-							if (!Entities[i]->m_Enemy->alive) {
-								
-								
-								for (int j = 0; j < collisionBoxes.size(); j++) {
-									if (collisionBoxes[j] == &Entities[i]->m_Collider) {
-										// remove the collision box from the list.
-										collisionBoxes.erase(collisionBoxes.begin() + j);
-									}
-								}
-								//Entities[i].~shared_ptr();
-								continue;
-							}
+					renderCollisionBoxes(
+						gRenderer,
+						{
+							int(camera.x),
+							int(camera.y),
+							int(camera.width),
+							int(camera.height)
 						}
-						/*if (gameState.inMenu) { break; }*/
+					);
+
+
+					// ===============================
+					// ENTITY UPDATE + COLLISION DEBUG
+					// ===============================
+					for (int i = 0; i < Entities.size(); i++)
+					{
+						if (Entities[i]->m_Enemy && !Entities[i]->m_Enemy->alive)
+						{
+							for (int j = 0; j < collisionBoxes.size(); j++)
+							{
+								if (collisionBoxes[j] == &Entities[i]->m_Collider)
+								{
+									collisionBoxes.erase(collisionBoxes.begin() + j);
+									break;
+								}
+							}
+							continue;
+						}
+
 						Entities.at(i)->Update(deltaTime, camera, player.GetCollider());
 
-						//SDL_RenderDrawRect(gRenderer, &Entities.at(i).m_FOV);
-
-						// render collision boxes
-						SDL_Rect intersectedBox;
 						SDL_Rect cameraRect = { camera.x, camera.y, camera.width, camera.height };
-						if (SDL_IntersectRect(&Entities.at(i)->m_Collider, &cameraRect, &intersectedBox)) {
-							//printf("bruh");
-							// Adjust box position relative to camera
-							SDL_Rect renderBox = {
-								Entities.at(i)->m_Collider.x - camera.x + MapoffsetX,
-								Entities.at(i)->m_Collider.y - camera.y + MapoffsetY,
-								Entities.at(i)->m_Collider.w,
-								Entities.at(i)->m_Collider.h
+
+						//SDL_Rect intersectedBox;
+						//if (SDL_IntersectRect(&Entities.at(i)->m_Collider, &cameraRect, &intersectedBox))
+						if (SDL_HasIntersection(&Entities.at(i)->m_Collider, &cameraRect))
+						{
+							SDL_Rect renderBox =
+							{
+								int((Entities[i]->m_Collider.x - camera.x)),
+								int((Entities[i]->m_Collider.y - camera.y)),
+								int(Entities[i]->m_Collider.w ),
+								int(Entities[i]->m_Collider.h)
 							};
-							// comment this out soon
-							renderBox = camera.worldToScreen(Entities.at(i)->m_Collider);
 
-							// Draw the box
 							SDL_RenderDrawRect(gRenderer, &renderBox);
-
-
-
 						}
-
 					}
 
+
+					// ===============================
+					// PLAYER COLLISION BOX
+					// ===============================
 					{
-						// RENDER BASIC CHECK BOX
 						SDL_Rect checkb = player.m_CheckBox;
-						SDL_Rect rendercheckBox = {
+
+						SDL_Rect rendercheckBox =
+						{
 							checkb.x - camera.x,
 							checkb.y - camera.y,
 							checkb.w,
 							checkb.h
 						};
-						rendercheckBox = camera.worldToScreen(player.m_CheckBox);
 
-						// Draw the box
 						SDL_RenderDrawRect(gRenderer, &rendercheckBox);
 					}
+
 
 					//SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
@@ -1796,7 +1906,7 @@ int main(int argc, char* args[])
 
 
 					SDL_RenderDrawRect(gRenderer, &renderBox); // render players collision box above player.
-
+					//SDL_RenderSetScale(gRenderer, 1.0f, 1.0f);
 
 					//SDL_RenderClear(renderer);
 

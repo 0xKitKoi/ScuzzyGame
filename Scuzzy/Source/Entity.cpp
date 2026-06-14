@@ -123,9 +123,19 @@ void Entity::Update(float deltaTime, Camera CameraRect, SDL_Rect PlayerPos)
 	//SDL_RenderDrawRect(gRenderer, &m_Collider);
 	// SpriteSheet.render(m_PosX - camX, m_PosY - camY, &srcRect);
 	//m_Texture->render(m_PosX - CameraRect.x, m_PosY - CameraRect.y, &srcRect);
-	SDL_Rect enemyScreen = CameraRect.worldToScreen({ m_PosX, m_PosY, srcRect.w, srcRect.h });
+//	float scale = gameState.mapScaling;
+/////	SDL_Rect enemyScreen = CameraRect.worldToScreen({ m_PosX, m_PosY, srcRect.w, srcRect.h }); // scale should be 1 here because the camera's worldToScreen function already accounts for scaling.
+//	printf("Entity render: world=(%.1f,%.1f) screen=(%d,%d) scale=%.1f\n", 
+//    m_PosX, m_PosY, enemyScreen.x, enemyScreen.y, scale);
     //SDL_RenderCopy(renderer, enemyTexture, NULL, &enemyScreen);
-	m_Texture->render(enemyScreen.x, enemyScreen.y, &srcRect);
+/////	m_Texture->render(enemyScreen.x, enemyScreen.y, &srcRect);
+	int screenX = (m_PosX - CameraRect.x);
+	int screenY = (m_PosY - CameraRect.y);
+	//m_Texture->render(screenX, screenY, &srcRect);
+
+	SDL_Rect renderQuad = { screenX, screenY, m_Collider.w, m_Collider.h };
+	//SDL_RenderCopy(gRenderer, m_Texture->getTexture(), &srcRect, &renderQuad);
+	m_Texture->render(screenX, screenY, &srcRect);
 }
 
 

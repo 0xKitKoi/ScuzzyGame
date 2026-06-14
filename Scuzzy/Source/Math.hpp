@@ -5,8 +5,8 @@
 
 struct Camera { // render space to world space fucking sucks
     float x, y;           // Camera position in world space
+    float zoom = 1.0f;    // Zoom level (1.0 = no zoom)
     int width, height;    // Viewport size ( the game is set to fullscreen only.)
-    
     int mapWidth, mapHeight;
     
 void centerOn(float targetX, float targetY) { // this centers the camera on a target position (the player)
@@ -35,15 +35,17 @@ void centerOn(float targetX, float targetY) { // this centers the camera on a ta
         }
     }
     
-    // Convert world position to screen position
-    SDL_Rect worldToScreen(SDL_Rect worldRect) {
-        return {
-            (int)(worldRect.x - x),
-            (int)(worldRect.y - y),
-            worldRect.w,
-            worldRect.h
-        };
-    }
+    
+        SDL_Rect WorldToScreen(SDL_Rect r)
+        {
+            return {
+                int((r.x - this->x) * this->zoom),
+                int((r.y - this->y) * this->zoom),
+                int(r.w * this->zoom),
+                int(r.h * this->zoom)
+            };
+        }
+
 };
 
 

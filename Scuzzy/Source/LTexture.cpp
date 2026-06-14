@@ -138,6 +138,7 @@ void LTexture::setAlpha(Uint8 alpha)
 	SDL_SetTextureAlphaMod(mTexture, alpha);
 }
 
+/*
 void LTexture::render(int x, int y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip, float scale)
 {
 	if (this == nullptr || mTexture == nullptr) return;
@@ -159,6 +160,19 @@ void LTexture::render(int x, int y, SDL_Rect* clip, double angle, SDL_Point* cen
 
 	//Render to screen
 	SDL_RenderCopyEx(gRenderer, mTexture, clip, &renderQuad, angle, center, flip);
+}*/
+void LTexture::render(int x, int y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip, float scale)
+{
+    if (this == nullptr || mTexture == nullptr) return;
+
+    SDL_Rect renderQuad = { x, y, static_cast<int>(mWidth * scale), static_cast<int>(mHeight * scale) };
+
+    if (clip != nullptr) {
+        renderQuad.w = static_cast<int>(clip->w * scale);
+        renderQuad.h = static_cast<int>(clip->h * scale);
+    }
+
+    SDL_RenderCopyEx(gRenderer, mTexture, clip, &renderQuad, angle, center, flip);
 }
 
 void LTexture::renderGlow(int x, int y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip, float scale)

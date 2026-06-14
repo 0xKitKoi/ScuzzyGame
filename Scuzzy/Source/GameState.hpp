@@ -69,6 +69,7 @@ struct GameState {
     bool dead = false;
 
     Vector2f DOOR_OUT_POS = {0,0};
+    float mapScaling = 1.0f;
 	int MapoffsetX = 0; // i hatteee uuu whyyy
 	int MapoffsetY = 0;
 	int levelWidth = 0;
