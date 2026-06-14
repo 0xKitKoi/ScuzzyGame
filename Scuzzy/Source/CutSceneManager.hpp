@@ -7,7 +7,8 @@
 #include <cstdio>
 
 #include "Source/Entity.hpp"
-#include "Source/GameState.hpp"
+
+class GameState; // Forward declaration
 
 // Base class for individual actions within a cutscene
 class CutsceneAction {
@@ -20,38 +21,15 @@ public:
 
 // Orchestrator class managing the cutscene flow
 class CutsceneManager {
+public:
     std::vector<std::unique_ptr<CutsceneAction>> m_Actions;
     size_t m_CurrentActionIndex = 0;
     bool m_IsActive = false;
+    void AddAction(std::unique_ptr<CutsceneAction> action);
 
-public:
-    void AddAction(std::unique_ptr<CutsceneAction> action) {
-        m_Actions.push_back(std::move(action));
-    }
+    void StartCutscene();
 
-    void StartCutscene() {
-        if (m_Actions.empty()) return;
-        m_IsActive = true;
-        m_CurrentActionIndex = 0;
-        printf("--- Player controls disabled. Cutscene Started. ---\n");
-        m_Actions[m_CurrentActionIndex]->Enter();
-    }
-
-    void Update(float deltaTime) {
-        if (!m_IsActive) return;
-
-        if (m_Actions[m_CurrentActionIndex]->Update(deltaTime)) {
-            m_Actions[m_CurrentActionIndex]->Exit();
-            m_CurrentActionIndex++;
-            
-            if (m_CurrentActionIndex < m_Actions.size()) {
-                m_Actions[m_CurrentActionIndex]->Enter();
-            } else {
-                m_IsActive = false;
-                printf("--- Cutscene Finished. Player controls restored. ---\n");
-            }
-        }
-    }
+    void Update(float deltaTime);
 };
 
 
@@ -128,5 +106,17 @@ public:
     }
 };
 
+
+class DialogueAction : public CutsceneAction {
+private:
+    GameState& m_GameState;
+    std::vector<std::string> m_DialogueLines;
+    size_t m_CurrentLine = 0;
+public:
+    DialogueAction(GameState& gs, const std::vector<std::string>& lines);
+    void Enter() override;
+    bool Update(float deltaTime) override;
+    void Exit() override;
+};
 
 #endif // CUTSCENEMANAGER_H

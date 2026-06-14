@@ -113,6 +113,25 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 
 			// CutScene trigger.
+			Vector2f triggerPos(1300, 1100);
+			SDL_Rect triggerRect = { 0, 0, 128, 128 };
+			SDL_Rect triggerCB = { triggerPos.x, triggerPos.y, 128, 128 };
+			//auto triggerEntity = std::make_shared<Entity>(triggerPos, triggerCB, triggerRect, 1, 401);
+			auto triggerEntity = std::make_shared<Entity>(
+				triggerPos, triggerCB, triggerRect,
+				nullptr,           // or a real texture
+				1,                 // framecount
+				std::vector<SDL_Rect>{{0,0,0,0}},  // clips
+				401                // EntityID
+			);
+			Entities.push_back(triggerEntity);
+			//collisionBoxes.push_back(&triggerEntity->m_Collider);
+			std::vector<std::unique_ptr<CutsceneAction>> cutsceneActions;
+			cutsceneActions.push_back(std::make_unique<DialogueAction>(gameState, std::vector<std::string>{"You stepped on a cutscene trigger!"}));
+			//cutsceneActions.push_back(std::make_unique<MoveEntityAction>(triggerEntity.get(), Vector2f(800, 300), 100.0f));
+			std::shared_ptr<NPC> triggerNPC = std::make_shared<TriggerNPC>(triggerEntity, triggerCB, std::move(cutsceneActions));
+			triggerEntity->setNPC(triggerNPC);
+		
 
 
 

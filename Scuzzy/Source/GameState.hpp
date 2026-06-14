@@ -63,7 +63,7 @@ struct GameState {
 	Player* player = nullptr;
     float deltaTime;
 
-    CutSceneManager cutsceneManager;
+    CutsceneManager cutsceneManager;
 
 	int DamageTaken = 0;
     bool dead = false;

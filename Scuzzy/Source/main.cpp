@@ -1115,10 +1115,22 @@ int main(int argc, char* args[])
 					{
 						quit = true;
 					}
-					if ( /*gameState.inMenu || gameState.inFight || gameState.textAvailable || gameState.dead || */ gameState.inCutScene) {
-						//player.clearInputState(); // prevent input buffering from menu/fight/text to player control.
-						// dont let the player move or do shit in a cutscene.
-						continue;
+					
+					//if ( /*gameState.inMenu || gameState.inFight || gameState.textAvailable || gameState.dead || */ gameState.inCutScene) {
+					//	//player.clearInputState(); // prevent input buffering from menu/fight/text to player control.
+					//	// dont let the player move or do shit in a cutscene.
+					//	continue;
+					//}
+					if (gameState.inCutScene) {
+						if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_z) {
+							if (gameState.textAnimating) {
+								gameState.textAnimating = false;
+								gameState.currentDisplayText = gameState.Text[gameState.textIndex];
+							} else if (gameState.textAvailable) {
+								gameState.textAvailable = false;
+							}
+						}
+						continue;  // block everything else
 					}
 
 
@@ -1261,6 +1273,13 @@ int main(int argc, char* args[])
 							MS_handleMenuInput(e);
 							gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
 
+						}
+
+
+						if (gameState.inCutScene) {
+							gameState.cutsceneManager.Update(deltaTime);
+							if (!gameState.cutsceneManager.m_IsActive)
+								gameState.inCutScene = false;
 						}
 						
 						else if (gameState.inFight) {
