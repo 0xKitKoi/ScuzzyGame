@@ -1235,6 +1235,7 @@ int main(int argc, char* args[])
 							continue;
 					}
 					else {
+
 						if (gameState.textAvailable) {
 							//gameState.player->clearInputState(); // prevent player input from being buffered and triggering after dialogue ends.
 							player.clearInputState();
@@ -1274,13 +1275,6 @@ int main(int argc, char* args[])
 							gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
 
 						}
-
-
-						if (gameState.inCutScene) {
-							gameState.cutsceneManager.Update(deltaTime);
-							if (!gameState.cutsceneManager.m_IsActive)
-								gameState.inCutScene = false;
-						}
 						
 						else if (gameState.inFight) {
 
@@ -1292,6 +1286,12 @@ int main(int argc, char* args[])
 						}
 						
 					}
+				}
+
+				if (gameState.inCutScene) {
+					gameState.cutsceneManager.Update(deltaTime);
+					if (!gameState.cutsceneManager.m_IsActive)
+						gameState.inCutScene = false;
 				}
 
 				//if (wasInMenu && !gameState.inMenu) {

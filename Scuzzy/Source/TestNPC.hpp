@@ -280,6 +280,8 @@ public:
         if (SDL_HasIntersection(&m_PovBox, &PlayerPos)) {
             if (!gameState.inCutScene) { // only trigger if not already in a cutscene
                 gameState.inCutScene = true;
+                fired = true;
+                gameState.cutsceneManager.m_IsActive = true;
                 //gameState.cutsceneManager.m_Actions = m_Cutscenes; // set the cutscene actions to this trigger's cutscenes.
 
                 //for (auto& action : m_Cutscenes) {

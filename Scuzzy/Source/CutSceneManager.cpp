@@ -21,6 +21,10 @@
 
     void CutsceneManager::Update(float deltaTime) {
         if (!m_IsActive) return;
+        if (m_CurrentActionIndex >= m_Actions.size()) {
+            m_IsActive = false;
+            return;
+        }
 
         if (m_Actions[m_CurrentActionIndex]->Update(deltaTime)) {
             m_Actions[m_CurrentActionIndex]->Exit();
@@ -57,6 +61,7 @@ void DialogueAction::Enter() {
 }
 
 bool DialogueAction::Update(float deltaTime) {
+    printf("Waiting for player to advance dialogue...\n");
     if (m_GameState.textAnimating) return false;   // still typing out
     if (m_GameState.textAvailable) return false;   // waiting for player to press confirm
 
