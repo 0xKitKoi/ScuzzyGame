@@ -920,6 +920,8 @@ std::vector<SDL_Rect> getSurroundingCollisionBoxes(Player& player, const std::ve
 				}
 			}
 */
+
+/*
 void update_camera(int player_x, int player_y, int map_width, int map_height) {
     float scale = gameState.mapScaling;
     int scaledMapW = map_width * scale;
@@ -952,7 +954,34 @@ void update_camera(int player_x, int player_y, int map_width, int map_height) {
 			camera.y = std::max(camera.y, 0.0f); // never go above map top
 		}
 }
+		*/
+void update_camera(int player_x, int player_y, int map_width, int map_height) {
+    float scale = gameState.mapScaling;
+    int scaledMapW = map_width * scale;
+    int scaledMapH = map_height * scale;
 
+    // Camera in screen space — center player on screen
+    camera.x = player_x * scale - screenwidth / 2;
+    camera.y = player_y * scale - screenheight / 2;
+
+    // X bounds
+    if (scaledMapW > screenwidth) {
+        if (camera.x < 0) camera.x = 0;
+        if (camera.x > scaledMapW - screenwidth) camera.x = scaledMapW - screenwidth;
+    } else {
+        // map smaller than screen — center it
+        camera.x = -((screenwidth - scaledMapW) / 2.0f);
+    }
+
+    // Y bounds
+    if (scaledMapH > screenheight) {
+        if (camera.y < 0) camera.y = 0;
+        if (camera.y > scaledMapH - screenheight) camera.y = scaledMapH - screenheight;
+    } else {
+        // map shorter than screen — center it
+        camera.y = -((screenheight - scaledMapH) / 2.0f);
+    }
+}
 
 
 
@@ -1550,22 +1579,7 @@ int main(int argc, char* args[])
 //																			gameState.MapoffsetY = center_offset_y;
 //																			gameState.levelHeight = Map.getHeight();
 //																			gameState.levelWidth = Map.getWidth();
-					center_offset_x = 0;
-					center_offset_y = 0;
 
-					float scale = gameState.mapScaling;
-					int scaledMapW = Map.getWidth() * scale;
-					int scaledMapH = Map.getHeight() * scale;
-
-					if (scaledMapW < screenwidth) {
-						center_offset_x = (screenwidth - scaledMapW) / 2;
-					}
-					if (scaledMapH < screenheight) {
-						center_offset_y = (screenheight - scaledMapH) / 2;
-					}
-
-					gameState.MapoffsetX = center_offset_x;
-					gameState.MapoffsetY = center_offset_y;
 					//gameState.levelHeight = scaledMapH;
 					//gameState.levelWidth = scaledMapW;
 
@@ -1604,7 +1618,22 @@ int main(int argc, char* args[])
 															
 															SDL_RenderCopy(gRenderer, Map.getTexture(), &srcRect, &dstRect);	
 															*/
+					center_offset_x = 0;
+					center_offset_y = 0;
 
+					float scale = gameState.mapScaling;
+					int scaledMapW = Map.getWidth() * scale;
+					int scaledMapH = Map.getHeight() * scale;
+
+					if (scaledMapW < screenwidth) {
+						center_offset_x = (screenwidth - scaledMapW) / 2;
+					}
+					if (scaledMapH < screenheight) {
+						center_offset_y = (screenheight - scaledMapH) / 2;
+					}
+
+					gameState.MapoffsetX = center_offset_x;
+					gameState.MapoffsetY = center_offset_y;
 					update_camera(player.GetPosX(), player.GetPosY(), Map.getWidth(), Map.getHeight());
 					printf("AFTER update_camera: camX=%.1f camY=%.1f\n", camera.x, camera.y);
 
@@ -1631,15 +1660,22 @@ int main(int argc, char* args[])
 
 					//SDL_RenderCopy(gRenderer, Map.getTexture(), &srcRect, &dstRect);
 
-					SDL_Rect mapQuad =
-					{
-						int((0 - camera.x) * gameState.mapScaling),
-						int((0 - camera.y) * gameState.mapScaling),
-						Map.getWidth() * gameState.mapScaling,
-						Map.getHeight() * gameState.mapScaling
-					};
+					//SDL_Rect mapQuad =
+					//{
+					//	int((0 - camera.x) * gameState.mapScaling),
+					//	int((0 - camera.y) * gameState.mapScaling),
+					//	Map.getWidth() * gameState.mapScaling,
+					//	Map.getHeight() * gameState.mapScaling
+					//};
 
-					SDL_RenderCopy(gRenderer, Map.getTexture(), NULL, &mapQuad);
+					//SDL_RenderCopy(gRenderer, Map.getTexture(), NULL, &mapQuad);
+					SDL_Rect mapQuad = {
+						(int)(0 - camera.x),        // screen space, no extra multiply needed
+						(int)(0 - camera.y),
+						Map.getWidth() * mapScale,
+						Map.getHeight() * mapScale
+					};
+					SDL_RenderCopy(gRenderer, Map.getTexture(), NULL, &mapQuad);  // NO RenderSetScale
 
 
 
