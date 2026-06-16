@@ -72,13 +72,13 @@ public:
 
 		m_Actions = { "info", "sit", "kick.?" };
 
-		m_ActionResponse = { "STATUS: .. its a box..?",
-			"You sat on the box, it left a dent in it.",
+		m_ActionResponse = { "It's a box. The label says it's full of \"Fuck You\". I wonder what's inside? It's probably full of \"Fuck You\".",
+			"You sat on the box with your whole ass. Your voluminous cheeks left a deep imprint.",
 			"WHAM! you left a big dent in its fleshy cardboard." };
 
 		m_EnemyFightSpriteSheet = getTexture("data/box_fuck_u_ari_1.png");
 
-		m_EnemySpriteClips = { { 0,0,128,128 }, { 128,0,128,128 }, { 128 * 2,0,128,128 }, { 128 * 3,0,128,128 } };
+		m_EnemySpriteClips = { { 0,0,128,128 }, { 128,0,128,128 }, { 128 * 2,0,128,128 }, { 128 * 3,0,128,128 }, { 128 * 4,0,128,128 } };
 
 		FRAME_COUNT = 4;
 
@@ -94,6 +94,7 @@ public:
 	}
 
 	std::string FightActionResponse(int actionIndex) override {
+		printf("BoxOfFuckYou FightActionResponse called with actionIndex: %d\n", actionIndex);
 		// by default, return the action response at the given index.
 		if (actionIndex < 0 || actionIndex >= m_ActionResponse.size()) {
 			return "Invalid action.";
@@ -104,6 +105,9 @@ public:
 		}
 		// increase silly mode?
 		if (actionIndex == 1) {
+			//m_Entity->m_SpriteRect = { 128*4, 0, 128, 128 };
+			this->currentFrameCount = 4;
+			this->m_animationDone = true;
 			if (gameState.DebugMode) {
 				printf("Silly mode INCREASED!!!!!!!!!!");
 			}

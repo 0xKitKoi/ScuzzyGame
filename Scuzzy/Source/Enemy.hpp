@@ -69,7 +69,7 @@ public:
 	Uint32 lastFrameTime = 0;
 	Uint32 frameDuration = 100; // Time each frame is displayed (milliseconds)
 	int FRAME_COUNT = 0; // number of frames in animation.
-	
+	bool m_animationDone = false;
 };
 
 /*

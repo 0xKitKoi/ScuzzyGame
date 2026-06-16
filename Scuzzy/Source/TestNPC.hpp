@@ -300,3 +300,21 @@ public:
 
 
 };
+
+
+
+// class ExplosionNPC : public NPC {
+// public:
+// bool fired = false;
+//     ExplosionNPC(std::shared_ptr<Entity> entity) : NPC(entity, {}) {}
+
+//     void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override  {
+//         if (!fired) {
+//             fired = true;
+//             // play sound once. animate once. 
+            
+//         }
+//         return;
+        
+//     }
+// };

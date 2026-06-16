@@ -115,6 +115,8 @@ Mix_Chunk* gTextCharSound7 = NULL; // character 2 a
 Mix_Chunk* gTextCharSound8 = NULL; // character 2 b
 Mix_Chunk* gTextCharSound9 = NULL; // character 2 c
 
+Mix_Chunk* gExplosionSound = NULL;
+
 //Rendered TEXT texture
 LTexture gTextTexture;
 
@@ -136,6 +138,7 @@ SDL_Rect gSpriteClips[WALKING_ANIMATION_FRAMES];
 LTexture gSpriteSheetTexture;
 LTexture Map;
 LTexture deathScreen;
+
 
 // GRID design for player collision detection.
 // The idea behind this is to check collision's player's rect when they move.
@@ -754,6 +757,8 @@ bool loadMedia()
 	gTextCharSound8 = Mix_LoadWAV("data/mus/entalk8.wav");
 	gTextCharSound9 = Mix_LoadWAV("data/mus/entalk9.wav");
 
+	gExplosionSound = Mix_LoadWAV("data/mus/snd_badexplosion.wav");
+
 
 
 	LoadSave();
@@ -981,6 +986,7 @@ void update_camera(int player_x, int player_y, int map_width, int map_height) {
         // map shorter than screen — center it
         camera.y = -((screenheight - scaledMapH) / 2.0f);
     }
+	gameState.cameraRect = {int(camera.x), int(camera.y), camera.width, camera.height};
 }
 
 
@@ -1635,7 +1641,7 @@ int main(int argc, char* args[])
 					gameState.MapoffsetX = center_offset_x;
 					gameState.MapoffsetY = center_offset_y;
 					update_camera(player.GetPosX(), player.GetPosY(), Map.getWidth(), Map.getHeight());
-					printf("AFTER update_camera: camX=%.1f camY=%.1f\n", camera.x, camera.y);
+					//printf("AFTER update_camera: camX=%.1f camY=%.1f\n", camera.x, camera.y);
 
 					float mapScale = gameState.mapScaling; // or whatever scale factor matches Tiled's appearance
 					camera.zoom = mapScale; // set camera zoom for worldToScreen calculations

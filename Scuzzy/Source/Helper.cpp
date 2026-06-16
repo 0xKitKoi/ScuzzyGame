@@ -19,6 +19,8 @@ extern std::vector<SDL_Rect*> collisionBoxes;
 extern std::vector<SDL_Rect> staticCollisionBoxes;
 extern std::vector<SDL_Rect> clips;
 
+extern Mix_Chunk* gExplosionSound;
+
 extern Camera camera;
 
 extern std::shared_ptr<LTexture> getTexture(const std::string& filename);
@@ -131,6 +133,32 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			cutsceneActions.push_back(std::make_unique<MoveEntityAction>(triggerEntity.get(), Vector2f(800, 300), 100.0f));
 			std::shared_ptr<NPC> triggerNPC = std::make_shared<TriggerNPC>(triggerEntity, triggerCB, std::move(cutsceneActions));
 			triggerEntity->setNPC(triggerNPC);
+
+
+						// CutScene trigger2 
+			Vector2f triggerPos2(2000, 1100);
+			SDL_Rect triggerRect2 = { 0, 0, 72, 100 };
+			SDL_Rect triggerCB2 = { triggerPos2.x, triggerPos2.y, 128, 128 };
+			std::vector<SDL_Rect> explClips;
+			for (int i = 0; i < 15; i++) {
+				explClips.push_back( SDL_Rect{ 72*i, 0, 72, 100});
+			}
+
+			//auto triggerEntity = std::make_shared<Entity>(triggerPos, triggerCB, triggerRect, 1, 401);
+			auto triggerEntity2 = std::make_shared<Entity>(
+				triggerPos2, triggerCB2, triggerRect2,
+				nullptr,           // or a real texture
+				1,                 // framecount
+				explClips,  // clips
+				402                // EntityID
+			);
+			Entities.push_back(triggerEntity2);
+			//collisionBoxes.push_back(&triggerEntity->m_Collider);
+			std::vector<std::unique_ptr<CutsceneAction>> cutsceneActions2;
+			cutsceneActions2.push_back(std::make_unique<DialogueAction>(gameState, std::vector<std::string>{"You stepped on a cutscene trigger!", "you stepped on it so hard that it died."}));
+			cutsceneActions2.push_back(std::make_unique<ExplosionAction>(gExplosionSound, getTexture("data/RealisticExplosion72x100x18.png"), 15, explClips, triggerPos2));
+			std::shared_ptr<NPC> triggerNPC2 = std::make_shared<TriggerNPC>(triggerEntity2, triggerCB2, std::move(cutsceneActions2));
+			triggerEntity2->setNPC(triggerNPC2);
 		
 
 
@@ -248,7 +276,15 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			SDL_Rect signCB = { int(signpos.x + 25), int(signpos.y + 25), int(signRect.w - 45), int(signRect.h - 55) };
 			auto signentity = std::make_shared<Entity>(signpos, signCB, signRect, getTexture("data/hintsign.png"), 1, clips, 2);
 			Entities.push_back(signentity);
-			std::vector<std::string> dialogue = { "Hello, I'm a fucking sign. ufck you" };
+			std::vector<std::string> dialogue = { "Hello, I'm a fucking sign. ufck you" ,
+				 "TODO: 1) better projectiles, since bounding box was implimented.",
+				 "2) CutScenes Implimented, so make some god damn cutscenes.",
+				 "3) Wacky Dreamlike Situations, word play. ",
+				 "4) make some god damn maps ",
+				 " 5) what the hell is the main story",
+				 "6) fight action menu needs heavy rework. Make undertale/Deltarune style actions actually do somehting. ",
+				 "7) decide if sparing will be a thing here."
+				};
 			std::shared_ptr<NPC> signnpc = std::make_shared<SIGNNPC>(dialogue, signentity);
 			signentity->setNPC(signnpc);
 

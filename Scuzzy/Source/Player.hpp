@@ -76,9 +76,10 @@ public:
 
 	int m_PosX, m_PosY;
 	int m_VelX, m_VelY;
+	SDL_Rect m_Collider;
 private:
 	
-	SDL_Rect m_Collider;
+	
 	//LTexture CurrentSprite;
 	LTexture SpriteSheet;
 	

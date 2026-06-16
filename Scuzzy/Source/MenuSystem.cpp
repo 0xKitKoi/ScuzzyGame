@@ -848,8 +848,11 @@ void handleItemOptionsMenuSelection(SDL_Event event) {
 				gameState.textIndex = 0; // Reset text index
 
 				//UseItem(gameState.Inventory[gameState.selectionIndex]); // Use the item
-                gameState.Inventory.at(gameState.selectionIndex)->Use(); // refactored to use item class method
-                gameState.Inventory.erase(gameState.Inventory.begin() + gameState.selectionIndex); // Remove the item from inventory
+                 if (!gameState.Inventory.at(gameState.selectionIndex)->Use()) { // 0 on item used. 
+                        gameState.Inventory.erase(gameState.Inventory.begin() + gameState.selectionIndex); // Remove the item from inventory
+                 } // refactored to use item class method
+                // TODO: Maybe items should decide if they get deleted from the inventory.....
+                //gameState.Inventory.erase(gameState.Inventory.begin() + gameState.selectionIndex); // Remove the item from inventory
 				//gameState.Inventory.erase(gameState.Inventory.begin() + gameState.selectionIndex); // Remove the item from inventory
                 lastMenuState = INVENTORY_MENU;
                 currentMenu = RESPONSE;

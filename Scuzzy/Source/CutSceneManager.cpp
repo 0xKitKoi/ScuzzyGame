@@ -1,9 +1,9 @@
 #include "Source/CutSceneManager.hpp"
 #include "Source/GameState.hpp"  // full definition available — no cycle, this is a .cpp
+#include <vector>
+#include <SDL2/SDL.h>
 
-
-
-
+extern GameState gameState;
 
 // Orchestrator class managing the cutscene flow
 
@@ -82,5 +82,50 @@ bool DialogueAction::Update(float deltaTime) {
 
 void DialogueAction::Exit() {
     printf("Dialogue action completed.\n");
+    //gameState.inCutScene = false; // signal cutscene manager to advance to next action or end cutscene
+}
+
+
+ExplosionAction::ExplosionAction(Mix_Chunk* explosionsound, std::shared_ptr<LTexture> texture, int frameCount, std::vector<SDL_Rect> clips, Vector2f position)
+ : m_Explosion(explosionsound), m_Texture(texture), FRAME_COUNT(frameCount), m_Clips(clips), m_Pos(position) { 
+    m_CollisionBox = {m_Pos.x, m_Pos.y, m_Clips[0].w,m_Clips[0].h };
+ }
+
+void ExplosionAction::Enter() {
+    //play explosion sound, let the entity render itself fast as possible.
+    Mix_PlayChannel(-1, m_Explosion, 0);
+    fired = true;
+}
+
+bool ExplosionAction::Update(float deltaTime) {
+    SDL_Rect srcRect;
+    if (fired && !m_AnimationFinished) {
+                // Calculates index of frame to use in animation.
+                lastFrameTime += deltaTime * 1000.0f; // was 1000
+                if (lastFrameTime >= 300) { // frameDuration = 100ms ?????
+                    currentFrameCount = (currentFrameCount + 1) % FRAME_COUNT;
+                    lastFrameTime = 0;
+                    if (currentFrameCount == 0) {
+                        m_AnimationFinished = true;
+
+                        return true;
+                    }	
+                }
+        srcRect = m_Clips[currentFrameCount]; // render the sprite at index of animation
+        int screenX = (m_Pos.x - gameState.cameraRect.x);
+        int screenY = (m_Pos.y - gameState.cameraRect.y);
+        //m_Texture->render(screenX, screenY, &srcRect);
+
+        SDL_Rect renderQuad = { screenX, screenY, srcRect.w, srcRect.h };
+        //SDL_RenderCopy(gRenderer, m_Texture->getTexture(), &srcRect, &renderQuad);
+        m_Texture->render(screenX, screenY, &srcRect);
+        
+    }
+    return false;
+
+}
+
+void ExplosionAction::Exit() {
+    printf("esploded action completed.\n");
     //gameState.inCutScene = false; // signal cutscene manager to advance to next action or end cutscene
 }

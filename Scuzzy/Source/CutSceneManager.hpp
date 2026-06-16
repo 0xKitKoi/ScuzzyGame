@@ -7,6 +7,7 @@
 #include <cstdio>
 
 #include "Source/Entity.hpp"
+#include "SDL2/SDL_mixer.h"
 
 class GameState; // Forward declaration
 
@@ -114,6 +115,27 @@ private:
     size_t m_CurrentLine = 0;
 public:
     DialogueAction(GameState& gs, const std::vector<std::string>& lines);
+    void Enter() override;
+    bool Update(float deltaTime) override;
+    void Exit() override;
+};
+
+
+class ExplosionAction : public CutsceneAction {
+public:
+    SDL_Rect m_CollisionBox;
+    std::shared_ptr<LTexture> m_Texture;
+    Mix_Chunk* m_Explosion = NULL;
+    bool fired = false;
+    bool m_AnimationFinished = false;
+    int lastFrameTime = 0;
+    int currentFrameCount = 1;
+    int FRAME_COUNT = 0;
+    SDL_Rect srcRect = {};
+    std::vector<SDL_Rect> m_Clips;
+    Vector2f m_Pos;
+
+    ExplosionAction(Mix_Chunk* explosionsound, std::shared_ptr<LTexture> texture, int frameCount, std::vector<SDL_Rect> clips, Vector2f position);
     void Enter() override;
     bool Update(float deltaTime) override;
     void Exit() override;

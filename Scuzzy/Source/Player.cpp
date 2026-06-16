@@ -594,7 +594,8 @@ void Player::handleEvent(SDL_Event& e, float deltaTime) {
 }
 
 
-
+/// @brief This is a fix for weird movement bugs. It's basically spam called to stop all player movements while in/exiting menus.
+/// @param initPos 
 void Player::reset(Vector2f initPos) {
 	//printf("Player::reset called.\n");
 	m_PosX = initPos.x;
@@ -608,7 +609,7 @@ void Player::reset(Vector2f initPos) {
 	m_Collider = { m_PosX + 40, m_PosY + 60, 50, 40 };
 	m_HeartCollider = { int(m_HeartPos.x) + 16, int(m_HeartPos.y) + 16, 20, 20 };
 	gameState.dead = false;
-	printf("Player reset to position (%d, %d)\n", m_PosX, m_PosY);
+	//printf("Player reset to position (%d, %d)\n", m_PosX, m_PosY);
 
 }
 

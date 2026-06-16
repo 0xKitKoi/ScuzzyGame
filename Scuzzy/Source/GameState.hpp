@@ -62,6 +62,7 @@ struct GameState {
 	//std::shared_ptr<Player> player = nullptr;
 	Player* player = nullptr;
     float deltaTime;
+    SDL_Rect cameraRect;
 
     CutsceneManager cutsceneManager;
 
