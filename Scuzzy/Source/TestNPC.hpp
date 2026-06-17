@@ -318,3 +318,20 @@ public:
         
 //     }
 // };
+
+
+ class SoulRubberBandBallNPC : public NPC {
+ public:
+ bool fired = false;
+ SoulRubberBandBallNPC(std::shared_ptr<Entity> entity) : NPC(entity, {}) {}
+
+     void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override  {
+         if (!fired) {
+             fired = true;
+              //play sound once. animate once. 
+
+         }
+         return;
+
+     }
+ };

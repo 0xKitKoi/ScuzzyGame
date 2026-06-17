@@ -763,13 +763,13 @@ bool loadMedia()
 
 	//ballTexture.loadFromFile("assets/SoulBandBall.png");
 	
-	initSoulRubberBandBallMenu();
+	initSoulRubberBandBallMenu(); // generates the sprite sheet's clip vector.
 	soulRubberBandBall = std::make_shared<Entity>(Vector2f(screenwidth/2 -500, screenheight/2 -500), SDL_Rect{ 0,0,500,500 }, SDL_Rect{ 0,0,500,500 }, getTexture("data/SoulBandBall.png"), 21, ballFrames, 999);
 	//soulRubberBandBall.m_Clips = ballFrames;
 	soulRubberBandBall->moving = true;
 	std::vector<std::string> dialogue = {"How did we get here?"};
-	soulRubberBandBallNPC = std::make_shared<SoulRubberBandBallNPC>(&dialogue, soulRubberBandBall);
-	soulRubberBandBallNPC->m_Entity = std::make_shared<Entity>(soulRubberBandBall);
+	soulRubberBandBallNPC = std::make_shared<SoulRubberBandBallNPC>(soulRubberBandBall);
+	//soulRubberBandBallNPC->m_Entity = soulRubberBandBall;
 	soulRubberBandBall->setNPC(soulRubberBandBallNPC);
 
 	/*

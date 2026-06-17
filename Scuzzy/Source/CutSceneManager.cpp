@@ -1,7 +1,12 @@
 #include "Source/CutSceneManager.hpp"
 #include "Source/GameState.hpp"  // full definition available — no cycle, this is a .cpp
 #include <vector>
-#include <SDL2/SDL.h>
+
+#ifndef _WIN32
+	#include <SDL2/SDL.h>
+#elif defined(_WIN32)
+	#include <SDL.h>
+#endif
 
 extern GameState gameState;
 
@@ -88,7 +93,7 @@ void DialogueAction::Exit() {
 
 ExplosionAction::ExplosionAction(Mix_Chunk* explosionsound, std::shared_ptr<LTexture> texture, int frameCount, std::vector<SDL_Rect> clips, Vector2f position)
  : m_Explosion(explosionsound), m_Texture(texture), FRAME_COUNT(frameCount), m_Clips(clips), m_Pos(position) { 
-    m_CollisionBox = {m_Pos.x, m_Pos.y, m_Clips[0].w,m_Clips[0].h };
+    m_CollisionBox = {int(m_Pos.x), int(m_Pos.y), m_Clips[0].w,m_Clips[0].h };
  }
 
 void ExplosionAction::Enter() {

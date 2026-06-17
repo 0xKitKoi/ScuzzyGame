@@ -116,6 +116,7 @@ xcopy /Q /E /Y /I $(SolutionDir)\Scuzzy\data ..\bin\Release\data</Command>
     <ClInclude Include="Source\BackgroundPalette.h" />
     <ClInclude Include="Source\BattleBackground.h" />
     <ClInclude Include="Source\Block.h" />
+    <ClInclude Include="Source\CutSceneManager.hpp" />
     <ClInclude Include="Source\Decompress.h" />
     <ClInclude Include="Source\Distorter.hpp" />
     <ClInclude Include="Source\DistortionEffect.hpp" />
@@ -146,6 +147,7 @@ xcopy /Q /E /Y /I $(SolutionDir)\Scuzzy\data ..\bin\Release\data</Command>
     <ClCompile Include="Source\BackgroundPalette.cpp" />
     <ClCompile Include="Source\BattleBackground.cpp" />
     <ClCompile Include="Source\Block.cpp" />
+    <ClCompile Include="Source\CutSceneManager.cpp" />
     <ClCompile Include="Source\Decompress.cpp" />
     <ClCompile Include="Source\Distorter.cpp" />
     <ClCompile Include="Source\Enemy.cpp" />

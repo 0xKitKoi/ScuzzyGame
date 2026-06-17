@@ -4,7 +4,7 @@
 #include "Source/GameState.hpp"
 #include "Source/Enums.hpp"
 #include "Source/Helper.hpp"
-#include "Source/TestNPC.hpp" // MerchantNPC
+#include "Source/TestNPC.hpp" // NPC Classes
 #include "Source/Item.hpp"
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -20,6 +20,8 @@
 
 //extern const int SCREEN_WIDTH;
 //extern const int SCREEN_HEIGHT;
+
+extern std::shared_ptr<Entity> soulRubberBandBall; // for the SoulRubberBandBall Menu
 
 extern Mix_Chunk* gSelectSound; // player presses z
 extern Mix_Chunk* gDeSelectSound; // player presses x
@@ -1242,12 +1244,17 @@ void handleMenuInputSideBySide(SDL_Event event) {
 
 //extern std::vector<SDL_Rect> initSoulRubberBandBallMenu;
 //extern std::vector<SDL_Rect> ballFrames;
-extern Entity soulRubberBandBall;
+//extern Entity soulRubberBandBall;
 
 void renderSoulRubberBandBallMenu(SDL_Renderer* renderer, TTF_Font* font) {
 	SDL_SetRenderDrawColor(gRenderer, 0x0, 0x0, 0x0, 0xFF);
 	SDL_RenderClear(gRenderer);
-	soulRubberBandBall.Update(gameState.deltaTime, {0,0,gameState.screenwidth, gameState.screenheight }, {0,0,0,0});
+	Camera cam;
+	cam.x = gameState.cameraRect.x;
+	cam.y = gameState.cameraRect.y;
+	cam.height = gameState.cameraRect.h;
+	cam.width = gameState.cameraRect.w;
+	soulRubberBandBall->Update(gameState.deltaTime, cam, {0,0,0,0});
 	SDL_RenderPresent(gRenderer);
 }
 

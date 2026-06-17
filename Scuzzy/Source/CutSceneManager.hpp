@@ -7,7 +7,14 @@
 #include <cstdio>
 
 #include "Source/Entity.hpp"
-#include "SDL2/SDL_mixer.h"
+#ifdef _WIN32
+	#include <SDL_mixer.h>
+#elif defined(__linux__)
+	#include "SDL2/SDL_mixer.h"
+#endif 
+
+
+
 
 class GameState; // Forward declaration
 
