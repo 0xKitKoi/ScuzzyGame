@@ -48,6 +48,10 @@ struct GameState {
 	bool hasHealing = true;
     bool hasScuzzy = false;
 
+	// SOUL DIRECTION: this is for the SoulRubberBandBall. color of the soul changes on direction.
+	int SoulDirection = 1; // 1-4 for up, right, down, left.
+
+
 
 
 	// these are game mechanic flags used to keep track of the state machines that is the fight system, the dialogue system, and the menu system.

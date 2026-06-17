@@ -138,6 +138,10 @@ SDL_Rect gSpriteClips[WALKING_ANIMATION_FRAMES];
 LTexture gSpriteSheetTexture;
 LTexture Map;
 LTexture deathScreen;
+//LTexture ballTexture;
+std::shared_ptr<Entity> soulRubberBandBall;
+std::shared_ptr<NPC> soulRubberBandBallNPC;
+std::vector<SDL_Rect> ballFrames;
 
 
 // GRID design for player collision detection.
@@ -712,7 +716,7 @@ void handleDeath(SDL_Event e, Player player) {
 	}
 }
 
-
+void initSoulRubberBandBallMenu();
 
 bool loadMedia()
 {
@@ -757,7 +761,43 @@ bool loadMedia()
 	gTextCharSound8 = Mix_LoadWAV("data/mus/entalk8.wav");
 	gTextCharSound9 = Mix_LoadWAV("data/mus/entalk9.wav");
 
+	//ballTexture.loadFromFile("assets/SoulBandBall.png");
+	
+	initSoulRubberBandBallMenu();
+	soulRubberBandBall = std::make_shared<Entity>(Vector2f(screenwidth/2 -500, screenheight/2 -500), SDL_Rect{ 0,0,500,500 }, SDL_Rect{ 0,0,500,500 }, getTexture("data/SoulBandBall.png"), 21, ballFrames, 999);
+	//soulRubberBandBall.m_Clips = ballFrames;
+	soulRubberBandBall->moving = true;
+	std::vector<std::string> dialogue = {"How did we get here?"};
+	soulRubberBandBallNPC = std::make_shared<SoulRubberBandBallNPC>(&dialogue, soulRubberBandBall);
+	soulRubberBandBallNPC->m_Entity = std::make_shared<Entity>(soulRubberBandBall);
+	soulRubberBandBall->setNPC(soulRubberBandBallNPC);
+
+	/*
 	gExplosionSound = Mix_LoadWAV("data/mus/snd_badexplosion.wav");
+
+			// DOOR TEST
+			clips.clear();
+			Vector2f doorPos(400, 300);
+			entityRect = { 0,0,128,128 };
+			tmp = { 0,0,128,128 };
+			clips.push_back(tmp);
+			tmp = { 128,0,128,128 };
+			clips.push_back(tmp);
+			entity_cb = { int(entityPos.x + 25), int(entityPos.y + 25), int(entityRect.w - 45), int(entityRect.h - 55) }; // custom per entity but whatever
+			auto Doorentity = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
+			Entities.push_back(Doorentity); // vector of all entities to render.
+			Vector2f outpos(400, 200);
+			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity, "Level1", outpos, 81); // DOOR ID 81 added. important for keys!
+
+			doornpc->m_Entity = Doorentity;
+			Doorentity->setNPC(doornpc);
+			collisionBoxes.push_back(&Doorentity->m_Collider);
+			//Doorentity->m_NPC->m_Unlocked = false; // testing locked door
+			std::shared_ptr<DoorNPC> door =
+				std::dynamic_pointer_cast<DoorNPC>(doornpc);
+			door->m_Unlocked = false; // testing locked door, Cast back to DoorNPC.
+			//MerchantNPC sells key with ID 81, so this door should unlock when the player buys the key from the merchant and uses it.
+	*/
 
 
 
@@ -1060,6 +1100,31 @@ void render_map_unified(SDL_Renderer* renderer, LTexture* map_texture) {
     }
     
     SDL_RenderCopy(renderer, map_texture->getTexture(), &src_rect, &dest_rect);
+}
+
+
+
+
+void initSoulRubberBandBallMenu() {
+	
+
+	const int frameWidth = 500;
+	const int frameHeight = 500;
+	const int rows = 7;
+	const int cols = 7;
+
+	for (int y = 0; y < rows; y++)
+	{
+		for (int x = 0; x < cols; x++)
+		{
+			ballFrames.push_back({
+				x * frameWidth,
+				y * frameHeight,
+				frameWidth,
+				frameHeight
+				});
+		}
+	}
 }
 
 

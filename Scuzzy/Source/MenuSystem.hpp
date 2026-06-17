@@ -15,7 +15,8 @@ enum MenuState {
     SHOP_MENU,
 	DIALOGUE,
 	QUESTION_MENU,
-	RESPONSE
+	RESPONSE,
+	SOULRUBBERBANDBALL_MENU
 };
 
 // Shop menu functions
@@ -51,6 +52,9 @@ void handleDialogue(SDL_Event event);
 
 void renderMenuSideBySide(SDL_Renderer* renderer, TTF_Font* font);
 void handleMenuInputSideBySide(SDL_Event event);
+
+void renderSoulRubberBandBallMenu(SDL_Renderer* renderer, TTF_Font* font);
+void handleSoulRubberBandBallMenu(SDL_Event event);
 
 
 #endif

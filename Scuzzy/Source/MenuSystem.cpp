@@ -294,7 +294,11 @@ void MS_renderMenu(SDL_Renderer* renderer, TTF_Font* font) {
 	case RESPONSE:
 		renderResponse(renderer, font);
         break;
+	case SOULRUBBERBANDBALL_MENU:
+		renderSoulRubberBandBallMenu(renderer, font);
+		break;
     }
+
 }
 
 void MS_handleMenuInput(SDL_Event event) {
@@ -337,6 +341,9 @@ void MS_handleMenuInput(SDL_Event event) {
 	}
 	else if (currentMenu == RESPONSE) {
 		handleResponse(event);
+	}
+	else if (currentMenu == SOULRUBBERBANDBALL_MENU) {
+		handleSoulRubberBandBallMenu(event);
 	}
 }
 
@@ -896,11 +903,18 @@ void handleItemOptionsMenuSelection(SDL_Event event) {
 }
 
 void handleStatsMenu(SDL_Event event) {
-    if (event.key.keysym.sym == SDLK_x) {
-		Mix_PlayChannel(-1, gDeSelectSound, 0);
-        lastMenuState = currentMenu;
-        currentMenu = MAIN_MENU;  // Enter item options
-    }
+	if (event.type == SDL_KEYDOWN) {
+		if (event.key.keysym.sym == SDLK_x) {
+			Mix_PlayChannel(-1, gDeSelectSound, 0);
+			lastMenuState = currentMenu;
+			currentMenu = MAIN_MENU;  // Enter item options
+		}
+		if (event.key.keysym.sym == SDLK_z) {
+			Mix_PlayChannel(-1, gSelectSound, 0);
+			lastMenuState = currentMenu;
+			currentMenu = SOULRUBBERBANDBALL_MENU;  // Enter item options
+		}
+	}
 }
 
 
@@ -1222,6 +1236,25 @@ void handleMenuInputSideBySide(SDL_Event event) {
 				// If the NPC wants to be called back again, that's its fucking problem. 
 			}
 			
+		}
+	}
+}
+
+//extern std::vector<SDL_Rect> initSoulRubberBandBallMenu;
+//extern std::vector<SDL_Rect> ballFrames;
+extern Entity soulRubberBandBall;
+
+void renderSoulRubberBandBallMenu(SDL_Renderer* renderer, TTF_Font* font) {
+	SDL_SetRenderDrawColor(gRenderer, 0x0, 0x0, 0x0, 0xFF);
+	SDL_RenderClear(gRenderer);
+	soulRubberBandBall.Update(gameState.deltaTime, {0,0,gameState.screenwidth, gameState.screenheight }, {0,0,0,0});
+	SDL_RenderPresent(gRenderer);
+}
+
+void handleSoulRubberBandBallMenu(SDL_Event event) {
+	if (event.type == SDL_KEYDOWN) {
+		if (event.key.keysym.sym == SDLK_x) {
+			currentMenu = MAIN_MENU;
 		}
 	}
 }
