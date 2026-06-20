@@ -98,6 +98,44 @@ void MS_renderText(SDL_Renderer* renderer, TTF_Font* font, std::string text, int
     SDL_DestroyTexture(texture);
 }
 
+// void renderMenuGrid(SDL_Renderer* renderer, TTF_Font* font, std::vector<std::string>* options) {
+//     // Get screen dimensions
+//     int screenWidth, screenHeight;
+//     SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+
+//     // Render the text box at the bottom of the screen
+//     MS_renderTextBox(renderer);
+
+//     // Calculate text rendering position
+//     int boxWidth = screenWidth * 0.9;
+//     int xOffset = screenWidth * 0.05 + 30;  // Start slightly inside the text box
+//     int yOffset = screenHeight - 275;       // Place the text inside the box
+
+//     int numOptions = std::min(static_cast<int>(options->size()), 12); // Cap to 12 options
+
+//     // Calculate grid dimensions
+//     const int maxColumns = 4;
+//     const int maxRows = (numOptions + maxColumns - 1) / maxColumns; // Calculate necessary rows
+//     int optionWidth = (boxWidth - (maxColumns + 1) * 10) / maxColumns; // 10 is spacing
+//     int optionHeight = 50; // Set a fixed height for each option
+
+//     SDL_Color white = { 255, 255, 255 };  // Normal text color
+//     SDL_Color red = { 237, 28, 36 };       // Highlighted text color
+
+//     for (int i = 0; i < numOptions; i++) {
+//         int column = i % maxColumns;  // Current column (0, 1, 2, 3)
+//         int row = i / maxColumns;      // Current row
+
+//         int currentX = xOffset + (column * (optionWidth + 10)); // 10 is the spacing
+//         int currentY = yOffset + (row * (optionHeight + 10));   // 10 is the spacing
+
+//         // Determine color based on selection
+//         SDL_Color color = (i == MS_selectedIndex) ? red : white;
+
+//         // Render the option
+//         MS_renderText(renderer, font, options->at(i), currentX, currentY, color);
+//     }
+// }
 void renderMenuGrid(SDL_Renderer* renderer, TTF_Font* font, std::vector<std::string>* options) {
     // Get screen dimensions
     int screenWidth, screenHeight;
@@ -108,32 +146,36 @@ void renderMenuGrid(SDL_Renderer* renderer, TTF_Font* font, std::vector<std::str
 
     // Calculate text rendering position
     int boxWidth = screenWidth * 0.9;
-    int xOffset = screenWidth * 0.05 + 30;  // Start slightly inside the text box
-    int yOffset = screenHeight - 275;       // Place the text inside the box
-
-    int numOptions = std::min(static_cast<int>(options->size()), 12); // Cap to 12 options
+    int xOffset = screenWidth * 0.05 + 30;
+    int yOffset = screenHeight - 275;
+    int numOptions = std::min(static_cast<int>(options->size()), 12);
 
     // Calculate grid dimensions
     const int maxColumns = 4;
-    const int maxRows = (numOptions + maxColumns - 1) / maxColumns; // Calculate necessary rows
-    int optionWidth = (boxWidth - (maxColumns + 1) * 10) / maxColumns; // 10 is spacing
-    int optionHeight = 50; // Set a fixed height for each option
+    const int maxRows = (numOptions + maxColumns - 1) / maxColumns;
+    int optionWidth = (boxWidth - (maxColumns + 1) * 10) / maxColumns;
+    int optionHeight = 50;
 
-    SDL_Color white = { 255, 255, 255 };  // Normal text color
-    SDL_Color red = { 237, 28, 36 };       // Highlighted text color
+    SDL_Color white = { 255, 255, 255 };
+    SDL_Color red = { 237, 28, 36 };
+
+    SDL_Rect heartClip = gameState.player->m_HeartClips[0];
+    const int heartPadding = 8;
+    int textIndent = heartClip.w + heartPadding;
 
     for (int i = 0; i < numOptions; i++) {
-        int column = i % maxColumns;  // Current column (0, 1, 2, 3)
-        int row = i / maxColumns;      // Current row
+        int column = i % maxColumns;
+        int row = i / maxColumns;
+        int currentX = xOffset + (column * (optionWidth + 10));
+        int currentY = yOffset + (row * (optionHeight + 10));
 
-        int currentX = xOffset + (column * (optionWidth + 10)); // 10 is the spacing
-        int currentY = yOffset + (row * (optionHeight + 10));   // 10 is the spacing
-
-        // Determine color based on selection
         SDL_Color color = (i == MS_selectedIndex) ? red : white;
 
-        // Render the option
-        MS_renderText(renderer, font, options->at(i), currentX, currentY, color);
+        if (i == MS_selectedIndex && gameState.player) {
+            gameState.player->m_FightSpriteSheet.render(currentX, currentY, &heartClip);
+        }
+
+        MS_renderText(renderer, font, options->at(i), currentX + textIndent, currentY, color);
     }
 }
 
@@ -559,7 +601,65 @@ void renderStatsMenu(SDL_Renderer* renderer, TTF_Font* font) {
     }
 }
 
-// ------------------------- Shop Menu -------------------------
+// // ------------------------- Shop Menu -------------------------
+// void renderShopMenu(SDL_Renderer* renderer, TTF_Font* font) {
+//     MerchantNPC* merchant = nullptr;
+//     if (gameState.currentNPC) {
+//         merchant = dynamic_cast<MerchantNPC*>(gameState.currentNPC);
+//     }
+
+//     MS_renderTextBox(renderer);
+
+//     int screenWidth, screenHeight;
+//     SDL_GetWindowSize(SDL_GetWindowFromID(1), &screenWidth, &screenHeight);
+
+//     if (!merchant) {
+//         MS_renderText(renderer, font, "Nobody is here to sell...", screenWidth * 0.05 + 30, screenHeight - 275, {255,255,255});
+//         return;
+//     }
+
+//     int numOptions = std::min(static_cast<int>(merchant->m_Stock.size()), 12);
+//     if (numOptions == 0) {
+//         MS_renderText(renderer, font, "The shop is empty.", screenWidth * 0.05 + 30, screenHeight - 275, {255,255,255});
+//         return;
+//     }
+
+//     // Layout similar to renderMenuGrid
+//     int boxWidth = screenWidth * 0.9;
+//     int xOffset = screenWidth * 0.05 + 30;
+//     int yOffset = screenHeight - 275;
+//     const int maxColumns = 4;
+//     int optionWidth = (boxWidth - (maxColumns + 1) * 10) / maxColumns; // 10 is spacing
+//     int optionHeight = 50; // fixed
+
+//     SDL_Color white = {255,255,255};
+//     SDL_Color red = {237,28,36};
+//     SDL_Color grey = {128,128,128};
+
+//     for (int i = 0; i < numOptions; i++) {
+//         int column = i % maxColumns;
+//         int row = i / maxColumns;
+//         int currentX = xOffset + (column * (optionWidth + 10));
+//         int currentY = yOffset + (row * (optionHeight + 10));
+
+//         const auto &item = merchant->m_Stock[i];
+//         std::string line = item.name + " - " + std::to_string(item.price) + "g";
+
+//         SDL_Color color;
+//         if (!merchant->canAfford(i)) {
+//             color = grey; // unaffordable grey
+//         }
+//         else if (i == MS_selectedIndex) {
+//             color = red; // selected
+//         }
+//         else {
+//             color = white;
+//         }
+
+//         MS_renderText(renderer, font, line, currentX, currentY, color);
+//     }
+// }
+
 void renderShopMenu(SDL_Renderer* renderer, TTF_Font* font) {
     MerchantNPC* merchant = nullptr;
     if (gameState.currentNPC) {
@@ -582,13 +682,16 @@ void renderShopMenu(SDL_Renderer* renderer, TTF_Font* font) {
         return;
     }
 
-    // Layout similar to renderMenuGrid
     int boxWidth = screenWidth * 0.9;
     int xOffset = screenWidth * 0.05 + 30;
     int yOffset = screenHeight - 275;
     const int maxColumns = 4;
-    int optionWidth = (boxWidth - (maxColumns + 1) * 10) / maxColumns; // 10 is spacing
-    int optionHeight = 50; // fixed
+    int optionWidth = (boxWidth - (maxColumns + 1) * 10) / maxColumns;
+    int optionHeight = 50;
+
+    SDL_Rect heartClip = gameState.player->m_HeartClips[0];
+    const int heartPadding = 8;
+    int textIndent = heartClip.w + heartPadding; // reserve space on every row so text doesn't shift on selection change
 
     SDL_Color white = {255,255,255};
     SDL_Color red = {237,28,36};
@@ -605,16 +708,22 @@ void renderShopMenu(SDL_Renderer* renderer, TTF_Font* font) {
 
         SDL_Color color;
         if (!merchant->canAfford(i)) {
-            color = grey; // unaffordable grey
+            color = grey;
         }
         else if (i == MS_selectedIndex) {
-            color = red; // selected
+            color = red;
         }
         else {
             color = white;
         }
 
-        MS_renderText(renderer, font, line, currentX, currentY, color);
+        // Draw cursor heart purely based on selection, independent of affordability
+        if (i == MS_selectedIndex && gameState.player) {
+            int heartY = currentY;// + (optionHeight - heartClip.h);// / 2; // vertically center next to text
+            gameState.player->m_FightSpriteSheet.render(currentX, heartY, &heartClip);
+        }
+
+        MS_renderText(renderer, font, line, currentX + textIndent, currentY, color);
     }
 }
 
@@ -1036,13 +1145,27 @@ void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) {
                     char c = gameState.Text.at(gameState.textIndex).at(gameState.currentCharIndex);
                     gameState.currentDisplayText += c;
                     gameState.currentCharIndex++;
+                    static float blipCooldown = 0.0f;
+                    blipCooldown += 1.0f / 60.0f;
 
-                    // Play a random blip, but skip spaces/punctuation so it doesn't sound jittery
-                    if (!isspace(static_cast<unsigned char>(c))) {
+                    if (!isspace(static_cast<unsigned char>(c)) && blipCooldown >= 0.06f) { // ~60ms min gap
+                        blipCooldown = 0.0f;
                         Mix_Chunk* blips[] = { gTextCharSound1, gTextCharSound2, gTextCharSound3 };
-                        int idx = rand() % 3;
-                        Mix_PlayChannel(-1, blips[idx], 0);
+                        Mix_PlayChannel(2, blips[rand() % 3], 0);
                     }
+
+                    // // Play a random blip, but skip spaces/punctuation so it doesn't sound jittery
+                    // if (!isspace(static_cast<unsigned char>(c))) {
+                    //     Mix_Chunk* blips[] = { gTextCharSound1, gTextCharSound2, gTextCharSound3 };
+                    //     int idx = rand() % 3;
+                    //     Mix_PlayChannel(-1, blips[idx], 0);
+                    // }
+                    // play random blip for each character, regardless of what it is, because it sounds better that way.
+                    // Mix_Chunk* blips[] = { gTextCharSound1, gTextCharSound2, gTextCharSound3 };
+                    // int idx = rand() % 3;
+                    // Mix_PlayChannel(-1, blips[idx], 0);
+
+                    
                 }
                 else {
                     gameState.textAnimating = false;
@@ -1067,24 +1190,56 @@ void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) {
 
 // need a question and answer system for npcs, with branching dialogue options based on player choices and game state.
 //   needs to prompt a player with options, and return the selection to the npc, which will then respond
+// void renderQuestion(SDL_Renderer* renderer, TTF_Font* font) {
+//     // Get screen dimensions
+//     int screenWidth, screenHeight;
+//     SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+//     // Render the text box at the bottom of the screen
+//     MS_renderTextBox(renderer);
+//     // Calculate text rendering position
+//     int boxWidth = screenWidth * 0.9;
+//     int xOffset = screenWidth * 0.05 + 30;  // Start slightly inside the text box
+//     int yOffset = screenHeight - 275;       // Place the text inside the box
+
+// 	MS_renderText(renderer, font, gameState.callbackNPC->m_prompt, xOffset, yOffset, { 255, 255, 255 });
+// 	// Render options below the prompt
+//     for (size_t i = 0; i < gameState.callbackNPC->m_Choices.size(); ++i) {
+//         SDL_Color color = (i == MS_selectedIndex) ? SDL_Color{ 237, 28, 36 } : SDL_Color{ 255, 255, 255 }; // Highlight color
+//         MS_renderText(renderer, font, gameState.callbackNPC->m_Choices.at(i), xOffset + ((i + 1) * 500), yOffset + 40 , color); // Spacing options
+// 	}
+//     //MS_renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, {255, 255, 255});
+// }
 void renderQuestion(SDL_Renderer* renderer, TTF_Font* font) {
     // Get screen dimensions
     int screenWidth, screenHeight;
     SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+
     // Render the text box at the bottom of the screen
     MS_renderTextBox(renderer);
+
     // Calculate text rendering position
     int boxWidth = screenWidth * 0.9;
-    int xOffset = screenWidth * 0.05 + 30;  // Start slightly inside the text box
-    int yOffset = screenHeight - 275;       // Place the text inside the box
+    int xOffset = screenWidth * 0.05 + 30;
+    int yOffset = screenHeight - 275;
+    MS_renderText(renderer, font, gameState.callbackNPC->m_prompt, xOffset, yOffset, { 255, 255, 255 });
 
-	MS_renderText(renderer, font, gameState.callbackNPC->m_prompt, xOffset, yOffset, { 255, 255, 255 });
-	// Render options below the prompt
+    SDL_Rect heartClip = gameState.player->m_HeartClips[0];
+    const int heartPadding = 8;
+    int textIndent = heartClip.w + heartPadding; // reserve space so text doesn't shift on selection change
+
+    // Render options below the prompt
     for (size_t i = 0; i < gameState.callbackNPC->m_Choices.size(); ++i) {
-        SDL_Color color = (i == MS_selectedIndex) ? SDL_Color{ 237, 28, 36 } : SDL_Color{ 255, 255, 255 }; // Highlight color
-        MS_renderText(renderer, font, gameState.callbackNPC->m_Choices.at(i), xOffset + ((i + 1) * 500), yOffset + 40 , color); // Spacing options
-	}
-    //MS_renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, {255, 255, 255});
+        int currentX = xOffset + ((i + 1) * 500);
+        int currentY = yOffset + 40;
+
+        SDL_Color color = (i == MS_selectedIndex) ? SDL_Color{ 237, 28, 36 } : SDL_Color{ 255, 255, 255 };
+
+        if (i == MS_selectedIndex && gameState.player) {
+            gameState.player->m_FightSpriteSheet.render(currentX, currentY, &heartClip);
+        }
+
+        MS_renderText(renderer, font, gameState.callbackNPC->m_Choices.at(i), currentX + textIndent, currentY, color);
+    }
 }
 
 void handleQuestionInput(SDL_Event event) {
