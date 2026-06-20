@@ -1105,6 +1105,53 @@ void render_map_unified(SDL_Renderer* renderer, LTexture* map_texture) {
 
 
 
+void RenderEncounterSouls(SDL_Renderer* renderer) {
+    bool chasing = gameState.playerSoulVisible && gameState.encounterPhase == EncounterPhase::NONE;
+    bool encountering = gameState.encounterPhase != EncounterPhase::NONE;
+
+    if (!chasing && !encountering) return;
+
+    SDL_Texture* playerHeartTex = gameState.player->m_FightSpriteSheet.getTexture();
+    SDL_Texture* enemySoulTex = gameState.enemy->m_EnemySoulSpriteSheet->getTexture();
+
+    SDL_Rect playerHeartClip = gameState.player->m_HeartClips[0];
+    SDL_Rect enemySoulClip = gameState.enemy->m_EnemySoulSpriteClips[0];
+
+    int px, py, ex, ey;
+    Uint8 alpha;
+
+    if (encountering) {
+        // Pull/launch animation in progress - use the offset positions
+        px = (int)(gameState.playerSoulOffset.x - gameState.cameraRect.x);
+        py = (int)(gameState.playerSoulOffset.y - gameState.cameraRect.y);
+        ex = (int)(gameState.enemySoulOffset.x - gameState.cameraRect.x);
+        ey = (int)(gameState.enemySoulOffset.y - gameState.cameraRect.y);
+        alpha = 255;//(Uint8)gameState.soulAlpha;
+		// play sound effect for soul encounter 
+		Mix_PlayChannel(-1, gPlayerAttackSound, 0);
+    }
+	else {
+		// Chasing - draw faint, stationary on top of player/enemy sprites
+		int heartCenterOffsetX = 128/2 - 10; // tune: half of player sprite width minus half of heart width, roughly
+		int heartCenterOffsetY = 128/2 - 10;
+
+		px = (int)(gameState.player->m_PosX - gameState.cameraRect.x) + heartCenterOffsetX;
+		py = (int)(gameState.player->m_PosY - gameState.cameraRect.y) + heartCenterOffsetY;
+		ex = (int)(gameState.enemy->m_Entity->m_PosX - gameState.cameraRect.x) + heartCenterOffsetX;
+		ey = (int)(gameState.enemy->m_Entity->m_PosY - gameState.cameraRect.y) + heartCenterOffsetY;
+		alpha = 90;
+	}
+
+    SDL_SetTextureAlphaMod(playerHeartTex, alpha);
+    SDL_SetTextureAlphaMod(enemySoulTex, alpha);
+
+    gameState.player->m_FightSpriteSheet.render(px, py, &playerHeartClip);
+    gameState.enemy->m_EnemySoulSpriteSheet->render(ex, ey, &enemySoulClip);
+
+    SDL_SetTextureAlphaMod(playerHeartTex, 255);
+    SDL_SetTextureAlphaMod(enemySoulTex, 255);
+}
+
 
 void initSoulRubberBandBallMenu() {
 	
@@ -1964,7 +2011,7 @@ int main(int argc, char* args[])
 							SDL_RenderDrawRect(gRenderer, &renderBox);
 						}
 					}
-
+					
 
 					// ===============================
 					// PLAYER COLLISION BOX
@@ -2021,7 +2068,7 @@ int main(int argc, char* args[])
 
 					//SDL_RenderClear(renderer);
 
-
+					RenderEncounterSouls(gRenderer);
 
 					//SDL_RenderPresent(renderer);
 

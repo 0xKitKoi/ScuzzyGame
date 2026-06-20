@@ -19,6 +19,9 @@ enum class FightState {
 };
 
 
-
-
 #endif // !FightSystem
+
+#ifndef ENUMS_HPP
+#define ENUMS_HPP
+enum class EncounterPhase { NONE, SOUL_PULL, SOUL_LAUNCH };
+#endif // !ENUMS_HPP

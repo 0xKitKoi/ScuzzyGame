@@ -27,6 +27,7 @@
 //    FIGHT_END           // Fight is over (win/lose)
 //};
 
+//enum class EncounterPhase { NONE, SOUL_PULL, SOUL_LAUNCH };
 
 
 #ifndef GAME_STATE_H
@@ -93,6 +94,15 @@ struct GameState {
     float alpha2 = 0.0f;
     std::shared_ptr<BackgroundLayer> bgLayer1;
     std::shared_ptr<BackgroundLayer> bgLayer2;
+
+    // Fight Init Soul Rip Mechanic
+    //enum class EncounterPhase { NONE, SOUL_PULL, SOUL_LAUNCH };
+    EncounterPhase encounterPhase = EncounterPhase::NONE;
+    float encounterTimer = 0.0f;
+    Vector2f playerSoulOffset = {128,128};
+    Vector2f enemySoulOffset = {0,0};
+    float soulAlpha = 0.0f; // 0 = invisible, 255 = fully visible
+    bool playerSoulVisible = false;
 
 	SDL_Rect FightTargetRect = { 500,500,10,40 };
 	SDL_Rect FightTargetAreaRect = { 300,500,20,40 };

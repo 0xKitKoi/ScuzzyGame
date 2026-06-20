@@ -171,15 +171,29 @@ bool ExplosionAction::Update(float deltaTime) {
     return false;
 }
 
+// void ExplosionAction::Render() {
+//     if (!fired || m_AnimationFinished) return;
+
+//     SDL_Rect srcRect = m_Clips[currentFrameCount];
+//     int screenX = m_Pos.x - gameState.cameraRect.x;
+//     int screenY = m_Pos.y - gameState.cameraRect.y;
+//     SDL_Rect renderQuad = { screenX, screenY, srcRect.w, srcRect.h };
+
+//     SDL_RenderCopy(gRenderer, m_Texture->getTexture(), &srcRect, &renderQuad);
+// }
 void ExplosionAction::Render() {
     if (!fired || m_AnimationFinished) return;
 
     SDL_Rect srcRect = m_Clips[currentFrameCount];
-    int screenX = m_Pos.x - gameState.cameraRect.x;
-    int screenY = m_Pos.y - gameState.cameraRect.y;
-    SDL_Rect renderQuad = { screenX, screenY, srcRect.w, srcRect.h };
+    float scale = 3.0f;
 
-    SDL_RenderCopy(gRenderer, m_Texture->getTexture(), &srcRect, &renderQuad);
+    int scaledW = static_cast<int>(srcRect.w * scale);
+    int scaledH = static_cast<int>(srcRect.h * scale);
+
+    int screenX = (m_Pos.x - gameState.cameraRect.x) - (scaledW - srcRect.w) / 2;
+    int screenY = (m_Pos.y - gameState.cameraRect.y) - (scaledH - srcRect.h) / 2;
+
+    m_Texture->render(screenX, screenY, &srcRect, 0.0, nullptr, SDL_FLIP_NONE, scale);
 }
 
 void ExplosionAction::Exit() {

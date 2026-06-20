@@ -56,6 +56,68 @@ Vector2f Enemy::moveEntity(Vector2f pos, float deltaTime, Vector2f target) {
 }
 
 
+void UpdateEncounterAnimation(float deltaT) {
+    if (gameState.encounterPhase == EncounterPhase::NONE) return;
+
+    gameState.encounterTimer += deltaT;
+
+    if (gameState.encounterPhase == EncounterPhase::SOUL_PULL) {
+        float pullDuration = 0.8f; // tune to taste
+        float t = std::min(gameState.encounterTimer / pullDuration, 1.0f);
+
+        // Fade souls in
+        gameState.soulAlpha = 255.0f * t;
+
+        // Souls drift toward the midpoint between player and enemy
+        Vector2f playerCenter = { (float)gameState.player->m_PosX, (float)gameState.player->m_PosY };
+        Vector2f enemyCenter  = { (float)gameState.enemy->m_Entity->m_PosX, (float)gameState.enemy->m_Entity->m_PosY };
+        Vector2f mid = { (playerCenter.x + enemyCenter.x) / 2.0f, (playerCenter.y + enemyCenter.y) / 2.0f - 20.0f }; // slight upward bias
+
+        gameState.playerSoulOffset = lerpVec(playerCenter, mid, t);
+        gameState.enemySoulOffset  = lerpVec(enemyCenter, mid, t);
+
+        if (t >= 1.0f) {
+            gameState.encounterPhase = EncounterPhase::SOUL_LAUNCH;
+            gameState.encounterTimer = 0.0f;
+        }
+    }
+    else if (gameState.encounterPhase == EncounterPhase::SOUL_LAUNCH) {
+        float launchDuration = 0.4f;
+        float t = std::min(gameState.encounterTimer / launchDuration, 1.0f);
+
+        // Souls shoot straight up together
+        Vector2f mid = gameState.playerSoulOffset; // already at midpoint from previous phase
+        gameState.playerSoulOffset.y = mid.y - (150.0f * t); // 150px upward travel, tune to taste
+        gameState.enemySoulOffset.y  = mid.y - (150.0f * t);
+
+        if (t >= 1.0f) {
+            // NOW actually start the fight
+            gameState.FightStarted = true;
+            gameState.player->m_HeartPos = { float(gameState.screenwidth) / 2.0f - 32.0f, float(gameState.screenheight) / 2.0f - 32.0f };
+            gameState.Plot = 0;
+            gameState.fightLayer1 = gameState.enemy->m_layer1;
+            gameState.fightLayer2 = gameState.enemy->m_layer2;
+            FS_InitFight();
+            gameState.enemy->alive = false;
+
+            // init projectiles (moved from Enemy::Update)
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            for (int i = 0; i < gameState.enemy->m_projectileCount; i++) {
+                float subx = float(randomInt(0, gameState.screenwidth));
+                float suby = float(randomInt(0, gameState.screenheight));
+                gameState.enemy->m_EnemyProjectiles.push_back(std::make_shared<Projectile>(
+                    gameState.enemy->m_EnemyProjectile->m_SpriteSheet,
+                    gameState.enemy->m_EnemyProjectile->m_SpriteClip,
+                    Vector2f(subx, suby), Vector2f(200,200), 1));
+            }
+
+            gameState.encounterPhase = EncounterPhase::NONE;
+        }
+    }
+}
+
+//enum class EncounterPhase { NONE, SOUL_PULL, SOUL_LAUNCH };
 //void Enemy::Update(float deltaT, SDL_Rect CameraRect, SDL_Rect PlayerPos) {
 void Enemy::Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) {
 
@@ -64,8 +126,13 @@ void Enemy::Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) {
 	//if (gameState.inFight) { return; }
 	if (gameState.FightStarted) { return; }
 
+    UpdateEncounterAnimation(deltaT);
+
 	// move to the player if player is in POV box. once touch player, set game state to fight mode.
 	if (SDL_HasIntersection(&m_Entity->m_FOV, &PlayerPos)) {
+            //gameState.encounterPhase = EncounterPhase::SOUL_PULL; // start the encounter animation
+            gameState.playerSoulVisible = true;
+            gameState.enemy = this; // set the global enemy pointer so the render code can draw its soul during the encounter animation
 			//printf("Enemy can see the player!\n");
 			m_Entity->moving = true;
 			//m_Entity.m_PosX += lerp(m_Entity.m_PosX, PlayerPos.x, deltaT);
@@ -76,36 +143,54 @@ void Enemy::Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) {
             m_Entity->m_PosX = out.x;
             m_Entity->m_PosY = out.y;
 
+            // if (SDL_HasIntersection(&m_Entity->m_Collider, &PlayerPos)) {
+            //     if (gameState.DebugMode) {
+            //         printf("Enemy has reached the player! Starting fight...\n");
+            //     }
+            //     gameState.enemyID = m_EnemyID;
+            //     gameState.enemy = this;
+            //     gameState.FightStarted = true;
+            //     gameState.player->m_HeartPos = { float(gameState.screenwidth) / 2.0f - 32.0f, float(gameState.screenheight) / 2.0f - 32.0f };
+            //     gameState.Plot = 0;
+
+            //     gameState.fightLayer1 = m_layer1;
+            //     gameState.fightLayer2 = m_layer2;
+			// 	FS_InitFight();
+            //     this->alive = false;
+            //     std::random_device rd;
+            //     std::mt19937 gen(rd());
+
+            //     // init the projectiles
+            //     for (int i = 0; i < m_projectileCount; i++) {
+			//         //m_EnemyProjectiles.push_back(std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1));
+            //         // using the m_EnemyProjectile as a template, create new projectiles
+            //         float subx = float(randomInt(0, gameState.screenwidth));
+            //         float suby = float(randomInt(0, gameState.screenheight));
+            //         m_EnemyProjectiles.push_back(std::make_shared<Projectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f( subx, suby ), Vector2f(200,200), 1));
+            //         // randomize vector2f(x,y) position:
+		    //     }
+            // }
             if (SDL_HasIntersection(&m_Entity->m_Collider, &PlayerPos)) {
-                if (gameState.DebugMode) {
-                    printf("Enemy has reached the player! Starting fight...\n");
+                if (gameState.encounterPhase == EncounterPhase::NONE) {
+                    if (gameState.DebugMode) {
+                        printf("Enemy has reached the player! Starting soul pull...\n");
+                    }
+                    gameState.enemyID = m_EnemyID;
+                    gameState.enemy = this;
+                    gameState.encounterPhase = EncounterPhase::SOUL_PULL;
+                    gameState.encounterTimer = 0.0f;
+                    m_Entity->moving = false; // freeze enemy in place during the animation
+                    //gameState.player->moving = false; // freeze player input too, if not already locked
+                    gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
                 }
-                gameState.enemyID = m_EnemyID;
-                gameState.enemy = this;
-                gameState.FightStarted = true;
-                gameState.player->m_HeartPos = { float(gameState.screenwidth) / 2.0f - 32.0f, float(gameState.screenheight) / 2.0f - 32.0f };
-                gameState.Plot = 0;
-
-                gameState.fightLayer1 = m_layer1;
-                gameState.fightLayer2 = m_layer2;
-				FS_InitFight();
-                this->alive = false;
-                std::random_device rd;
-                std::mt19937 gen(rd());
-
-                // init the projectiles
-                for (int i = 0; i < m_projectileCount; i++) {
-			        //m_EnemyProjectiles.push_back(std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1));
-                    // using the m_EnemyProjectile as a template, create new projectiles
-                    float subx = float(randomInt(0, gameState.screenwidth));
-                    float suby = float(randomInt(0, gameState.screenheight));
-                    m_EnemyProjectiles.push_back(std::make_shared<Projectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f( subx, suby ), Vector2f(200,200), 1));
-                    // randomize vector2f(x,y) position:
-		        }
             }
 	}
     else {
 		m_Entity->moving = false;
+        if (gameState.enemy == this) {
+            gameState.enemy = nullptr; // clear it once this enemy stops chasing, so render code stops drawing its soul
+            gameState.playerSoulVisible = false;
+        }
 	}
 }
 

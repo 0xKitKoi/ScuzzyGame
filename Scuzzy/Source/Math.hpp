@@ -109,3 +109,8 @@ inline Vector2f lerp(const Vector2f& a, const Vector2f& b, float t) {
 
 
 void draw_circle(SDL_Renderer* renderer, int x, int y, int radius, SDL_Color color);
+
+inline Vector2f lerpVec(Vector2f a, Vector2f b, float t) {
+    return { a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t };
+}
+
