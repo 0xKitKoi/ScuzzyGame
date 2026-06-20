@@ -502,27 +502,119 @@ void HandleAttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
 
 }
 
+// void HandlePlayerTurnMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
+//     FS_renderTextBox(renderer);
+
+//     // Define menu options
+//     if (gameState.SillyMeter >= 5) {
+//         gameState.SillyMode = true;
+//         //
+//     }
+//     std::vector<std::string> fightMenu = { "Fight", "Actions", "Magic", "Items" };
+
+//     // Render menu options
+//     int screenWidth, screenHeight;
+//     SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+//     int xOffset = screenWidth * 0.05 + 30;
+//     int yOffset = screenHeight - 275;
+
+//     for (int i = 0; i < fightMenu.size(); i++) {
+//         SDL_Color color = (i == selection) ? SDL_Color{ 237, 28, 36 } : SDL_Color{ 255, 255, 255 };
+//         FS_renderText(renderer, font, fightMenu[i], xOffset + (i * 300), yOffset, color);
+//     }
+
+//     // Handle input
+//     if (event.type == SDL_KEYDOWN) {
+//         if (event.key.keysym.sym == SDLK_LEFT) {
+//             Mix_PlayChannel(-1, gMoveSound, 0);
+//             selection--;
+//             if (selection < 0) selection = fightMenu.size() - 1;
+//         }
+//         else if (event.key.keysym.sym == SDLK_RIGHT) {
+//             Mix_PlayChannel(-1, gMoveSound, 0);
+//             selection++;
+//             if (selection >= fightMenu.size()) selection = 0;
+//         }
+//         else if (event.key.keysym.sym == SDLK_z) {
+//             Mix_PlayChannel(-1, gSelectSound, 0);
+//             // Handle selection
+//             switch (selection) {
+//             case 0: // Fight
+// 				gameState.fightState = FightState::PLAYER_FIGHT;
+// 				HandleAttackMechanic(renderer, font, event);
+//     //            // Attack enemy
+//     //            if (HandleAttackMechanic(renderer, font, event)) {
+//     //                gameState.enemy->HP -= 1; // Replace with proper damage calculation
+//     //                // Set text for result dialogue
+//     //                fightText = "You hit the " + std::string("{ENEMY ID: ") +
+//     //                    std::to_string(gameState.enemy->m_EnemyID) + " }\n";
+//     //            }
+//     //            else {
+//     //                fightText = "You missed!!!\n";
+// 				//}
+
+//     //            
+
+//     //            // Check if enemy defeated
+//     //            if (gameState.enemy->HP <= 0) {
+//     //                gameState.enemy->alive = false;
+//     //                fightText = "You defeated the enemy!";
+//     //                gameState.kills++;
+//     //                gameState.money += chance(10);
+//     //                gameState.fightState = FightState::FIGHT_END;
+//     //            }
+//     //            else {
+//     //                gameState.fightState = FightState::PLAYER_ACTION_RESULT;
+//     //            }
+//                 break;
+
+//             case 1: // Actions
+//                 gameState.fightState = FightState::PLAYER_ACTIONS_MENU;
+//                 selection = 0; // Reset selection for new menu
+//                 break;
+//             case 2: // Items
+//                 gameState.fightState = FightState::PLAYER_MAGIC;
+//                 selection = 0; // Reset selection for new menu
+//                 break;
+//             case 3: // Items
+//                 gameState.fightState = FightState::PLAYER_ITEMS_MENU;
+//                 selection = 0; // Reset selection for new menu
+//                 break;
+//             }
+//             gameState.turnCount++;
+//         }
+//     }
+// }
 void HandlePlayerTurnMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     FS_renderTextBox(renderer);
-
     // Define menu options
     if (gameState.SillyMeter >= 5) {
         gameState.SillyMode = true;
         //
     }
     std::vector<std::string> fightMenu = { "Fight", "Actions", "Magic", "Items" };
-
     // Render menu options
     int screenWidth, screenHeight;
     SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
     int xOffset = screenWidth * 0.05 + 30;
     int yOffset = screenHeight - 275;
 
-    for (int i = 0; i < fightMenu.size(); i++) {
-        SDL_Color color = (i == selection) ? SDL_Color{ 237, 28, 36 } : SDL_Color{ 255, 255, 255 };
-        FS_renderText(renderer, font, fightMenu[i], xOffset + (i * 300), yOffset, color);
-    }
+    SDL_Rect heartClip = gameState.player->m_HeartClips[0];
+    const int heartPadding = 8;
+    int textIndent = heartClip.w + heartPadding;
 
+    for (int i = 0; i < fightMenu.size(); i++) {
+        int currentX = xOffset + (i * 300);
+        int currentY = yOffset;
+
+        SDL_Color color = (i == selection) ? SDL_Color{ 237, 28, 36 } : SDL_Color{ 255, 255, 255 };
+
+        if (i == selection && gameState.player) {
+            gameState.player->m_FightSpriteSheet.render(currentX, currentY, &heartClip);
+        }
+
+        FS_renderText(renderer, font, fightMenu[i], currentX + textIndent, currentY, color);
+    }
     // Handle input
     if (event.type == SDL_KEYDOWN) {
         if (event.key.keysym.sym == SDLK_LEFT) {
@@ -540,45 +632,20 @@ void HandlePlayerTurnMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event
             // Handle selection
             switch (selection) {
             case 0: // Fight
-				gameState.fightState = FightState::PLAYER_FIGHT;
-				HandleAttackMechanic(renderer, font, event);
-    //            // Attack enemy
-    //            if (HandleAttackMechanic(renderer, font, event)) {
-    //                gameState.enemy->HP -= 1; // Replace with proper damage calculation
-    //                // Set text for result dialogue
-    //                fightText = "You hit the " + std::string("{ENEMY ID: ") +
-    //                    std::to_string(gameState.enemy->m_EnemyID) + " }\n";
-    //            }
-    //            else {
-    //                fightText = "You missed!!!\n";
-				//}
-
-    //            
-
-    //            // Check if enemy defeated
-    //            if (gameState.enemy->HP <= 0) {
-    //                gameState.enemy->alive = false;
-    //                fightText = "You defeated the enemy!";
-    //                gameState.kills++;
-    //                gameState.money += chance(10);
-    //                gameState.fightState = FightState::FIGHT_END;
-    //            }
-    //            else {
-    //                gameState.fightState = FightState::PLAYER_ACTION_RESULT;
-    //            }
+                gameState.fightState = FightState::PLAYER_FIGHT;
+                HandleAttackMechanic(renderer, font, event);
                 break;
-
             case 1: // Actions
                 gameState.fightState = FightState::PLAYER_ACTIONS_MENU;
-                selection = 0; // Reset selection for new menu
+                selection = 0;
                 break;
             case 2: // Items
                 gameState.fightState = FightState::PLAYER_MAGIC;
-                selection = 0; // Reset selection for new menu
+                selection = 0;
                 break;
             case 3: // Items
                 gameState.fightState = FightState::PLAYER_ITEMS_MENU;
-                selection = 0; // Reset selection for new menu
+                selection = 0;
                 break;
             }
             gameState.turnCount++;
@@ -587,37 +654,116 @@ void HandlePlayerTurnMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event
 }
 
 
+// void HandlePlayerMagicMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
+//     // this is the menu for the actions the player can pick in a fight. 
+//     // They come from the enemy that started the fight. 
+
+//     FS_renderTextBox(renderer);
+
+//     // Get actions for current enemy
+//     //std::vector<std::string> actionMenu = { "Magic 1", "Magic 2"};
+// 	//std::vector<Magic> *actionMenu = &gameState.player->m_Abilities;
+// 	std::vector<std::unique_ptr<Magic>>* actionMenu = &gameState.player->m_Abilities;
+
+
+//     // Render menu options
+//     int screenWidth, screenHeight;
+//     SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+//     int xOffset = screenWidth * 0.05 + 30;
+//     int yOffset = screenHeight - 275;
+
+//     SDL_Color white = { 255,255,255 };
+//     SDL_Color red = { 237,28,36 };
+//     SDL_Color grey = { 128,128,128 };
+
+//     for (int i = 0; i < actionMenu->size(); i++) {
+//         SDL_Color color;
+//         if (i == selection) { color = red; }
+//         else if (gameState.TensionMeterCost[i] > gameState.TensionMeter) { color = grey; }
+//         else { color = white; }
+//         // SDL_Color color = (i == selection) ? red : white;
+//         FS_renderText(renderer, font, actionMenu->at(i)->m_abilityName, xOffset + (i * 300), yOffset, color);
+//     }
+
+//     // Handle input
+//     if (event.type == SDL_KEYDOWN) {
+//         if (event.key.keysym.sym == SDLK_LEFT) {
+//             Mix_PlayChannel(-1, gMoveSound, 0);
+//             selection--;
+//             if (selection < 0) selection = actionMenu->size() - 1;
+//         }
+//         else if (event.key.keysym.sym == SDLK_RIGHT) {
+//             Mix_PlayChannel(-1, gMoveSound, 0);
+//             selection++;
+//             if (selection >= actionMenu->size()) selection = 0;
+//         }
+//         else if (event.key.keysym.sym == SDLK_z) {
+//             Mix_PlayChannel(-1, gSelectSound, 0);
+//             // Set text based on selected action
+//             // The enemy will effect the gameState based on the action chosen here.
+//             if (gameState.TensionMeterCost[selection] > gameState.TensionMeter) {
+//                 // player does not have enough Tension Points to cast this ability. 
+//                 // I will play a sound to indicate that this option is unselectable. for now, do nothing. 
+//                 return;
+//             }
+//             if (selection < actionMenu->size()) {
+//                 //fightText = gameState.enemy->FightActionResponse(selection); // side effects handled inside the function
+// 				FS_QueueFightText("Magic Menu: You used " + actionMenu->at(selection)->m_abilityName + "!\n");
+//                 //gameState.TensionMeter -= gameState.TensionMeterCost[selection];
+// 				gameState.TensionMeter -= actionMenu->at(selection)->m_TensionCost; // deduct the appropriate amount of tension points
+// 				gameState.player->m_Abilities.at(selection)->Cast(); // call the Cast method of the selected ability, which will apply its effects to the game state
+//                 //fightText = gameState.enemy->m_ActionResponse[selection]; // this is replaced by the above line for silly mode support
+//                 gameState.fightState = FightState::PLAYER_ACTION_RESULT;
+//                 gameState.turnCount++;
+//                 selection = 0; // Set to Actions option
+//             }
+//             else {
+//                 FS_QueueFightText("ERROR: Invalid action!");
+//                 gameState.fightState = FightState::PLAYER_ACTION_RESULT;
+//             }
+//         }
+//         else if (event.key.keysym.sym == SDLK_x) {
+//             Mix_PlayChannel(-1, gDeSelectSound, 0);
+//             // Go back to main menu
+//             gameState.fightState = FightState::PLAYER_TURN_MENU;
+//             selection = 1; // Set to Actions option
+//         }
+//     }
+// }
 void HandlePlayerMagicMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     // this is the menu for the actions the player can pick in a fight. 
     // They come from the enemy that started the fight. 
-
     FS_renderTextBox(renderer);
-
     // Get actions for current enemy
-    //std::vector<std::string> actionMenu = { "Magic 1", "Magic 2"};
-	//std::vector<Magic> *actionMenu = &gameState.player->m_Abilities;
-	std::vector<std::unique_ptr<Magic>>* actionMenu = &gameState.player->m_Abilities;
-
-
+    std::vector<std::unique_ptr<Magic>>* actionMenu = &gameState.player->m_Abilities;
     // Render menu options
     int screenWidth, screenHeight;
     SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
     int xOffset = screenWidth * 0.05 + 30;
     int yOffset = screenHeight - 275;
-
     SDL_Color white = { 255,255,255 };
     SDL_Color red = { 237,28,36 };
     SDL_Color grey = { 128,128,128 };
 
+    SDL_Rect heartClip = gameState.player->m_HeartClips[0];
+    const int heartPadding = 8;
+    int textIndent = heartClip.w + heartPadding;
+
     for (int i = 0; i < actionMenu->size(); i++) {
+        int currentX = xOffset + (i * 300);
+        int currentY = yOffset;
+
         SDL_Color color;
         if (i == selection) { color = red; }
         else if (gameState.TensionMeterCost[i] > gameState.TensionMeter) { color = grey; }
         else { color = white; }
-        // SDL_Color color = (i == selection) ? red : white;
-        FS_renderText(renderer, font, actionMenu->at(i)->m_abilityName, xOffset + (i * 300), yOffset, color);
-    }
 
+        if (i == selection) {
+            gameState.player->m_FightSpriteSheet.render(currentX, currentY, &heartClip);
+        }
+
+        FS_renderText(renderer, font, actionMenu->at(i)->m_abilityName, currentX + textIndent, currentY, color);
+    }
     // Handle input
     if (event.type == SDL_KEYDOWN) {
         if (event.key.keysym.sym == SDLK_LEFT) {
@@ -632,23 +778,16 @@ void HandlePlayerMagicMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
         }
         else if (event.key.keysym.sym == SDLK_z) {
             Mix_PlayChannel(-1, gSelectSound, 0);
-            // Set text based on selected action
-            // The enemy will effect the gameState based on the action chosen here.
             if (gameState.TensionMeterCost[selection] > gameState.TensionMeter) {
-                // player does not have enough Tension Points to cast this ability. 
-                // I will play a sound to indicate that this option is unselectable. for now, do nothing. 
                 return;
             }
             if (selection < actionMenu->size()) {
-                //fightText = gameState.enemy->FightActionResponse(selection); // side effects handled inside the function
-				FS_QueueFightText("Magic Menu: You used " + actionMenu->at(selection)->m_abilityName + "!\n");
-                //gameState.TensionMeter -= gameState.TensionMeterCost[selection];
-				gameState.TensionMeter -= actionMenu->at(selection)->m_TensionCost; // deduct the appropriate amount of tension points
-				gameState.player->m_Abilities.at(selection)->Cast(); // call the Cast method of the selected ability, which will apply its effects to the game state
-                //fightText = gameState.enemy->m_ActionResponse[selection]; // this is replaced by the above line for silly mode support
+                FS_QueueFightText("Magic Menu: You used " + actionMenu->at(selection)->m_abilityName + "!\n");
+                gameState.TensionMeter -= actionMenu->at(selection)->m_TensionCost;
+                gameState.player->m_Abilities.at(selection)->Cast();
                 gameState.fightState = FightState::PLAYER_ACTION_RESULT;
                 gameState.turnCount++;
-                selection = 0; // Set to Actions option
+                selection = 0;
             }
             else {
                 FS_QueueFightText("ERROR: Invalid action!");
@@ -657,9 +796,8 @@ void HandlePlayerMagicMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
         }
         else if (event.key.keysym.sym == SDLK_x) {
             Mix_PlayChannel(-1, gDeSelectSound, 0);
-            // Go back to main menu
             gameState.fightState = FightState::PLAYER_TURN_MENU;
-            selection = 1; // Set to Actions option
+            selection = 1;
         }
     }
 }
@@ -680,9 +818,18 @@ void HandlePlayerActionsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Ev
     int xOffset = screenWidth * 0.05 + 30;
     int yOffset = screenHeight - 275;
 
+    SDL_Rect heartClip = gameState.player->m_HeartClips[0];
+    const int heartPadding = 8;
+    int textIndent = heartClip.w + heartPadding;
+
     for (int i = 0; i < actionMenu.size(); i++) {
+        int currentX = xOffset + (i * 300);
+        int currentY = yOffset;
         SDL_Color color = (i == selection) ? SDL_Color{ 237, 28, 36 } : SDL_Color{ 255, 255, 255 };
-        FS_renderText(renderer, font, actionMenu[i], xOffset + (i * 300), yOffset, color);
+        if (i == selection && gameState.player) {
+            gameState.player->m_FightSpriteSheet.render(currentX, currentY, &heartClip);
+        }
+        FS_renderText(renderer, font, actionMenu[i], currentX + textIndent, currentY, color);
     }
 
     // Handle input
@@ -748,6 +895,9 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
     SDL_Color white = { 255, 255, 255 };  // Normal text color
     SDL_Color red = { 237, 28, 36 };       // Highlighted text color
 
+    SDL_Rect heartClip = gameState.player->m_HeartClips[0];
+    const int heartPadding = 8;
+    int textIndent = heartClip.w + heartPadding;
 
     // Calculate grid dimensions
     const int maxColumns = 4;
@@ -758,14 +908,18 @@ void HandlePlayerItemsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
         int column = i % 4;  // Current column (0, 1, 2, 3)
         int row = i / 4;      // Current row
 
-        int currentX = xOffset + (column * (optionWidth + 10)); // 10 is the spacing
-        int currentY = yOffset + (row * (optionHeight + 10));   // 10 is the spacing
+        //int currentX = xOffset + (column * (optionWidth + 10)); // 10 is the spacing
+        //int currentY = yOffset + (row * (optionHeight + 10));   // 10 is the spacing
+        int currentX = xOffset + (i * 300);
+        int currentY = yOffset;
 
         // Determine color based on selection
         SDL_Color color = (i == selection) ? red : white;
-
+        if (i == selection) {
+            gameState.player->m_FightSpriteSheet.render(currentX, currentY, &heartClip);
+        }
         // Render the option
-        FS_renderText(renderer, font, itemMenu[i], currentX, currentY, color);
+        FS_renderText(renderer, font, itemMenu[i], currentX + textIndent, currentY, color);
     }
 
 
