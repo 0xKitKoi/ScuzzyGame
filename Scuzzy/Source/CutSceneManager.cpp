@@ -4,11 +4,13 @@
 
 #ifndef _WIN32
 	#include <SDL2/SDL.h>
+    #include <SDL2/SDL_mixer.h>
 #elif defined(_WIN32)
 	#include <SDL.h>
 #endif
 
 extern GameState gameState;
+extern Mix_Chunk* gExplosionSound;
 
 // Orchestrator class managing the cutscene flow
 
@@ -45,6 +47,14 @@ extern GameState gameState;
         }
     }
 
+    
+    void CutsceneManager::Render() {
+        if (!m_IsActive) return;
+        if (m_CurrentActionIndex < m_Actions.size()) {
+            m_Actions[m_CurrentActionIndex]->Render();
+        }
+    }
+
 
 
 
@@ -66,7 +76,7 @@ void DialogueAction::Enter() {
 }
 
 bool DialogueAction::Update(float deltaTime) {
-    printf("Waiting for player to advance dialogue...\n");
+    //printf("Waiting for player to advance dialogue...\n");
     if (m_GameState.textAnimating) return false;   // still typing out
     if (m_GameState.textAvailable) return false;   // waiting for player to press confirm
 
@@ -98,36 +108,78 @@ ExplosionAction::ExplosionAction(Mix_Chunk* explosionsound, std::shared_ptr<LTex
 
 void ExplosionAction::Enter() {
     //play explosion sound, let the entity render itself fast as possible.
-    Mix_PlayChannel(-1, m_Explosion, 0);
+    //Mix_PlayChannel(-1, m_Explosion, 0);
+    Mix_PlayChannel(-1, gExplosionSound, 0);
     fired = true;
 }
 
-bool ExplosionAction::Update(float deltaTime) {
-    SDL_Rect srcRect;
-    if (fired && !m_AnimationFinished) {
-                // Calculates index of frame to use in animation.
-                lastFrameTime += deltaTime * 1000.0f; // was 1000
-                if (lastFrameTime >= 300) { // frameDuration = 100ms ?????
-                    currentFrameCount = (currentFrameCount + 1) % FRAME_COUNT;
-                    lastFrameTime = 0;
-                    if (currentFrameCount == 0) {
-                        m_AnimationFinished = true;
+// bool ExplosionAction::Update(float deltaTime) {
+//     SDL_Rect srcRect;
+//     if (fired && !m_AnimationFinished) {
+//                 //printf("Explosion animation playing...\n");
+//                 // Calculates index of frame to use in animation.
+//                 lastFrameTime += deltaTime * 1000.0f; // was 1000
+//                 if (lastFrameTime >= 300) { // frameDuration = 100ms ?????
+//                     currentFrameCount = (currentFrameCount + 1) % FRAME_COUNT;
+//                     lastFrameTime = 0;
+//                     if (currentFrameCount == 0) {
+//                         //printf("Explosion animation finished.\n");
+//                         m_AnimationFinished = true;
 
-                        return true;
-                    }	
-                }
-        srcRect = m_Clips[currentFrameCount]; // render the sprite at index of animation
-        int screenX = (m_Pos.x - gameState.cameraRect.x);
-        int screenY = (m_Pos.y - gameState.cameraRect.y);
-        //m_Texture->render(screenX, screenY, &srcRect);
+//                         return true;
+//                     }	
+//                 }
+//         srcRect = m_Clips[currentFrameCount]; // render the sprite at index of animation
+//         int screenX = (m_Pos.x - gameState.cameraRect.x);
+//         int screenY = (m_Pos.y - gameState.cameraRect.y);
+//         //m_Texture->render(screenX, screenY, &srcRect);
 
-        SDL_Rect renderQuad = { screenX, screenY, srcRect.w, srcRect.h };
-        //SDL_RenderCopy(gRenderer, m_Texture->getTexture(), &srcRect, &renderQuad);
-        m_Texture->render(screenX, screenY, &srcRect);
+//         SDL_Rect renderQuad = { screenX, screenY, srcRect.w, srcRect.h };
+//         //SDL_Rect renderQuad = { m_Pos.x, m_Pos.y, srcRect.w, srcRect.h };
+//         SDL_RenderCopy(gRenderer, m_Texture->getTexture(), &srcRect, &renderQuad);
+//         if (!m_Texture->getTexture()) {
+//             printf("Explosion texture is NULL!\n");
+//         }
+//         int texW, texH;
+//         SDL_QueryTexture(m_Texture->getTexture(), NULL, NULL, &texW, &texH);
+//         printf("Explosion texture size: %d x %d\n", texW, texH);
+//         printf("Rendering explosion frame %d at position (%d, %d, %d, %d)\n", currentFrameCount, renderQuad.x, renderQuad.y, renderQuad.w, renderQuad.h);
+//         printf("Camera position: (%d, %d)\n", gameState.cameraRect.x, gameState.cameraRect.y);
+//         printf("Explosion world position: (%f, %f)\n", m_Pos.x, m_Pos.y);
+//         printf("Explosion screen position: (%d, %d)\n", screenX, screenY);
+//         printf("SrcRect: (%d, %d, %d, %d)\n", srcRect.x, srcRect.y, srcRect.w, srcRect.h);
+//         //m_Texture->render(m_Pos.x, m_Pos.y, &srcRect);
+//         SDL_RenderPresent(gRenderer); // Force update to show explosion frames immediately
         
+//     }
+//     return false;
+
+//}
+
+bool ExplosionAction::Update(float deltaTime) {
+    if (fired && !m_AnimationFinished) {
+        lastFrameTime += deltaTime * 1000.0f;
+        if (lastFrameTime >= 100) {
+            currentFrameCount = (currentFrameCount + 1) % FRAME_COUNT;
+            lastFrameTime = 0;
+            if (currentFrameCount == 0) {
+                m_AnimationFinished = true;
+                return true;
+            }
+        }
     }
     return false;
+}
 
+void ExplosionAction::Render() {
+    if (!fired || m_AnimationFinished) return;
+
+    SDL_Rect srcRect = m_Clips[currentFrameCount];
+    int screenX = m_Pos.x - gameState.cameraRect.x;
+    int screenY = m_Pos.y - gameState.cameraRect.y;
+    SDL_Rect renderQuad = { screenX, screenY, srcRect.w, srcRect.h };
+
+    SDL_RenderCopy(gRenderer, m_Texture->getTexture(), &srcRect, &renderQuad);
 }
 
 void ExplosionAction::Exit() {

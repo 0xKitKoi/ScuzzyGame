@@ -24,6 +24,7 @@ public:
     virtual ~CutsceneAction() = default;
     virtual void Enter() = 0;
     virtual bool Update(float deltaTime) = 0; // Returns true when completed
+    virtual void Render() {};
     virtual void Exit() = 0;
 };
 
@@ -38,6 +39,7 @@ public:
     void StartCutscene();
 
     void Update(float deltaTime);
+    void Render();
 };
 
 
@@ -145,6 +147,7 @@ public:
     ExplosionAction(Mix_Chunk* explosionsound, std::shared_ptr<LTexture> texture, int frameCount, std::vector<SDL_Rect> clips, Vector2f position);
     void Enter() override;
     bool Update(float deltaTime) override;
+    void Render() override;
     void Exit() override;
 };
 

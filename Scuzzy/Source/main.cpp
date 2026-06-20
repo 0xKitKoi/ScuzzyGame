@@ -772,6 +772,7 @@ bool loadMedia()
 	//soulRubberBandBallNPC->m_Entity = soulRubberBandBall;
 	soulRubberBandBall->setNPC(soulRubberBandBallNPC);
 
+	gExplosionSound = Mix_LoadWAV("data/mus/snd_badexplosion.wav");
 	/*
 	gExplosionSound = Mix_LoadWAV("data/mus/snd_badexplosion.wav");
 
@@ -1423,6 +1424,7 @@ int main(int argc, char* args[])
 
 				if (gameState.inCutScene) {
 					gameState.cutsceneManager.Update(deltaTime);
+					
 					if (!gameState.cutsceneManager.m_IsActive)
 						gameState.inCutScene = false;
 				}
@@ -1984,7 +1986,9 @@ int main(int argc, char* args[])
 
 					//SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
-
+					if (gameState.inCutScene) {
+						gameState.cutsceneManager.Render();
+					}
 
 					//Cycle animation frames
 					++countedFrames;

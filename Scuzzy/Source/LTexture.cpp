@@ -54,6 +54,17 @@ bool LTexture::loadFromFile(std::string path)
 
 		//Create texture from surface pixels
 		newTexture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
+		newTexture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
+		if (newTexture == NULL)
+		{
+			printf("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+		}
+		else
+		{
+			SDL_SetTextureBlendMode(newTexture, SDL_BLENDMODE_BLEND);
+			mWidth = loadedSurface->w;
+			mHeight = loadedSurface->h;
+		}
 		if (newTexture == NULL)
 		{
 			printf("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());

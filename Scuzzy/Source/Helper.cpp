@@ -147,7 +147,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			//auto triggerEntity = std::make_shared<Entity>(triggerPos, triggerCB, triggerRect, 1, 401);
 			auto triggerEntity2 = std::make_shared<Entity>(
 				triggerPos2, triggerCB2, triggerRect2,
-				nullptr,           // or a real texture
+				nullptr, //getTexture("data/RealisticExplosion72x100x18.png"), //nullptr,           // or a real texture 
 				1,                 // framecount
 				explClips,  // clips
 				402                // EntityID
@@ -195,7 +195,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			SDL_Rect sodaCB = {
 				int(sodaPos.x + 8),
 				int(sodaPos.y + 10),
-				48,
+				48,	
 				44
 			};
 
