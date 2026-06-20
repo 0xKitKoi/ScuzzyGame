@@ -1264,7 +1264,7 @@ int main(int argc, char* args[])
 								gameState.textAvailable = false;
 							}
 						}
-						continue;  // block everything else
+						continue;  // block everything else. Must be above the SDL Event switch case so as to not allow movement. 
 					}
 
 
@@ -1392,7 +1392,7 @@ int main(int argc, char* args[])
 								renderMenuSideBySide(gRenderer, gFont);
 								gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
 							}
-							else {
+							else { // this is from cutscenes or NPC dialogue that requires text but not the menu system.
 								handleDialogue(e);
 								gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
 							}

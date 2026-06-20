@@ -27,6 +27,10 @@ extern Mix_Chunk* gSelectSound; // player presses z
 extern Mix_Chunk* gDeSelectSound; // player presses x
 extern Mix_Chunk* gMoveSound; // player moves cursor in menu.
 
+extern Mix_Chunk* gTextCharSound1; // character 1 a
+extern Mix_Chunk* gTextCharSound2; // character 1 b
+extern Mix_Chunk* gTextCharSound3; // character 1 c
+
 // Define the current menu state and selected index
 MenuState currentMenu = MAIN_MENU;
 MenuState lastMenuState = MAIN_MENU; // To keep track of the last menu state
@@ -1016,11 +1020,29 @@ void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) {
         // Update text animation if needed
         if (gameState.shouldAnimateText && gameState.textAnimating) {
             gameState.textTimer += 1.0f / 60.0f;//60.0f; // Assuming 60 FPS
+            // if (gameState.textTimer >= gameState.textSpeed) {
+            //     gameState.textTimer = 0.0f;
+            //     if (gameState.currentCharIndex < gameState.Text.at(gameState.textIndex).length()) {
+            //         gameState.currentDisplayText += gameState.Text.at(gameState.textIndex).at(gameState.currentCharIndex);
+            //         gameState.currentCharIndex++;
+            //     }
+            //     else {
+            //         gameState.textAnimating = false;
+            //     }
+            // }
             if (gameState.textTimer >= gameState.textSpeed) {
                 gameState.textTimer = 0.0f;
                 if (gameState.currentCharIndex < gameState.Text.at(gameState.textIndex).length()) {
-                    gameState.currentDisplayText += gameState.Text.at(gameState.textIndex).at(gameState.currentCharIndex);
+                    char c = gameState.Text.at(gameState.textIndex).at(gameState.currentCharIndex);
+                    gameState.currentDisplayText += c;
                     gameState.currentCharIndex++;
+
+                    // Play a random blip, but skip spaces/punctuation so it doesn't sound jittery
+                    if (!isspace(static_cast<unsigned char>(c))) {
+                        Mix_Chunk* blips[] = { gTextCharSound1, gTextCharSound2, gTextCharSound3 };
+                        int idx = rand() % 3;
+                        Mix_PlayChannel(-1, blips[idx], 0);
+                    }
                 }
                 else {
                     gameState.textAnimating = false;
