@@ -699,7 +699,38 @@ void Player::render(int camX, int camY) {
 	int screenY = (m_PosY - camera.y);
 	SDL_Rect renderQuad = { screenX, screenY, SpriteWidth, SpriteHeight };
 	SDL_RenderCopy(gRenderer, SpriteSheet.getTexture(), &srcRect, &renderQuad);
+	RenderSoul(gRenderer);
 }
+
+
+void Player::RenderSoul(SDL_Renderer* renderer) {
+    bool chasing = gameState.playerSoulVisible && gameState.encounterPhase == EncounterPhase::NONE;
+    bool encountering = gameState.encounterPhase != EncounterPhase::NONE;
+    if (!chasing && !encountering) return;
+
+    SDL_Texture* tex = m_FightSpriteSheet.getTexture();
+    SDL_Rect clip = m_HeartClips[0];
+
+    int x, y;
+    Uint8 alpha;
+
+    if (encountering) {
+        x = (int)(gameState.playerSoulOffset.x - gameState.cameraRect.x);
+        y = (int)(gameState.playerSoulOffset.y - gameState.cameraRect.y);
+        alpha = 255;
+    } else {
+        constexpr int heartCenterOffsetX = 128 / 2 - 10;
+        constexpr int heartCenterOffsetY = 128 / 2 - 10;
+        x = (int)(m_PosX - gameState.cameraRect.x) + heartCenterOffsetX;
+        y = (int)(m_PosY - gameState.cameraRect.y) + heartCenterOffsetY;
+        alpha = 90;
+    }
+
+    SDL_SetTextureAlphaMod(tex, alpha);
+    m_FightSpriteSheet.render(x, y, &clip);
+    SDL_SetTextureAlphaMod(tex, 255);
+}
+
 
 int Player::GetPosX() {
 	return m_PosX;

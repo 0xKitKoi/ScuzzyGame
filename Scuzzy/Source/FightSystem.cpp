@@ -1131,14 +1131,20 @@ void EndFightAndReturnToFlow() {
 }
 
 void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
-    if (gameState.HP <= 0 && !FightEndConsumed) { // this is the only way the player can die right now.
+    if (gameState.HP <= 0 /*&& !FightEndConsumed*/) { // this is the only way the player can die right now.
         gameState.HP = 0;
         gameState.dead = true;
-        fightText = "You were defeated!";
-        FS_QueueFightText(fightText);
-        fightShouldAnimateText = true;
+        gameState.enemy->alive = false;
+        //fightText = "You were defeated!";
+        //FS_QueueFightText(fightText);
+        //fightShouldAnimateText = true;
+        gameState.fightState = FightState::FIGHT_END;
+        gameState.inFight = false;
+        gameState.wonFight = !gameState.dead;
+        gameState.FightStarted = false;
+        gameState.enemy->alive = false;
         FightEndConsumed = true;
-
+        return; // game state has been notified of death. Return to Application Flow
     }
     else {
         if (!FightEndConsumed) {
@@ -1250,7 +1256,6 @@ void DrawThickRect(SDL_Renderer* renderer,
 	SDL_RenderFillRect(renderer, &right);
 }
 
-
 void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     // render fight
     // get attack from enemy
@@ -1308,7 +1313,9 @@ void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event ev
             // Update enemy projectile(s)
             if (gameState.HP <= 0) { // this is the only way the player can die right now.
                 gameState.HP = 0;
+                gameState.dead = true;
                 gameState.fightState = FightState::FIGHT_END;
+                HandleFightEndState(renderer, font, event);
             }
             gameState.enemy->m_EnemyProjectile->Update(gameState.deltaTime, gameState.player->m_HeartPos);
         }
@@ -1319,6 +1326,10 @@ void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event ev
 
 // Main fight system input handler. This is also how the fight system enters the Application Flow.
 void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
+    if (gameState.dead || !gameState.inFight || !gameState.enemy) {
+        return;
+    }
+
     //gameState.player->m_HeartVelocity = { 0,0 }; // stop fucking moving
     //gameState.player->m_HeartPos = { 200.0f, 400.0f }; // reset position
 

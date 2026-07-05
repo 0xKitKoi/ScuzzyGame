@@ -50,6 +50,7 @@ int SCREEN_WIDTH = 0;
 int SCREEN_HEIGHT = 0;
 
 float avgFPS = 0.0f;
+bool deathResetArmed = false;
 
 
 Camera camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
@@ -408,6 +409,14 @@ void GameStart() {
 	playerinitpos = SaveData.pos;
 	CheckBox = { (int)playerinitpos.x,(int)playerinitpos.y, 20,20};
 	gameState.room = SaveData.room;
+	gameState.enemy = nullptr;
+	gameState.enemyID = 0;
+	gameState.encounterPhase = EncounterPhase::NONE;
+	gameState.playerSoulVisible = false;
+	gameState.FightStarted = false;
+	gameState.inFight = false;
+	gameState.dead = false;
+	gameState.wonFight = false;
 	//gameState.Inventory = PopulateInventory(SaveData.items);
 	//PopulateInventory(SaveData.items); // DEPRECATED
 	gameState.kills = SaveData.kills;
@@ -1106,6 +1115,7 @@ void render_map_unified(SDL_Renderer* renderer, LTexture* map_texture) {
 
 
 void RenderEncounterSouls(SDL_Renderer* renderer) {
+	printf("WOMP WOMP BRO CALLED OLD FUNC\n");
     bool chasing = gameState.playerSoulVisible && gameState.encounterPhase == EncounterPhase::NONE;
     bool encountering = gameState.encounterPhase != EncounterPhase::NONE;
 
@@ -1375,45 +1385,7 @@ int main(int argc, char* args[])
 
 
 					if (gameState.dead) {
-							SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0);
-							// render the death png
-							// auto barrel = std::make_shared<Entity>(Vector2f(2322, 258), SDL_Rect{ 0,0,128,128 }, SDL_Rect{ 0,0,128,128 }, getTexture("data/barrel_nuclear.png"), 1, clips, 1);
-							//Entities.clear();
-							SDL_RenderClear(gRenderer);
-							deathScreen.render(screenwidth / 2, screenheight / 2);
-							//SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, count);
-							//SDL_RenderClear(gRenderer);
-							//const Uint8* keystate = SDL_GetKeyboardState(NULL);
-
-							
-							SDL_RenderPresent(gRenderer);
-							SDL_Delay(1000);
-							if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_z) {
-							//if (keystate[SDL_SCANCODE_Z]) {
-								// reset the game
-								
-								printf("[!] Player has died. Reseting the game. Main()-> SDL_PollEvent()-> if(gameSTate.dead)\n");
-								LoadSave();
-								//player.reset(new Player(SaveData.pos, Entities));
-								player.reset(SaveData.pos);
-								player.SetPosX(SaveData.pos.x);
-								player.SetPosY(SaveData.pos.y);
-								player.currentState = State::Idle; // why is the little bastard moving on his own 
-								//player.AllEntities = Entities; // this is breaking. 
-								//player = std::make_unique<Player>(SaveData.pos, Entities);
-								GameStart();
-								gameState.dead = false;
-								gameState.inFight = false;
-								gameState.FightStarted = false;
-								gameState.inMenu = false;
-								gameState.textAvailable = false;
-								levelHeight = Map.getHeight(); // needed to make sure death upon smaller maps doesnt break rendering loop
-								levelWidth = Map.getWidth();
-								gameState.HP = gameState.maxHP; // reset HP on death
-
-								/*main(argc, args);*/ // lmfao dont call main in main lesson learned
-							}
-							continue;
+						continue;
 					}
 					else {
 
@@ -1507,6 +1479,42 @@ int main(int argc, char* args[])
 				deltaTime = (currentTime - previousTime) / 1000.0f; // Convert to seconds
 				previousTime = currentTime;
 				gameState.deltaTime = deltaTime;
+
+				if (gameState.dead) {
+					SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0);
+					SDL_RenderClear(gRenderer);
+					deathScreen.render((screenwidth / 2) - (deathScreen.getWidth() / 2), (screenheight / 2) - (deathScreen.getHeight() / 2));
+					SDL_RenderPresent(gRenderer);
+
+					SDL_PumpEvents();
+					const Uint8* keyState = SDL_GetKeyboardState(NULL);
+					if (!keyState[SDL_SCANCODE_Z]) {
+						deathResetArmed = true;
+					}
+					else if (deathResetArmed) {
+						printf("[!] Player has died. Reseting the game. Main()-> death screen branch\n");
+						LoadSave();
+						player.reset(SaveData.pos);
+						player.SetPosX(SaveData.pos.x);
+						player.SetPosY(SaveData.pos.y);
+						player.currentState = State::Idle;
+						GameStart();
+						gameState.dead = false;
+						gameState.inFight = false;
+						gameState.FightStarted = false;
+						gameState.inMenu = false;
+						gameState.textAvailable = false;
+						gameState.enemy = nullptr;
+						gameState.enemyID = 0;
+						gameState.encounterPhase = EncounterPhase::NONE;
+						gameState.playerSoulVisible = false;
+						gameState.HP = gameState.maxHP;
+						levelHeight = Map.getHeight();
+						levelWidth = Map.getWidth();
+						deathResetArmed = false;
+					}
+					continue;
+				}
 
 
 				// Starting Point!
@@ -2067,8 +2075,8 @@ int main(int argc, char* args[])
 					//SDL_RenderSetScale(gRenderer, 1.0f, 1.0f);
 
 					//SDL_RenderClear(renderer);
-
-					RenderEncounterSouls(gRenderer);
+					
+					//RenderEncounterSouls(gRenderer);
 
 					//SDL_RenderPresent(renderer);
 

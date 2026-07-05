@@ -136,6 +136,9 @@ void Entity::Update(float deltaTime, Camera CameraRect, SDL_Rect PlayerPos)
 	SDL_Rect renderQuad = { screenX, screenY, m_Collider.w, m_Collider.h };
 	//SDL_RenderCopy(gRenderer, m_Texture->getTexture(), &srcRect, &renderQuad);
 	m_Texture->render(screenX, screenY, &srcRect);
+	if (m_Enemy) {
+		m_Enemy->RenderSoul(gRenderer);
+	}
 }
 
 

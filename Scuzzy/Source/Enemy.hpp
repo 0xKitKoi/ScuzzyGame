@@ -37,6 +37,8 @@ public:
 	void move(Vector2f targetPos);
 	Vector2f moveEntity(Vector2f pos, float deltaTime, Vector2f target);
 
+	void RenderSoul(SDL_Renderer* renderer);
+
 	//Entity &m_Entity;
 	std::shared_ptr<Entity> m_Entity;
 	int m_EnemyID = 0;

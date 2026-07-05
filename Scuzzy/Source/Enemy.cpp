@@ -98,7 +98,10 @@ void UpdateEncounterAnimation(float deltaT) {
             gameState.fightLayer1 = gameState.enemy->m_layer1;
             gameState.fightLayer2 = gameState.enemy->m_layer2;
             FS_InitFight();
-            gameState.enemy->alive = false;
+            //gameState.enemy->alive = false;
+            gameState.encounterTimer = 0.0f;
+            gameState.playerSoulVisible = false;
+            gameState.encounterPhase = EncounterPhase::NONE;
 
             // init projectiles (moved from Enemy::Update)
             std::random_device rd;
@@ -111,8 +114,6 @@ void UpdateEncounterAnimation(float deltaT) {
                     gameState.enemy->m_EnemyProjectile->m_SpriteClip,
                     Vector2f(subx, suby), Vector2f(200,200), 1));
             }
-
-            gameState.encounterPhase = EncounterPhase::NONE;
         }
     }
 }
@@ -132,7 +133,12 @@ void Enemy::Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) {
 	if (SDL_HasIntersection(&m_Entity->m_FOV, &PlayerPos)) {
             //gameState.encounterPhase = EncounterPhase::SOUL_PULL; // start the encounter animation
             gameState.playerSoulVisible = true;
-            gameState.enemy = this; // set the global enemy pointer so the render code can draw its soul during the encounter animation
+            //gameState.enemy = this; // set the global enemy pointer so the render code can draw its soul during the encounter animation
+            ///// NAWWW fuck that, the enemy and the player should render their own souls, and nothing else should. 
+            // TODO: make the enemy render itself here:
+            
+            //RenderSoul(gRenderer);
+
 			//printf("Enemy can see the player!\n");
 			m_Entity->moving = true;
 			//m_Entity.m_PosX += lerp(m_Entity.m_PosX, PlayerPos.x, deltaT);
@@ -171,7 +177,7 @@ void Enemy::Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) {
 		    //     }
             // }
             if (SDL_HasIntersection(&m_Entity->m_Collider, &PlayerPos)) {
-                if (gameState.encounterPhase == EncounterPhase::NONE) {
+                if (gameState.encounterPhase == EncounterPhase::NONE && this->alive) {
                     if (gameState.DebugMode) {
                         printf("Enemy has reached the player! Starting soul pull...\n");
                     }
@@ -187,10 +193,12 @@ void Enemy::Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) {
 	}
     else {
 		m_Entity->moving = false;
-        if (gameState.enemy == this) {
-            gameState.enemy = nullptr; // clear it once this enemy stops chasing, so render code stops drawing its soul
-            gameState.playerSoulVisible = false;
-        }
+        gameState.playerSoulVisible = false;
+        //gameState.encounterPhase = EncounterPhase::NONE;
+        // if (gameState.enemy == this) {
+        //     gameState.enemy = nullptr; // clear it once this enemy stops chasing, so render code stops drawing its soul
+        //     gameState.playerSoulVisible = false;
+        // }
 	}
 }
 
@@ -364,4 +372,34 @@ Enemy::~Enemy() {
     m_EnemySpriteClips.clear();
     m_EnemyProjectiles.clear();
 
+}
+
+
+
+void Enemy::RenderSoul(SDL_Renderer* renderer) {
+    bool chasing = gameState.playerSoulVisible && gameState.encounterPhase == EncounterPhase::NONE;
+    bool encountering = gameState.encounterPhase != EncounterPhase::NONE;
+    if (!chasing && !encountering && !alive) return;
+
+    SDL_Texture* tex = m_EnemySoulSpriteSheet->getTexture();
+    SDL_Rect clip = m_EnemySoulSpriteClips[0];
+
+    int x, y;
+    Uint8 alpha;
+
+    if (encountering) {
+        x = (int)(gameState.enemySoulOffset.x - gameState.cameraRect.x);
+        y = (int)(gameState.enemySoulOffset.y - gameState.cameraRect.y);
+        alpha = 255;
+    } else {
+        constexpr int heartCenterOffsetX = 128 / 2 - 10;
+        constexpr int heartCenterOffsetY = 128 / 2 - 10;
+        x = (int)(m_Entity->m_PosX - gameState.cameraRect.x) + heartCenterOffsetX;
+        y = (int)(m_Entity->m_PosY - gameState.cameraRect.y) + heartCenterOffsetY;
+        alpha = 90;
+    }
+
+    SDL_SetTextureAlphaMod(tex, alpha);
+    m_EnemySoulSpriteSheet->render(x, y, &clip);
+    SDL_SetTextureAlphaMod(tex, 255);
 }

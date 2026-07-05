@@ -36,6 +36,9 @@ public:
 	//void move(const std::vector<SDL_Rect>& walls, float deltaTime);
 	//void move(std::vector<SDL_Rect> grid[40][40]);
 	void render(int camX, int camY);
+
+	void RenderSoul(SDL_Renderer* renderer);
+
 	int GetPosX();
 	int GetPosY();
 	void SetPosX(int X);
