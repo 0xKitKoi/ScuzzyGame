@@ -3,6 +3,7 @@
 //#include "Source/Item.hpp"
 #include "Source/MenuSystem.hpp"
 #include "Source/CutSceneManager.hpp"
+#include "Source/Enums.hpp"
 #include <vector>
 #include <string>
 
@@ -322,8 +323,33 @@ public:
 
  class SoulRubberBandBallNPC : public NPC {
  public:
- bool fired = false;
- SoulRubberBandBallNPC(std::shared_ptr<Entity> entity) : NPC(entity, {}) {}
+    bool fired = false;
+    BackLayerDirection m_Direction = BackLayerDirection::TOP_LEFT;
+    int m_BackFrameCountMax = 0; // how many frames this direction's set has
+    std::vector<SDL_Rect> m_BackClipsTopLeft;
+    std::vector<SDL_Rect> m_BackClipsTopRight;
+    std::vector<SDL_Rect> m_BackClipsBottomLeft;
+    std::vector<SDL_Rect> m_BackClipsBottomRight;
+
+    // Returns whichever set matches the current direction.
+    std::vector<SDL_Rect>& GetActiveBackClips() {
+        switch (m_Direction) {
+            case BackLayerDirection::TOP_LEFT:     return m_BackClipsTopLeft;
+            case BackLayerDirection::TOP_RIGHT:    return m_BackClipsTopRight;
+            case BackLayerDirection::BOTTOM_LEFT:  return m_BackClipsBottomLeft;
+            case BackLayerDirection::BOTTOM_RIGHT: return m_BackClipsBottomRight;
+        }
+        return m_BackClipsTopLeft;
+    }
+
+
+    SoulRubberBandBallNPC(std::shared_ptr<Entity> entity) : NPC(entity, {}) {
+        m_BackClipsTopLeft = std::vector<SDL_Rect>(m_Entity->m_Clips.begin() + 23, m_Entity->m_Clips.begin() + 30);
+        m_BackClipsTopRight = std::vector<SDL_Rect>(m_Entity->m_Clips.begin() + 29, m_Entity->m_Clips.begin() + 36);
+        m_BackClipsBottomLeft = std::vector<SDL_Rect>(m_Entity->m_Clips.begin() + 35, m_Entity->m_Clips.begin() + 42);
+        m_BackClipsBottomRight = std::vector<SDL_Rect>(m_Entity->m_Clips.begin() + 41, m_Entity->m_Clips.begin() + 48);
+
+    }
 
      void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override  {
          if (!fired) {

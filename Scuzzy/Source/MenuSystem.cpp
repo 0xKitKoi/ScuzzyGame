@@ -1430,6 +1430,23 @@ void renderSoulRubberBandBallMenu(SDL_Renderer* renderer, TTF_Font* font) {
         return;
     }
 
+    // Decide back-layer frames from the NPC's stored direction.
+    if (soulRubberBandBall->m_NPC) {
+        auto npc = std::static_pointer_cast<SoulRubberBandBallNPC>(soulRubberBandBall->m_NPC);
+        std::vector<SDL_Rect>* backClips = nullptr;
+
+        switch (npc->m_Direction) {
+            case BackLayerDirection::TOP_LEFT:     backClips = &npc->m_BackClipsTopLeft;     break;
+            case BackLayerDirection::TOP_RIGHT:    backClips = &npc->m_BackClipsTopRight;    break;
+            case BackLayerDirection::BOTTOM_LEFT:  backClips = &npc->m_BackClipsBottomLeft;  break;
+            case BackLayerDirection::BOTTOM_RIGHT: backClips = &npc->m_BackClipsBottomRight; break;
+        }
+
+        soulRubberBandBall->m_HasBackLayer = true;
+        soulRubberBandBall->m_BackClips = backClips->data();
+        soulRubberBandBall->m_BackFrameCountMax = (int)backClips->size();
+    }
+
     if (soulRubberBandBall->moving && !soulRubberBandBall->m_AnimationFinished) {
         soulRubberBandBall->lastFrameTime += gameState.deltaTime * 1000.0f;
         if (soulRubberBandBall->lastFrameTime >= soulRubberBandBall->frameDuration) {
@@ -1462,6 +1479,11 @@ void handleSoulRubberBandBallMenu(SDL_Event event) {
 	if (event.type == SDL_KEYDOWN) {
 		if (event.key.keysym.sym == SDLK_x) {
 			currentMenu = MAIN_MENU;
+		}
+        if (event.key.keysym.sym == SDLK_z) {
+            // set direction to next one in the enum, and loop back to the first one if at the end.
+            auto npc = std::static_pointer_cast<SoulRubberBandBallNPC>(soulRubberBandBall->m_NPC);
+			npc->m_Direction = static_cast<BackLayerDirection>((static_cast<int>(npc->m_Direction) + 1) % 4);
 		}
 	}
 }

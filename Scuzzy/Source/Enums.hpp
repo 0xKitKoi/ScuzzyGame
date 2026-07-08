@@ -23,5 +23,9 @@ enum class FightState {
 
 #ifndef ENUMS_HPP
 #define ENUMS_HPP
+// Soul Ripping Mechanic
 enum class EncounterPhase { NONE, SOUL_PULL, SOUL_LAUNCH };
+
+// SoulRubberBandBall Menu Direction Enum
+enum class BackLayerDirection { TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT};
 #endif // !ENUMS_HPP
