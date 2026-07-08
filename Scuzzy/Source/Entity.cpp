@@ -109,14 +109,21 @@ void Entity::Update(float deltaTime, Camera CameraRect, SDL_Rect PlayerPos)
 		}
 
 		if (moving && !m_AnimationFinished) {
-			// Calculates index of frame to use in animation.
 			lastFrameTime += deltaTime * 1000.0f;
 			if (lastFrameTime >= frameDuration) {
 				currentFrameCount = (currentFrameCount + 1) % FRAME_COUNT;
 				lastFrameTime = 0;
 				if (m_PlayAnimationOnce && currentFrameCount == 0) {
 					m_AnimationFinished = true;
-				}	
+				}
+			}
+
+			if (m_HasBackLayer) {
+				m_BackFrameTime += deltaTime * 1000.0f;
+				if (m_BackFrameTime >= m_BackFrameDuration) {
+					m_BackFrameCount = (m_BackFrameCount + 1) % m_BackFrameCountMax;
+					m_BackFrameTime = 0;
+				}
 			}
 		}
 	}
@@ -136,7 +143,16 @@ void Entity::Update(float deltaTime, Camera CameraRect, SDL_Rect PlayerPos)
 /////	m_Texture->render(enemyScreen.x, enemyScreen.y, &srcRect);
 	int screenX = (m_PosX - CameraRect.x);
 	int screenY = (m_PosY - CameraRect.y);
+
+	//RenderTrail(screenX, screenY);      // draws behind, no-op for normal entities
 	//m_Texture->render(screenX, screenY, &srcRect);
+
+	if (m_HasBackLayer) {
+		SDL_Rect backSrcRect = m_BackClips[m_BackFrameCount];
+		SDL_SetTextureAlphaMod(m_Texture->getTexture(), 130); // tune to taste
+		m_Texture->render(screenX, screenY, &backSrcRect);
+		SDL_SetTextureAlphaMod(m_Texture->getTexture(), 255); // restore before front layer
+	}
 
 	SDL_Rect renderQuad = { screenX, screenY, m_Collider.w, m_Collider.h };
 	//SDL_RenderCopy(gRenderer, m_Texture->getTexture(), &srcRect, &renderQuad);
@@ -173,4 +189,13 @@ void Entity::setEnemy(std::shared_ptr<Enemy> newChild) {
 
 void Entity::setNPC(std::shared_ptr<NPC> newchild) {
 	m_NPC = newchild;
+}
+
+void Entity::EnableBackLayer(SDL_Rect* backClips, int frameCountMax, float frameDuration) {
+    m_HasBackLayer = true;
+    m_BackClips = backClips;
+    m_BackFrameCountMax = frameCountMax;
+    m_BackFrameDuration = frameDuration;
+    m_BackFrameCount = 0;
+    m_BackFrameTime = 0.0f;
 }

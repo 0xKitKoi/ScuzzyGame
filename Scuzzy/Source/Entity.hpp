@@ -56,6 +56,8 @@ public:
 	void setEnemy(std::shared_ptr<Enemy> newChild);
 	void setNPC(std::shared_ptr<NPC> newchild);
 
+	void EnableBackLayer(SDL_Rect* backClips, int frameCountMax, float frameDuration);
+
 	// CutScene related functions
     	Vector2f m_targetPosition{ 0.0f, 0.0f };
     	bool m_isLerping = false;
@@ -65,6 +67,7 @@ public:
         m_MoveSpeed  = speed;
         m_isLerping   = true;
     }
+
 
 
 	int currentFrameCount = 0;
@@ -89,6 +92,15 @@ public:
 
 	std::shared_ptr<LTexture> m_Texture;
 
+	    // Optional second animation layer, rendered behind the main sprite.
+    // Inactive unless EnableBackLayer() has been called for this entity.
+    bool m_HasBackLayer = false;
+    SDL_Rect* m_BackClips = nullptr;
+    int m_BackFrameCountMax = 0;
+    int m_BackFrameCount = 0;
+    float m_BackFrameTime = 0.0f;
+    float m_BackFrameDuration = 0.0f;
+
 private:
 	float angle = 0;
 	Vector2f scale = Vector2f(1, 1);
@@ -96,10 +108,6 @@ private:
 	//SDL_Texture* m_Texture;
 	//LTexture m_Texture; // Sprite sheet.
 	
-	
-	
-
-
 };
 
 

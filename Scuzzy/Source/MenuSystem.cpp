@@ -1422,17 +1422,40 @@ void handleMenuInputSideBySide(SDL_Event event) {
 //extern std::vector<SDL_Rect> initSoulRubberBandBallMenu;
 //extern std::vector<SDL_Rect> ballFrames;
 //extern Entity soulRubberBandBall;
-
 void renderSoulRubberBandBallMenu(SDL_Renderer* renderer, TTF_Font* font) {
-	SDL_SetRenderDrawColor(gRenderer, 0x0, 0x0, 0x0, 0xFF);
-	SDL_RenderClear(gRenderer);
-	Camera cam;
-	cam.x = gameState.cameraRect.x;
-	cam.y = gameState.cameraRect.y;
-	cam.height = gameState.cameraRect.h;
-	cam.width = gameState.cameraRect.w;
-	soulRubberBandBall->Update(gameState.deltaTime, cam, {0,0,0,0});
-	SDL_RenderPresent(gRenderer);
+    SDL_SetRenderDrawColor(gRenderer, 0x0, 0x0, 0x0, 0xFF);
+    SDL_RenderClear(gRenderer);
+
+    if (!soulRubberBandBall || soulRubberBandBall->m_Clips.empty()) {
+        return;
+    }
+
+    if (soulRubberBandBall->moving && !soulRubberBandBall->m_AnimationFinished) {
+        soulRubberBandBall->lastFrameTime += gameState.deltaTime * 1000.0f;
+        if (soulRubberBandBall->lastFrameTime >= soulRubberBandBall->frameDuration) {
+            soulRubberBandBall->currentFrameCount = (soulRubberBandBall->currentFrameCount + 1) % soulRubberBandBall->FRAME_COUNT;
+            soulRubberBandBall->lastFrameTime = 0;
+        }
+
+        if (soulRubberBandBall->m_HasBackLayer) {
+            soulRubberBandBall->m_BackFrameTime += gameState.deltaTime * 1000.0f;
+            if (soulRubberBandBall->m_BackFrameTime >= soulRubberBandBall->m_BackFrameDuration) {
+                soulRubberBandBall->m_BackFrameCount = (soulRubberBandBall->m_BackFrameCount + 1) % soulRubberBandBall->m_BackFrameCountMax;
+                soulRubberBandBall->m_BackFrameTime = 0;
+            }
+        }
+    }
+
+    SDL_Rect clip = soulRubberBandBall->m_Clips[soulRubberBandBall->currentFrameCount];
+
+    if (soulRubberBandBall->m_HasBackLayer) {
+        SDL_Rect backClip = soulRubberBandBall->m_BackClips[soulRubberBandBall->m_BackFrameCount];
+        SDL_SetTextureAlphaMod(soulRubberBandBall->getTex()->getTexture(), 130);
+        soulRubberBandBall->getTex()->render(soulRubberBandBall->m_PosX, soulRubberBandBall->m_PosY, &backClip);
+        SDL_SetTextureAlphaMod(soulRubberBandBall->getTex()->getTexture(), 255);
+    }
+
+    soulRubberBandBall->getTex()->render(soulRubberBandBall->m_PosX, soulRubberBandBall->m_PosY, &clip);
 }
 
 void handleSoulRubberBandBallMenu(SDL_Event event) {

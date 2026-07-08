@@ -781,6 +781,8 @@ bool loadMedia()
 	soulRubberBandBallNPC = std::make_shared<SoulRubberBandBallNPC>(soulRubberBandBall);
 	//soulRubberBandBallNPC->m_Entity = soulRubberBandBall;
 	soulRubberBandBall->setNPC(soulRubberBandBallNPC);
+	soulRubberBandBall->EnableBackLayer(&soulRubberBandBall->m_Clips[20], soulRubberBandBall->m_Clips.size()-20, 100);
+	soulRubberBandBall->m_Texture->setBlendMode(SDL_BLENDMODE_BLEND);
 
 	gExplosionSound = Mix_LoadWAV("data/mus/snd_badexplosion.wav");
 	/*
