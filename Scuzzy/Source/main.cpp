@@ -70,6 +70,7 @@ int MapoffsetX = 0, MapoffsetY = 0;
 int center_offset_x = 0;
 int center_offset_y = 0;
 
+bool freezeOverworldActors;
 
 
 //Starts up SDL and creates window
@@ -1631,6 +1632,8 @@ int main(int argc, char* args[])
 					//initializeCollisionBoxes();
 
 				}
+				freezeOverworldActors = gameState.textAvailable || gameState.OpenedMenu || gameState.inMenu /* || gameState.inCutScene*/ ;
+				gameState.playerSoulVisible = false;
 
 				if (!gameState.inFight) {	// OverWorld Rendering 
 
@@ -1985,6 +1988,7 @@ int main(int argc, char* args[])
 					// ===============================
 					// ENTITY UPDATE + COLLISION DEBUG
 					// ===============================
+					//const bool freezeOverworldActors = gameState.textAvailable || gameState.OpenedMenu || gameState.inMenu || gameState.inCutScene;
 					for (int i = 0; i < Entities.size(); i++)
 					{
 						if (Entities[i]->m_Enemy && !Entities[i]->m_Enemy->alive)

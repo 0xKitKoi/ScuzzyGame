@@ -1101,6 +1101,8 @@ void EndFightAndReturnToFlow() {
     gameState.inFight = false;
     gameState.wonFight = !gameState.dead;
     gameState.FightStarted = false;
+    gameState.encounterPhase = EncounterPhase::NONE;
+    gameState.playerSoulVisible = false;
     //gameState.dead = false;
     //gameState.fightState = FightState::INTRO;
     gameState.Plot = 0;
@@ -1117,6 +1119,8 @@ void EndFightAndReturnToFlow() {
         gameState.textAvailable = true;
         gameState.shouldAnimateText = true;
         gameState.FightStarted = false;
+        gameState.enemy = nullptr;
+        gameState.enemyID = 0;
         gameState.player->m_HeartVelocity = { 0,0 };
         gameState.player->m_VelX = 0; // stop fucking moving 
         gameState.player->m_VelY = 0;

@@ -21,6 +21,7 @@ public:
 	bool m_Active = true;
 	bool m_TensionHit = false;
 	bool m_Init = true;
+	bool m_Launched = false;
 	//LTexture* m_SpriteSheet;
 	std::shared_ptr<LTexture> m_SpriteSheet;
 	SDL_Rect m_SpriteClip;

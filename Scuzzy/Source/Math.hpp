@@ -80,6 +80,13 @@ struct Vector2f
         return Vector2f(x * scalar, y * scalar);
     }
 
+    // Scalar division
+    Vector2f operator/(float scalar) const {
+        if (scalar == 0.0f)
+            return Vector2f(0.0f, 0.0f);
+        return Vector2f(x / scalar, y / scalar);
+    }
+
     // Compound operators
     Vector2f& operator+=(const Vector2f& rhs) {
         x += rhs.x;

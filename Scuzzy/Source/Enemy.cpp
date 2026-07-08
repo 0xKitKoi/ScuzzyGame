@@ -7,6 +7,7 @@
 #include <random>
 
 
+
 extern float lerp(float x, float y, float t);
 extern std::shared_ptr<LTexture> getTexture(const std::string& filename);   
 
@@ -193,7 +194,6 @@ void Enemy::Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) {
 	}
     else {
 		m_Entity->moving = false;
-        gameState.playerSoulVisible = false;
         //gameState.encounterPhase = EncounterPhase::NONE;
         // if (gameState.enemy == this) {
         //     gameState.enemy = nullptr; // clear it once this enemy stops chasing, so render code stops drawing its soul
@@ -379,7 +379,7 @@ Enemy::~Enemy() {
 void Enemy::RenderSoul(SDL_Renderer* renderer) {
     bool chasing = gameState.playerSoulVisible && gameState.encounterPhase == EncounterPhase::NONE;
     bool encountering = gameState.encounterPhase != EncounterPhase::NONE;
-    if (!chasing && !encountering && !alive) return;
+    if (!chasing && !encountering) return;
 
     SDL_Texture* tex = m_EnemySoulSpriteSheet->getTexture();
     SDL_Rect clip = m_EnemySoulSpriteClips[0];

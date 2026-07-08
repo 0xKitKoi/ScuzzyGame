@@ -22,27 +22,44 @@ void Projectile::Update(float deltaT, Vector2f PlayerPos) { // DEFAULT UPDATE FU
 		// this is the first update call, set target position.
 		m_TargetPosition.x = PlayerPos.x;
 		m_TargetPosition.y = PlayerPos.y;
-		m_Init = false;
-	}
-	else {
-		// check if we are close enough to target position to stop.
-		float dx = m_TargetPosition.x - m_Position.x;
-		float dy = m_TargetPosition.y - m_Position.y;
-		float distance = sqrt(dx * dx + dy * dy);
-		// move towards target position
-		 // Normalize the direction vector (dx, dy)
-		dx /= distance;
-		dy /= distance;
 
-		// Move the entity in the direction of the target based on speed and deltaTime
-		m_Position.x += dx * m_Velocity.x * deltaT;
-		m_Position.y += dy * m_Velocity.y * deltaT;
-		m_Collider = SDL_Rect{ int(m_Position.x), int(m_Position.y), m_SpriteClip.w, m_SpriteClip.h };
-		if (gameState.DebugMode) {
-			printf("BASE CLASS Projectile Update Called\n");
-			printf("Projectile Position: (%f, %f)\n", m_Position.x, m_Position.y);
-			printf("Target Position: (%f, %f)\n", m_TargetPosition.x, m_TargetPosition.y);
+		Vector2f launchDirection = m_TargetPosition - m_Position;
+		float launchDistance = launchDirection.Length();
+		if (launchDistance > 0.0001f) {
+			launchDirection = launchDirection / launchDistance;
 		}
+		else {
+			launchDirection = { 1.0f, 0.0f };
+		}
+
+		float launchSpeed = m_Velocity.Length();
+		if (launchSpeed <= 0.0f) {
+			launchSpeed = 200.0f;
+		}
+
+		m_Velocity = launchDirection * launchSpeed;
+		m_Init = false;
+
+	}
+
+	// Move in the launch direction until the projectile leaves the screen.
+	m_Position.x += m_Velocity.x * deltaT;
+	m_Position.y += m_Velocity.y * deltaT;
+	m_Collider = SDL_Rect{ int(m_Position.x), int(m_Position.y), m_SpriteClip.w, m_SpriteClip.h };
+
+	if (m_Position.x + m_SpriteClip.w < -64 ||
+		m_Position.y + m_SpriteClip.h < -64 ||
+		m_Position.x > gameState.screenwidth + 64 ||
+		m_Position.y > gameState.screenheight + 64) {
+		m_Active = false;
+		return;
+	}
+
+	if (gameState.DebugMode) {
+		printf("BASE CLASS Projectile Update Called\n");
+		printf("Projectile Position: (%f, %f)\n", m_Position.x, m_Position.y);
+		printf("Target Position: (%f, %f)\n", m_TargetPosition.x, m_TargetPosition.y);
+	}
 
 		if (SDL_HasIntersection(&m_Collider, &gameState.player->m_HeartCollider)) {
 			printf("Projectile hit the player!\n");
@@ -59,11 +76,6 @@ void Projectile::Update(float deltaT, Vector2f PlayerPos) { // DEFAULT UPDATE FU
 			//gameState.TensionMeter -= 5;
 			gameState.TensionMeter += 5; // cant decide if projectiles should increase or decrease tension on hit
 		}
-
-	}
-	
-	//m_Position.x += m_Velocity.x * deltaT;
-	//m_Position.y += m_Velocity.y * deltaT;
 
 }
 
