@@ -44,6 +44,9 @@ int LevelIDFromName(std::string name) {
 	else if (name == "testtiled") {
 		return 5;
 	}
+	else if (name == "forgottencave") {
+		return 6;
+	}
 	else {
 		return -1;
 	}
@@ -701,13 +704,22 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			auto PuddleEntity = std::make_shared<Entity>(PuddlePos, puddleCB, puddleRect, getTexture("data/Puddle.png"), 7, clips, 69);
 			Entities.push_back(PuddleEntity);
 			Vector2f PuddleOutPos(400, 200);
-			std::shared_ptr<NPC> PuddleNPC = std::make_shared<DoorNPC>(PuddleEntity, "test", PuddleOutPos);
+			std::shared_ptr<NPC> PuddleNPC = std::make_shared<DoorNPC>(PuddleEntity, "forgottencave", PuddleOutPos);
 			PuddleNPC->m_Entity = PuddleEntity;
 			PuddleEntity->moving = true;
 			PuddleEntity->setNPC(PuddleNPC);
 			collisionBoxes.push_back(&PuddleEntity->m_Collider);
 		}
 
+		break;
+	case 6:
+		if (!Map->loadFromFile("data/forgottencave.png"))
+		{
+			printf("Failed to load sprite sheet texture!\n");
+		}
+		else {
+			gameState.mapScaling = 1.0f;
+		}
 		break;
 
 	default:
