@@ -893,7 +893,7 @@ void initializeCollisionGrid() {
 //void renderCollisionBoxes(SDL_Renderer* gRenderer, const std::vector<SDL_Rect>& collisionBoxes, const SDL_Rect& camera) {
 void renderCollisionBoxes(SDL_Renderer* gRenderer, const SDL_Rect& camera) {
 	// Set the render draw color for walls (black in this case)
-	//SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
+	SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
 
 	// Iterate through all collision boxes and draw only if they are within the camera's viewport
 	for ( auto& box : collisionBoxes) { // const?

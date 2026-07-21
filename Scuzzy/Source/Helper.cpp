@@ -256,7 +256,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			entity_cb = { int(entityPos.x + 25), int(entityPos.y + 25), int(entityRect.w - 45), int(entityRect.h - 55) }; // custom per entity but whatever
 			auto Doorentity = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
 			Entities.push_back(Doorentity); // vector of all entities to render.
-			Vector2f outpos(400, 200);
+			Vector2f outpos(300, 200);
 			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity, "Level1", outpos, 81); // DOOR ID 81 added. important for keys!
 			
 			doornpc->m_Entity = Doorentity;
@@ -348,6 +348,37 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			gameState.mapScaling = 1.1f;
 
 
+			std::vector<SDL_Rect> boundaryBoxes = {
+				{ 226, 30, 177, 96 },
+				{ 406, 114, 69, 80 },
+				{ 420, 195, 48, 27 },
+				{ 433, 225, 46, 48 },
+				{ 443, 276, 50, 39 },
+				{ 345, 326, 139, 107 },
+				{ 369, 310, 84, 16 },
+				{ 363, 436, 122, 27 },
+				{ 417, 466, 93, 166 },
+				{ 145, 73, 63, 373 },
+				{ 80, 393, 63, 61 },
+				{ 83, 451, 51, 32 },
+				{ 88, 491, 39, 27 },
+				{ 95, 520, 23, 24 },
+				{ 99, 558, 59, 33 },
+				{ 97, 597, 57, 156 },
+				{ 80, 738, 58, 284 },
+				{ 522, 634, 84, 71 },
+				{ 544, 701, 105, 116 },
+				{ 570, 822, 84, 183 },
+				{ 136, 988, 435, 9 },
+			};
+						collisionBoxes.clear();
+			collisionBoxes.reserve(boundaryBoxes.size()); // Optimizes memory allocation
+
+			for (auto& r : boundaryBoxes) {
+				collisionBoxes.push_back(new SDL_Rect(r));
+			}
+
+
 			// DOOR TEST
 			Vector2f entityPos(450, 770);
 			SDL_Rect entityRect = { 0,0,128,128 };
@@ -362,7 +393,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			entity_cb = { int(entityPos.x + 25), int(entityPos.y + 25), int(entityRect.w - 45), int(entityRect.h - 55) }; // custom per entity but whatever
 			auto Doorentity2 = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
 			Entities.push_back(Doorentity2); // vector of all entities to render.
-			Vector2f outpos(540, 300);//(1000, 960);
+			Vector2f outpos(240, 300);//(1000, 960);
 			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity2, "MAGICANT", outpos);
 			doornpc->m_Entity = Doorentity2;
 			Doorentity2->setNPC(doornpc);
@@ -703,7 +734,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			SDL_Rect puddleCB = { PuddlePos.x, PuddlePos.y, 200, 200 };
 			auto PuddleEntity = std::make_shared<Entity>(PuddlePos, puddleCB, puddleRect, getTexture("data/Puddle.png"), 7, clips, 69);
 			Entities.push_back(PuddleEntity);
-			Vector2f PuddleOutPos(400, 200);
+			Vector2f PuddleOutPos(240, 1630);
 			std::shared_ptr<NPC> PuddleNPC = std::make_shared<DoorNPC>(PuddleEntity, "forgottencave", PuddleOutPos);
 			PuddleNPC->m_Entity = PuddleEntity;
 			PuddleEntity->moving = true;
@@ -719,6 +750,137 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 		}
 		else {
 			gameState.mapScaling = 1.0f;
+			collisionBoxes.clear();
+			std::vector<SDL_Rect> boundaryBoxes = {
+				{ 851, 576, 90, 304 },
+				{ 682, 509, 33, 11 },
+				{ 657, 519, 48, 14 },
+				{ 638, 532, 31, 20 },
+				{ 627, 552, 37, 27 },
+				{ 594, 578, 46, 54 },
+				{ 582, 631, 30, 53 },
+				{ 569, 684, 27, 39 },
+				{ 578, 720, 12, 53 },
+				{ 580, 773, 11, 51 },
+				{ 583, 822, 22, 71 },
+				{ 565, 885, 16, 13 },
+				{ 557, 899, 20, 10 },
+				{ 545, 909, 25, 25 },
+				{ 531, 933, 29, 19 },
+				{ 815, 713, 36, 12 },
+				{ 834, 696, 25, 12 },
+				{ 802, 733, 48, 69 },
+				{ 779, 780, 27, 34 },
+				{ 769, 813, 31, 13 },
+				{ 740, 827, 42, 11 },
+				{ 714, 838, 48, 11 },
+				{ 714, 850, 30, 20 },
+				{ 718, 871, 23, 23 },
+				{ 724, 893, 30, 25 },
+				{ 712, 917, 15, 76 },
+				{ 695, 992, 15, 48 },
+				{ 685, 1011, 11, 22 },
+				{ 672, 1024, 41, 40 },
+				{ 514, 959, 31, 17 },
+				{ 502, 983, 28, 22 },
+				{ 488, 1014, 27, 24 },
+				{ 476, 1046, 16, 52 },
+				{ 471, 1097, 17, 200 },
+				{ 704, 1058, 138, 67 },
+				{ 838, 1122, 19, 18 },
+				{ 851, 1142, 26, 14 },
+				{ 863, 1155, 34, 26 },
+				{ 881, 1181, 57, 36 },
+				{ 907, 1220, 68, 31 },
+				{ 931, 1254, 74, 44 },
+				{ 964, 1297, 75, 69 },
+				{ 1007, 1369, 86, 74 },
+				{ 493, 1293, 78, 68 },
+				{ 574, 1330, 28, 26 },
+				{ 600, 1358, 23, 32 },
+				{ 610, 1391, 35, 38 },
+				{ 640, 1424, 40, 39 },
+				{ 672, 1459, 43, 50 },
+				{ 697, 1485, 46, 57 },
+				{ 1042, 1451, 251, 22 },
+				{ 742, 1544, 427, 53 },
+				{ 1058, 1605, 70, 22 },
+				{ 994, 1635, 96, 22 },
+				{ 899, 1663, 120, 21 },
+				{ 851, 1694, 115, 24 },
+				{ 756, 1731, 149, 17 },
+				{ 699, 1754, 111, 23 },
+				{ 482, 1702, 74, 27 },
+				{ 448, 1627, 78, 75 },
+				{ 529, 1598, 79, 60 },
+				{ 616, 1595, 66, 71 },
+				{ 665, 1668, 72, 26 },
+				{ 712, 1701, 34, 48 },
+				{ 632, 1752, 75, 14 },
+				{ 334, 1653, 107, 38 },
+				{ 253, 1633, 81, 35 },
+				{ 179, 1598, 72, 174 },
+				{ 257, 1741, 72, 65 },
+				{ 324, 1755, 66, 57 },
+				{ 388, 1783, 78, 33 },
+				{ 471, 1805, 56, 47 },
+				{ 529, 1837, 42, 48 },
+				{ 579, 1871, 97, 55 },
+				{ 692, 1890, 106, 64 },
+				{ 823, 1920, 95, 53 },
+				{ 939, 1946, 114, 36 },
+				{ 1028, 1921, 86, 40 },
+				{ 1076, 1898, 61, 24 },
+				{ 1058, 1813, 14, 11 },
+				{ 1076, 1820, 28, 11 },
+				{ 1108, 1824, 47, 12 },
+				{ 1159, 1835, 20, 16 },
+				{ 1125, 1865, 47, 11 },
+				{ 1149, 1857, 27, 9 },
+				{ 1101, 1883, 40, 18 },
+				{ 1078, 1807, 51, 7 },
+				{ 1126, 1789, 65, 18 },
+				{ 1176, 1761, 53, 25 },
+				{ 1213, 1736, 66, 25 },
+				{ 1260, 1704, 89, 35 },
+				{ 1318, 1675, 82, 29 },
+				{ 1389, 1645, 69, 38 },
+				{ 1444, 1612, 63, 44 },
+				{ 1490, 1584, 109, 45 },
+				{ 1566, 1553, 68, 51 },
+				{ 1628, 1521, 72, 40 },
+				{ 1691, 1484, 99, 54 },
+				{ 1777, 1437, 70, 62 },
+				{ 1815, 1410, 100, 48 },
+				{ 1897, 1186, 113, 239 },
+				{ 1803, 1194, 88, 44 },
+				{ 1734, 1240, 128, 20 },
+				{ 1722, 1268, 71, 31 },
+				{ 1666, 1300, 65, 22 },
+				{ 1633, 1325, 59, 19 },
+				{ 1604, 1353, 48, 22 },
+				{ 1546, 1364, 54, 30 },
+				{ 1509, 1392, 42, 28 },
+				{ 1456, 1409, 52, 30 },
+				{ 1427, 1435, 51, 21 },
+				{ 1369, 1450, 63, 29 },
+				{ 1274, 1469, 102, 36 },
+				{ 807, 476, 61, 48 },
+				{ 843, 527, 60, 45 },
+				{ 678, 423, 38, 82 },
+			};
+
+			//collisionBoxes.clear();
+			//collisionBoxes.reserve(boundaryBoxes.size());
+
+			//std::transform(boundaryBoxes.begin(), boundaryBoxes.end(), std::back_inserter(collisionBoxes),
+			//	[](SDL_Rect& r) { return &r; });
+			collisionBoxes.clear();
+			collisionBoxes.reserve(boundaryBoxes.size()); // Optimizes memory allocation
+
+			for (auto& r : boundaryBoxes) {
+				collisionBoxes.push_back(new SDL_Rect(r));
+			}
 		}
 		break;
 
