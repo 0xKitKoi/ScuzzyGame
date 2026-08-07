@@ -712,12 +712,13 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 		break;
 
 	case 5:
-		if (!Map->loadFromFile("data/sewertest.png"))
+		if (!Map->loadFromFile("data/noomside.png")) // "data/sewertest.png"
 		{
 			printf("Failed to load sprite sheet texture!\n");
 		}
 		else {
-			gameState.mapScaling = 1.5f;
+			//gameState.mapScaling = 1.5f;
+			
 						// Exit Puddle
 			Vector2f PuddlePos(500, 500);
 			SDL_Rect puddleRect = { 0, 0, 200, 200 };
