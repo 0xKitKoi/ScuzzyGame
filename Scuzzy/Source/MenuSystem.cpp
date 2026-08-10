@@ -345,6 +345,9 @@ void MS_renderMenu(SDL_Renderer* renderer, TTF_Font* font) {
 	case SOULRUBBERBANDBALL_MENU:
 		renderSoulRubberBandBallMenu(renderer, font);
 		break;
+    case TALK_MENU:
+        renderTalkMenu(renderer, font);
+        break;
     }
 
 }
@@ -393,6 +396,9 @@ void MS_handleMenuInput(SDL_Event event) {
 	else if (currentMenu == SOULRUBBERBANDBALL_MENU) {
 		handleSoulRubberBandBallMenu(event);
 	}
+    else if (currentMenu == TALK_MENU) {
+        handleTalkMenuInput(event);
+    }
 }
 
 void renderMainMenu(SDL_Renderer* renderer, TTF_Font* font) {
@@ -1486,4 +1492,60 @@ void handleSoulRubberBandBallMenu(SDL_Event event) {
 			npc->m_Direction = static_cast<BackLayerDirection>((static_cast<int>(npc->m_Direction) + 1) % 4);
 		}
 	}
+}
+
+
+
+void renderTalkMenu(SDL_Renderer* renderer, TTF_Font* font) {
+    int screenWidth, screenHeight;
+    SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+
+    MS_renderTextBox(renderer);
+
+    int xOffset = screenWidth * 0.05 + 30;
+    int yOffset = screenHeight - 275;
+    MS_renderText(renderer, font, gameState.callbackNPC->m_prompt, xOffset, yOffset, { 255, 255, 255 });
+
+    SDL_Rect heartClip = gameState.player->m_HeartClips[0];
+    const int heartPadding = 8;
+    const int lineHeight = 40; // vertical spacing between questions
+    int textIndent = heartClip.w + heartPadding;
+
+    for (size_t i = 0; i < gameState.callbackNPC->m_Choices.size(); ++i) {
+        int currentX = xOffset;
+        int currentY = yOffset + 40 + (int)(i * lineHeight);
+
+        SDL_Color color = (i == MS_selectedIndex) ? SDL_Color{ 237, 28, 36 } : SDL_Color{ 255, 255, 255 };
+
+        if (i == MS_selectedIndex && gameState.player) {
+            gameState.player->m_FightSpriteSheet.render(currentX, currentY, &heartClip);
+        }
+
+        MS_renderText(renderer, font, gameState.callbackNPC->m_Choices.at(i), currentX + textIndent, currentY, color);
+    }
+}
+
+void handleTalkMenuInput(SDL_Event event) {
+    // gameState.callbackNPC->m_Choices holds the talk questions here (vertical list)
+    if (event.type == SDL_KEYDOWN) {
+        if (event.key.keysym.sym == SDLK_UP) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
+            MS_selectedIndex = (MS_selectedIndex > 0) ? MS_selectedIndex - 1 : gameState.callbackNPC->m_Choices.size() - 1;
+        }
+        else if (event.key.keysym.sym == SDLK_DOWN) {
+            Mix_PlayChannel(-1, gMoveSound, 0);
+            MS_selectedIndex = (MS_selectedIndex < gameState.callbackNPC->m_Choices.size() - 1) ? MS_selectedIndex + 1 : 0;
+        }
+        else if (event.key.keysym.sym == SDLK_z) { // ask the selected question
+            Mix_PlayChannel(-1, gSelectSound, 0);
+            gameState.callbackNPC->handleChoice(MS_selectedIndex);
+        }
+        else if (event.key.keysym.sym == SDLK_x) { // back out to Talk/Buy menu
+            Mix_PlayChannel(-1, gDeSelectSound, 0);
+            gameState.callbackNPC->handleChoice(-1);
+            // NOTE: don't clear gameState.callbackNPC here — unlike QUESTION_MENU's
+            // cancel, this cancel should return to the main choice menu, not end
+            // the conversation. Clearing callbackNPC happens only on a "real" exit.
+        }
+    }
 }

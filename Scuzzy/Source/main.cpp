@@ -476,10 +476,10 @@ bool LoadSave()
 		printf("No save found.\n");
 		//return false;
 		printf("Could not read save data.\n");
-        SaveData.pos.x = 700;
-        SaveData.pos.y = 700;
-        SaveData.room = "test";
-        gameState.room = "test";
+        SaveData.pos.x = 300;
+        SaveData.pos.y = 200;
+        SaveData.room = "StartingAlley";
+        gameState.room = "StartingAlley";
         SaveData.items.clear();
         SaveData.kills = 0;
         SaveData.money = 0;
@@ -1359,15 +1359,23 @@ int main(int argc, char* args[])
 							gameState.inMenu = true;
 							break;
 						case SDLK_c:
-
-							Mix_PlayChannel(-1, gSelectSound, 0);
-							gameState.inMenu = true;
-							gameState.shouldAnimateText = false;
-							if (gameState.player) {
-								gameState.player->clearInputState();
+							if (!gameState.inFight) {
+								Mix_PlayChannel(-1, gSelectSound, 0);
+								gameState.inMenu = true;
+								gameState.shouldAnimateText = false;
+								if (gameState.player) {
+									gameState.player->clearInputState();
+								}
+								MS_renderMenu(gRenderer, gFont);
 							}
-							MS_renderMenu(gRenderer, gFont);
 							break;
+						case SDLK_z:
+							if (!gameState.inMenu && !gameState.inFight && !gameState.textAvailable && !gameState.OpenedMenu && !gameState.inCutScene) {
+								gameState.checkFlag = true;
+								gameState.SimplePressZ = true;
+							}
+							break;
+
 						default:
 							break;
 						}
@@ -2106,21 +2114,61 @@ int main(int argc, char* args[])
 						player.reset({ float(player.GetPosX()), float(player.GetPosY()) });
 					}
 
-					if (gameState.checkFlag) {
+
+					if (gameState.checkFlag && gameState.SimplePressZ) {
+						gameState.checkFlag = false;
+						gameState.SimplePressZ = false;
+						bool someone = false;
+						for (const auto& entity : Entities) {
+							if (SDL_HasIntersection(&player.m_CheckBox, &entity->m_Collider)) { // &entity->m_Collider
+								//printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
+								printf(std::to_string(entity->m_EntityID).c_str());
+								someone = true;
+								if (entity->m_NPC) {
+									if (!entity->m_NPC->m_checked) {
+										entity->m_NPC->m_checked = true;
+									}
+									
+								}
+							}
+						}
+
+					}
+
+					if (gameState.checkFlag && !gameState.SimplePressZ) {
 						bool someone = false;
 						player.currentState = State::Idle;
 						player.reset({ float(player.GetPosX()), float(player.GetPosY()) });
 						for (const auto& entity : Entities) {
 							if (SDL_HasIntersection(&player.m_CheckBox, &entity->m_Collider)) { // &entity->m_Collider
-								printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
+								//printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
 								printf(std::to_string(entity->m_EntityID).c_str());
 								someone = true;
 								if (entity->m_NPC) {
-									entity->m_NPC->m_checked = true;
+									if (!entity->m_NPC->m_checked) {
+										entity->m_NPC->m_checked = true;
+									}
+									
 								}
 							}
 						}
 						if (!someone) {
+						// 	if (gameState.SimplePressZ) {
+						// 		gameState.SimplePressZ = false;
+						// 		// if theres nothing, then do nothing.
+						// 	}
+						// 	else {
+						// 		gameState.Text.clear();
+						// 		gameState.Text.push_back("Who are you talking to..?");
+						// 		gameState.textIndex = 0;
+						// 		gameState.currentCharIndex = 1; // offset because i need a char to start the animation.
+						// 		gameState.textTimer = 0.0f;
+						// 		gameState.textAnimating = true;
+						// 		gameState.currentDisplayText = gameState.Text.at(0).substr(0, 1); // "";
+						// 		gameState.shouldAnimateText = true;  // This is dialogue, so animate it
+						// 		gameState.textAvailable = true;
+						// 	}
+						// }
 							gameState.Text.clear();
 							gameState.Text.push_back("Who are you talking to..?");
 							gameState.textIndex = 0;
@@ -2130,9 +2178,9 @@ int main(int argc, char* args[])
 							gameState.currentDisplayText = gameState.Text.at(0).substr(0, 1); // "";
 							gameState.shouldAnimateText = true;  // This is dialogue, so animate it
 							gameState.textAvailable = true;
-						}
-						gameState.checkFlag = false;
 					}
+					gameState.checkFlag = false;
+				}
 
 
 

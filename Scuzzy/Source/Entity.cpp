@@ -70,6 +70,98 @@ std::shared_ptr<LTexture> Entity::getTex() //SDL_Texture* Entity::getTex
 /// <param name="CameraRect">Renders entity based on camera's perspective.</param>
 /// <param name="PlayerPos">Player's position for collision detection + enemy chasing</param>
 //void Entity::Update(float deltaTime, SDL_Rect CameraRect, SDL_Rect PlayerPos)
+// void Entity::Update(float deltaTime, Camera CameraRect, SDL_Rect PlayerPos)
+// {
+// 	SDL_Rect srcRect;
+// 	if (!freezeOverworldActors) {
+
+// 		if (m_isLerping) { // used for CutScenes. this should not interfere with Enemy/NPC.Update() calls.
+// 			float dx = m_targetPosition.x - m_PosX;
+// 			float dy = m_targetPosition.y - m_PosY;
+// 			float dist = sqrtf(dx*dx + dy*dy);
+// 			float step = m_MoveSpeed * deltaTime;
+
+// 			if (dist <= step) {
+// 				// Close enough — snap and stop
+// 				m_PosX = m_targetPosition.x;
+// 				m_PosY = m_targetPosition.y;
+// 				m_isLerping = false;
+// 				moving = false; // this is for animation frame stopping. 
+// 			} else {
+// 				// Normalize direction, advance by step
+// 				m_PosX += (dx / dist) * step;
+// 				m_PosY += (dy / dist) * step;
+// 			}
+// 		}
+
+
+
+// 		if (m_Enemy) {
+// 			SDL_Rect bruh = PlayerPos; // need to target center of player
+// 			bruh.x = bruh.x + bruh.w / 2;
+// 			bruh.y = bruh.y + bruh.h / 2;
+// 			bruh.w = bruh.w / 2;
+// 			bruh.w = bruh.h / 2;
+// 			m_Enemy->Update(deltaTime, CameraRect, bruh);
+// 		}
+// 		if (m_NPC) {
+// 			m_NPC->Update(deltaTime, CameraRect, PlayerPos);
+// 		}
+
+// 		if (moving && !m_AnimationFinished) {
+// 			lastFrameTime += deltaTime * 1000.0f;
+// 			if (lastFrameTime >= frameDuration) {
+// 				currentFrameCount = (currentFrameCount + 1) % FRAME_COUNT;
+// 				lastFrameTime = 0;
+// 				if (m_PlayAnimationOnce && currentFrameCount == 0) {
+// 					m_AnimationFinished = true;
+// 				}
+// 			}
+
+// 			if (m_HasBackLayer) {
+// 				m_BackFrameTime += deltaTime * 1000.0f;
+// 				if (m_BackFrameTime >= m_BackFrameDuration) {
+// 					m_BackFrameCount = (m_BackFrameCount + 1) % m_BackFrameCountMax;
+// 					m_BackFrameTime = 0;
+// 				}
+// 			}
+// 		}
+// 	}
+// 	srcRect = m_Clips[currentFrameCount]; // render the sprite at index of animation
+
+// 	m_Collider = { m_PosX, m_PosY, 128, 128 }; 
+// 	m_FOV = { (m_PosX + (m_Collider.w / 2)) - ((128*3)/2) , (m_PosY + (m_Collider.h / 2)) - ((128 * 3) / 2), (int)(currentFrame.w * 3), (int)(currentFrame.h * 3)};
+
+// 	//SDL_RenderDrawRect(gRenderer, &m_Collider);
+// 	// SpriteSheet.render(m_PosX - camX, m_PosY - camY, &srcRect);
+// 	//m_Texture->render(m_PosX - CameraRect.x, m_PosY - CameraRect.y, &srcRect);
+// //	float scale = gameState.mapScaling;
+// /////	SDL_Rect enemyScreen = CameraRect.worldToScreen({ m_PosX, m_PosY, srcRect.w, srcRect.h }); // scale should be 1 here because the camera's worldToScreen function already accounts for scaling.
+// //	printf("Entity render: world=(%.1f,%.1f) screen=(%d,%d) scale=%.1f\n", 
+// //    m_PosX, m_PosY, enemyScreen.x, enemyScreen.y, scale);
+//     //SDL_RenderCopy(renderer, enemyTexture, NULL, &enemyScreen);
+// /////	m_Texture->render(enemyScreen.x, enemyScreen.y, &srcRect);
+// 	int screenX = (m_PosX - CameraRect.x);
+// 	int screenY = (m_PosY - CameraRect.y);
+
+// 	//RenderTrail(screenX, screenY);      // draws behind, no-op for normal entities
+// 	//m_Texture->render(screenX, screenY, &srcRect);
+
+// 	if (m_HasBackLayer) {
+// 		SDL_Rect backSrcRect = m_BackClips[m_BackFrameCount];
+// 		SDL_SetTextureAlphaMod(m_Texture->getTexture(), 130); // tune to taste
+// 		m_Texture->render(screenX, screenY, &backSrcRect);
+// 		SDL_SetTextureAlphaMod(m_Texture->getTexture(), 255); // restore before front layer
+// 	}
+
+// 	SDL_Rect renderQuad = { screenX, screenY, m_Collider.w, m_Collider.h };
+// 	//SDL_RenderCopy(gRenderer, m_Texture->getTexture(), &srcRect, &renderQuad);
+// 	m_Texture->render(screenX, screenY, &srcRect);
+// 	if (m_Enemy) {
+// 		m_Enemy->RenderSoul(gRenderer);
+// 	}
+// }
+
 void Entity::Update(float deltaTime, Camera CameraRect, SDL_Rect PlayerPos)
 {
 	SDL_Rect srcRect;
@@ -108,26 +200,51 @@ void Entity::Update(float deltaTime, Camera CameraRect, SDL_Rect PlayerPos)
 			m_NPC->Update(deltaTime, CameraRect, PlayerPos);
 		}
 
-		if (moving && !m_AnimationFinished) {
-			lastFrameTime += deltaTime * 1000.0f;
-			if (lastFrameTime >= frameDuration) {
-				currentFrameCount = (currentFrameCount + 1) % FRAME_COUNT;
-				lastFrameTime = 0;
-				if (m_PlayAnimationOnce && currentFrameCount == 0) {
-					m_AnimationFinished = true;
-				}
-			}
 
-			if (m_HasBackLayer) {
-				m_BackFrameTime += deltaTime * 1000.0f;
-				if (m_BackFrameTime >= m_BackFrameDuration) {
-					m_BackFrameCount = (m_BackFrameCount + 1) % m_BackFrameCountMax;
-					m_BackFrameTime = 0;
-				}
-			}
-		}
-	}
-	srcRect = m_Clips[currentFrameCount]; // render the sprite at index of animation
+        // ---- NEW: named-animation system takes priority if in use ----
+        if (!m_Animations.empty() && !m_CurrentAnimation.empty()) {
+            Animation& anim = m_Animations[m_CurrentAnimation];
+            if (m_AnimPlaying && !m_AnimFinishedFlag && anim.frames.size() > 1) {
+                m_AnimFrameTimer += deltaTime * 1000.0f;
+                if (m_AnimFrameTimer >= anim.frameDuration) {
+                    m_AnimFrameTimer = 0.0f;
+                    if (m_AnimFrameIndex + 1 >= (int)anim.frames.size()) {
+                        if (anim.loop) m_AnimFrameIndex = 0;
+                        else            m_AnimFinishedFlag = true; // holds last frame
+                    } else {
+                        m_AnimFrameIndex++;
+                    }
+                }
+            }
+        }
+        // ---- legacy path, unchanged, only runs if no named animation set ----
+        else if (moving && !m_AnimationFinished) {
+            lastFrameTime += deltaTime * 1000.0f;
+            if (lastFrameTime >= frameDuration) {
+                currentFrameCount = (currentFrameCount + 1) % FRAME_COUNT;
+                lastFrameTime = 0;
+                if (m_PlayAnimationOnce && currentFrameCount == 0) {
+                    m_AnimationFinished = true;
+                }
+            }
+
+            if (m_HasBackLayer) {
+                m_BackFrameTime += deltaTime * 1000.0f;
+                if (m_BackFrameTime >= m_BackFrameDuration) {
+                    m_BackFrameCount = (m_BackFrameCount + 1) % m_BackFrameCountMax;
+                    m_BackFrameTime = 0;
+                }
+            }
+        }
+    }
+
+    // ---- NEW: pick srcRect from whichever system is active ----
+    if (!m_Animations.empty() && !m_CurrentAnimation.empty()) {
+        Animation& anim = m_Animations[m_CurrentAnimation];
+        srcRect = anim.frames[m_AnimFrameIndex];
+    } else {
+        srcRect = m_Clips[currentFrameCount]; // your original line
+    }
 
 	m_Collider = { m_PosX, m_PosY, 128, 128 }; 
 	m_FOV = { (m_PosX + (m_Collider.w / 2)) - ((128*3)/2) , (m_PosY + (m_Collider.h / 2)) - ((128 * 3) / 2), (int)(currentFrame.w * 3), (int)(currentFrame.h * 3)};
@@ -199,3 +316,39 @@ void Entity::EnableBackLayer(SDL_Rect* backClips, int frameCountMax, float frame
     m_BackFrameCount = 0;
     m_BackFrameTime = 0.0f;
 }
+
+
+void Entity::AddAnimation(const std::string& name, std::vector<SDL_Rect> frames,
+                   float frameDuration, bool loop = true) {
+    m_Animations[name] = Animation{ std::move(frames), frameDuration, loop };
+}
+
+// restart=true always resets to frame 0; restart=false lets you "re-select"
+// the same animation without interrupting it (e.g. calling Update() every frame)
+void Entity::PlayAnimation(const std::string& name, bool restart = true) {
+    auto it = m_Animations.find(name);
+    if (it == m_Animations.end()) {
+        printf("\n [!] ERROR: Entity::PlayAnimation() unknown animation '%s'", name.c_str());
+        return;
+    }
+    if (m_CurrentAnimation == name && !restart) {
+        m_AnimPlaying = true; // in case it was stopped, resume in place
+        return;
+    }
+    m_CurrentAnimation = name;
+    m_AnimFrameIndex   = 0;
+    m_AnimFrameTimer   = 0.0f;
+    m_AnimPlaying      = true;
+    m_AnimFinishedFlag = false;
+}
+
+void Entity::StopAnimation()   { m_AnimPlaying = false; } // freezes on current frame
+void Entity::ResumeAnimation() { m_AnimPlaying = true;  }
+
+void Entity::SetAnimationSpeed(float ms) {
+    auto it = m_Animations.find(m_CurrentAnimation);
+    if (it != m_Animations.end()) it->second.frameDuration = ms;
+}
+
+bool Entity::IsAnimationFinished() const { return m_AnimFinishedFlag; }
+const std::string& Entity::GetCurrentAnimation() const { return m_CurrentAnimation; }

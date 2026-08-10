@@ -7,6 +7,8 @@
 #include <vector>
 #include "Source/Math.hpp"
 #include "Source/LTexture.hpp"
+#include <unordered_map>
+#include <string>
 
 #ifndef ENTITY_H
 #define ENTITY_H
@@ -15,6 +17,12 @@
 
 class Enemy;
 class NPC;
+
+	struct Animation {
+		std::vector<SDL_Rect> frames;
+		float frameDuration = 100.0f; // ms per frame, independent per-animation
+		bool loop = true;
+	};
 
 
 class Entity
@@ -100,6 +108,23 @@ public:
     int m_BackFrameCount = 0;
     float m_BackFrameTime = 0.0f;
     float m_BackFrameDuration = 0.0f;
+
+
+		// new members, alongside your existing m_Clips / FRAME_COUNT / etc.
+	std::unordered_map<std::string, Animation> m_Animations;
+	std::string m_CurrentAnimation;
+	int   m_AnimFrameIndex   = 0;
+	float m_AnimFrameTimer   = 0.0f;
+	bool  m_AnimPlaying      = true;
+	bool  m_AnimFinishedFlag = false;
+
+	void AddAnimation(const std::string& name, std::vector<SDL_Rect> frames, float frameDuration, bool loop = true);
+	void PlayAnimation(const std::string& name, bool restart = true);
+	void StopAnimation();
+	void ResumeAnimation();
+	void SetAnimationSpeed(float ms);
+	bool IsAnimationFinished() const { return m_AnimFinishedFlag; }
+	const std::string& GetCurrentAnimation() const { return m_CurrentAnimation; }
 
 private:
 	float angle = 0;

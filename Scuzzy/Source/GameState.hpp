@@ -139,6 +139,7 @@ struct GameState {
     bool ActionResponse = false;
 
     bool checkFlag = false;
+    bool SimplePressZ = false;
 
     int selectionIndex = 0;
     NPC* callbackNPC = nullptr;

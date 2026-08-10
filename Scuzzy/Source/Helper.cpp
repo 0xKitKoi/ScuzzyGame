@@ -26,27 +26,16 @@ extern Camera camera;
 extern std::shared_ptr<LTexture> getTexture(const std::string& filename);
 
 int LevelIDFromName(std::string name) {
-	if (name == "test") {
-		return 0;
-	}
-	else if (name == "Level1") {
-		return 1;
-	}
-	else if (name == "Level2") {
-		return 2;
-	}
-	else if (name == "MLEM") {
-		return 3;
-	}
-	else if (name == "MAGICANT") {
-		return 4;
-	}
-	else if (name == "testtiled") {
-		return 5;
-	}
-	else if (name == "forgottencave") {
-		return 6;
-	}
+	if (name == "test") { return 0; }
+	else if (name == "DarkAlley") { return 1; }
+	else if (name == "Level2") { return 2; }
+	else if (name == "MLEM") { return 3; }
+	else if (name == "MAGICANT") { return 4; }
+	else if (name == "NOOMSIDE") { return 5; }
+	else if (name == "FORGOTTENCAVE") { return 6; }
+	else if (name == "StartingAlley") { return 7; }
+	else if (name == "NoomSideCafe") { return 8; }
+	else if (name == "NoomSideCafe2") { return 9; }
 	else {
 		return -1;
 	}
@@ -345,7 +334,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 		}
 		else {
 
-			gameState.mapScaling = 1.1f;
+			gameState.mapScaling = 1.0f;
 
 
 			std::vector<SDL_Rect> boundaryBoxes = {
@@ -393,8 +382,8 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			entity_cb = { int(entityPos.x + 25), int(entityPos.y + 25), int(entityRect.w - 45), int(entityRect.h - 55) }; // custom per entity but whatever
 			auto Doorentity2 = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
 			Entities.push_back(Doorentity2); // vector of all entities to render.
-			Vector2f outpos(240, 300);//(1000, 960);
-			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity2, "MAGICANT", outpos);
+			Vector2f outpos(1000, 222); // (240, 300);//(1000, 960);
+			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity2, "NOOMSIDE", outpos);
 			doornpc->m_Entity = Doorentity2;
 			Doorentity2->setNPC(doornpc);
 			collisionBoxes.push_back(&Doorentity2->m_Collider);
@@ -593,8 +582,8 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			SDL_Rect puddleCB = { PuddlePos.x, PuddlePos.y, 200, 200 };
 			auto PuddleEntity = std::make_shared<Entity>(PuddlePos, puddleCB, puddleRect, getTexture("data/Puddle.png"), 7, clips, 69);
 			Entities.push_back(PuddleEntity);
-			Vector2f PuddleOutPos(400, 200);
-			std::shared_ptr<NPC> PuddleNPC = std::make_shared<DoorNPC>(PuddleEntity, "testtiled", PuddleOutPos);
+			Vector2f PuddleOutPos(300, 200);
+			std::shared_ptr<NPC> PuddleNPC = std::make_shared<DoorNPC>(PuddleEntity, "DarkAlley", PuddleOutPos);
 			PuddleNPC->m_Entity = PuddleEntity;
 			PuddleEntity->moving = true;
 			PuddleEntity->setNPC(PuddleNPC);
@@ -717,7 +706,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			printf("Failed to load sprite sheet texture!\n");
 		}
 		else {
-			//gameState.mapScaling = 1.5f;
+			gameState.mapScaling = 1.0f;
 
 
 
@@ -1029,13 +1018,42 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			// door at 784, 1107 cafe door
 			// door at 4221, 2717 homeless tent
 			// DOOR 3400, 960 // YELLOW building near boss building
+			// 1000, 222 spawn
+			// 100, 2570 // puddle placement.
+			// 254, 740 tiny door.
 
 			// squirle tree, family kicks u out
 
 
-			
+			// door at 784, 1107 cafe door
+			Vector2f CafePuddlePos(784, 1107);
+			SDL_Rect CafePuddleRect = { 0, 0, 200, 200 };
+			clips.clear();
+			clips.push_back({ 0, 0, 200, 200 });
+			clips.push_back({ 0,200,200, 200 });
+			clips.push_back({ 0,200 * 2,200, 200 });
+			clips.push_back({ 200,0,200, 200 });
+			clips.push_back({ 200,200,200, 200 });
+			clips.push_back({ 200,200 * 2,200, 200 });
+			clips.push_back({ 200 * 2,0,200, 200 });
+			clips.push_back({ 200 * 2,200,200, 200 });
+			clips.push_back({ 200 * 2,200 * 2,200, 200 });
+			SDL_Rect CafePuddleCB = { CafePuddlePos.x, CafePuddlePos.y, 200, 200 };
+			auto CafePuddleEntity = std::make_shared<Entity>(CafePuddlePos, CafePuddleCB, CafePuddleRect, getTexture("data/Puddle.png"), 7, clips, 69);
+			Entities.push_back(CafePuddleEntity);
+			Vector2f CafePuddleOutPos(400, 400);
+			std::shared_ptr<NPC> CafePuddleNPC = std::make_shared<DoorNPC>(CafePuddleEntity, "NoomSideCafe", CafePuddleOutPos);
+			CafePuddleNPC->m_Entity = CafePuddleEntity;
+			CafePuddleEntity->moving = true;
+			CafePuddleEntity->setNPC(CafePuddleNPC);
+			collisionBoxes.push_back(&CafePuddleEntity->m_Collider);
+
+
+
+
+
 						// Exit Puddle
-			Vector2f PuddlePos(500, 500);
+			Vector2f PuddlePos(100, 2570);
 			SDL_Rect puddleRect = { 0, 0, 200, 200 };
 			clips.clear();
 			clips.push_back({ 0, 0, 200, 200 });
@@ -1197,9 +1215,173 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			for (auto& r : boundaryBoxes) {
 				collisionBoxes.push_back(new SDL_Rect(r));
 			}
+
+
+						// DOOR TEST
+			Vector2f entityPos(450, 770);
+			SDL_Rect entityRect = { 0,0,128,128 };
+			SDL_Rect tmp, entity_cb;
+			clips.clear();
+			Vector2f doorPos(472, 770);
+			entityRect = { 0,0,128,128 };
+			tmp = { 0,0,128,128 };
+			clips.push_back(tmp);
+			tmp = { 128,0,128,128 };
+			clips.push_back(tmp);
+			entity_cb = { int(entityPos.x + 25), int(entityPos.y + 25), int(entityRect.w - 45), int(entityRect.h - 55) }; // custom per entity but whatever
+			auto Doorentity2 = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
+			Entities.push_back(Doorentity2); // vector of all entities to render.
+			Vector2f outpos(500, 222); // (240, 300);//(1000, 960);
+			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity2, "MAGICANT", outpos);
+			doornpc->m_Entity = Doorentity2;
+			Doorentity2->setNPC(doornpc);
+			collisionBoxes.push_back(&Doorentity2->m_Collider);
+
+
 		}
 		break;
 
+
+		case 7:
+		if (!Map->loadFromFile("data/startingalley.png"))
+		{
+			printf("Failed to load sprite sheet texture!\n");
+		}
+		else {
+			gameState.mapScaling = 1.0f;
+			collisionBoxes.clear();
+						std::vector<SDL_Rect> boundaryBoxes = {
+				{ 226, 30, 177, 96 },
+				{ 406, 114, 69, 80 },
+				{ 420, 195, 48, 27 },
+				{ 433, 225, 46, 48 },
+				{ 443, 276, 50, 39 },
+				{ 345, 326, 139, 107 },
+				{ 369, 310, 84, 16 },
+				{ 363, 436, 122, 27 },
+				{ 417, 466, 93, 166 },
+				{ 145, 73, 63, 373 },
+				{ 80, 393, 63, 61 },
+				{ 83, 451, 51, 32 },
+				{ 88, 491, 39, 27 },
+				{ 95, 520, 23, 24 },
+				{ 99, 558, 59, 33 },
+				{ 97, 597, 57, 156 },
+				{ 80, 738, 58, 284 },
+				{ 522, 634, 84, 71 },
+				{ 544, 701, 105, 116 },
+				{ 570, 822, 84, 183 },
+				{ 136, 988, 435, 9 },
+			};
+						collisionBoxes.clear();
+			collisionBoxes.reserve(boundaryBoxes.size()); // Optimizes memory allocation
+
+			for (auto& r : boundaryBoxes) {
+				collisionBoxes.push_back(new SDL_Rect(r));
+			}
+
+
+			// cutscene to trip out and go to forgotten cave then magicant, then the dark alley, then to noomside.
+			
+						// Exit Puddle
+			Vector2f PuddlePos(500, 700);
+			SDL_Rect puddleRect = { 0, 0, 200, 200 };
+			clips.clear();
+			clips.push_back({ 0, 0, 200, 200 });
+			clips.push_back({ 0,200,200, 200 });
+			clips.push_back({ 0,200 * 2,200, 200 });
+			clips.push_back({ 200,0,200, 200 });
+			clips.push_back({ 200,200,200, 200 });
+			clips.push_back({ 200,200 * 2,200, 200 });
+			clips.push_back({ 200 * 2,0,200, 200 });
+			clips.push_back({ 200 * 2,200,200, 200 });
+			clips.push_back({ 200 * 2,200 * 2,200, 200 });
+			SDL_Rect puddleCB = { PuddlePos.x, PuddlePos.y, 200, 200 };
+			auto PuddleEntity = std::make_shared<Entity>(PuddlePos, puddleCB, puddleRect, getTexture("data/Puddle.png"), 7, clips, 69);
+			Entities.push_back(PuddleEntity);
+			Vector2f PuddleOutPos(240, 1630);
+			std::shared_ptr<NPC> PuddleNPC = std::make_shared<DoorNPC>(PuddleEntity, "FORGOTTENCAVE", PuddleOutPos);
+			PuddleNPC->m_Entity = PuddleEntity;
+			PuddleEntity->moving = true;
+			PuddleEntity->setNPC(PuddleNPC);
+			collisionBoxes.push_back(&PuddleEntity->m_Collider);
+
+
+		}
+		break;
+
+		case 8:
+		if (!Map->loadFromFile("data/noomsidecade2.png")) //"data/CafeNoomSide.png"
+		{
+			printf("Failed to load sprite sheet texture!\n");
+		}
+		else {
+			gameState.mapScaling = 1.0f;
+			collisionBoxes.clear();
+			std::vector<SDL_Rect> boundaryBoxes = {};
+
+
+			// cafe cat pos: 1753, 868
+			Vector2f CafeCatPOS = { 1753, 868 };
+			SDL_Rect cafeCatRect = {0, 0, 128, 128} ;
+			clips.clear();
+			clips.push_back({0, 0, 128, 128});
+			clips.push_back({128, 0, 128, 128});
+			clips.push_back({128*2, 0, 128, 128});
+			clips.push_back({128*3, 0, 128, 128});
+			SDL_Rect cafeCatCollisionBox = {CafeCatPOS.x, CafeCatPOS.y, 200, 200};
+			auto CafeCat = std::make_shared<Entity> (CafeCatPOS, cafeCatCollisionBox, cafeCatRect, 
+			getTexture("data/cafecat-Sheet.png"),
+			2,
+			clips,
+			024
+			);
+			Entities.push_back(CafeCat);	
+			collisionBoxes.push_back(&CafeCat->m_Collider);
+			std::vector<std::string> SHOPdialogue = {"meow meow meow MEOWWWWWW meow meow mree mreow meow meow mreow meow meow meow meow meow"};
+
+			std::vector<SpecialMerchantNPC::ShopItem> stock = {SpecialMerchantNPC::ShopItem{2, 2, "Cat-Food"}, MerchantNPC::ShopItem{1, 2, "Weird Drink"} };
+
+			std::shared_ptr<SpecialMerchantNPC> shopdood = std::make_shared<SpecialMerchantNPC>(
+				SHOPdialogue, CafeCat, stock,
+				std::vector<std::string>{"where am i", "what is this place?", "who are you?"}, // talkQuestions
+				std::vector<std::string>{"Meow. (You are in NoomSide. We have a lake, rampant homicides, and some shops. We dont get many visitors. How'd YOU get here..?)", "Meow meow MEOW. (ur in my cat cafe. next door is the town's main attraction.)", "Meow meow meow. (im goobert. im a good boy.)" }  // talkAnswers
+			);
+			CafeCat->setNPC(shopdood);
+			shopdood->m_Choices = { "Meow..?", "no."};
+			shopdood->m_prompt = "Meow.";
+			shopdood->m_CancelPrompt = "the cat spotted the duck. it's eyes widened.";
+
+			CafeCat->AddAnimation("idle",      { {0,0,128,128} }, 180.0f, false);
+			CafeCat->AddAnimation("surprised", { {128*3,0,128,128}, {128*4,0,128,120} }, 120.0f, false); // one-shot, holds last frame
+			CafeCat->AddAnimation("happy",     { {0,0,128,128}, {128,0,128,128}}, 150.0f, true);
+
+			CafeCat->PlayAnimation("idle");
+
+
+
+
+			// cafe duck pos: 1488, 1356
+			Vector2f CafeDuckPOS = { 1488, 1430 };
+			SDL_Rect cafeDuckRect = {0, 0, 64, 64} ;
+			clips.clear();
+			clips.push_back({0, 0, 64, 64});
+			clips.push_back({64, 0, 64, 64});
+			SDL_Rect cafeDuckCollisionBox = {CafeDuckPOS.x, CafeDuckPOS.y, 16, 16};
+			auto CafeDuck = std::make_shared<Entity> (CafeDuckPOS, cafeDuckCollisionBox, cafeDuckRect, 
+			getTexture("data/cafeduck-Sheet.png"),
+			2,
+			clips,
+			025
+			);
+			CafeDuck->moving = true;
+			Entities.push_back(CafeDuck);	
+			collisionBoxes.push_back(&CafeDuck->m_Collider);
+
+
+		}
+		break;
+	
 	default:
 		if (!Map->loadFromFile("data/Error.png"))
 		{
