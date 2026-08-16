@@ -325,7 +325,8 @@ void renderResponse(SDL_Renderer* renderer, TTF_Font* font) {
     int boxWidth = screenWidth * 0.9;
     int xOffset = screenWidth * 0.05 + 30;  // Start slightly inside the text box
     int yOffset = screenHeight - 275;       // Place the text inside the box
-	MS_renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, {255, 255, 255});
+    int maxTextWidth = boxWidth - 60;
+	MS_renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, {255, 255, 255}), maxTextWidth;
 }
 
 void handleResponse(SDL_Event event) {
@@ -1249,13 +1250,14 @@ void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) {
     }
     // Render the current text
     SDL_Color white = { 255, 255, 255 };  // Normal text color
+    int maxTextWidth = boxWidth - 40;
 	// HEY! when gameState.currentDisplayText.length() is zero, we cant try to generate the size of nothing for the sdl surface,
 	// which means crash. 
     if (gameState.shouldAnimateText && gameState.textAnimating && gameState.currentDisplayText.length() != 0) {
-        MS_renderText(renderer, font, gameState.currentDisplayText, xOffset, yOffset, white);
+        MS_renderText(renderer, font, gameState.currentDisplayText, xOffset, yOffset, white, maxTextWidth);
     }
     else {
-        MS_renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, white);
+        MS_renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, white, maxTextWidth);
     }
 }
 
