@@ -710,7 +710,9 @@ void renderShopMenu(SDL_Renderer* renderer, TTF_Font* font) {
         int currentY = yOffset + (row * (optionHeight + 10));
 
         const auto &item = merchant->m_Stock[i];
-        std::string line = item.name + " - " + std::to_string(item.price) + "g";
+        //std::string line = item.name + " - " + std::to_string(item.price) + "g";
+        std::string itemName = ItemRegistry::GetDefaultName(item.itemID);
+        std::string line = itemName + " - " + std::to_string(item.price) + "g";
 
         SDL_Color color;
         if (!merchant->canAfford(i)) {
@@ -771,7 +773,8 @@ void handleShopMenuSelection(SDL_Event event) {
         if (sel < 0 || sel >= (int)merchant->m_Stock.size()) return;
         if (!merchant->canAfford(sel)) {
             Mix_PlayChannel(-1, gDeSelectSound, 0);
-            gameState.Text = { std::string("You don't have enough money for ") + merchant->m_Stock[sel].name + "." };
+            //gameState.Text = { std::string("You don't have enough money for ") + merchant->m_Stock[sel].name + "." };
+            gameState.Text = { std::string("You don't have enough money for ") + ItemRegistry::GetDefaultName(merchant->m_Stock[sel].itemID) + "." };
             gameState.textIndex = 0;
             lastMenuState = SHOP_MENU;
             currentMenu = RESPONSE;
@@ -781,7 +784,8 @@ void handleShopMenuSelection(SDL_Event event) {
         bool ok = merchant->purchase(sel);
         if (ok) {
             Mix_PlayChannel(-1, gSelectSound, 0);
-            gameState.Text = { std::string("You bought ") + merchant->m_Stock[sel].name + "." };
+            //gameState.Text = { std::string("You bought ") + merchant->m_Stock[sel].name + "." };
+            gameState.Text = { std::string("You bought ") + ItemRegistry::GetDefaultName(merchant->m_Stock[sel].itemID) + "." };
             gameState.textIndex = 0;
             lastMenuState = SHOP_MENU;
             currentMenu = RESPONSE;

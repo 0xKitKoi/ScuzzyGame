@@ -50,18 +50,22 @@ public:
 
 class Catnip : public Item {
 public:
-    Catnip() {
-        m_ItemID = 3;
-        m_ItemName = "Catnip";
-        m_ItemDescription = "Kitty Kat Drugs.";
+    Catnip(
+        std::string name = "Catnip",
+        std::string description = "Kitty Kat Drugs."
+    ) {
+        m_ItemID = 3001;
+        m_ItemName = std::move(name);
+        m_ItemDescription = std::move(description);
     }
+
     int Use() override;
 };
 
 class HealingItem : public Item {
 public:
-    HealingItem(std::string name, std::string description, int healAmount) : m_HealAmount(healAmount) {
-        m_ItemID = 4; // Unique ID for HealingItem
+    HealingItem(int id, std::string name, std::string description, int healAmount) : m_HealAmount(healAmount) {
+        m_ItemID = id; // Unique ID for HealingItem. 
         m_ItemName = name;
         m_ItemDescription = description;
     }

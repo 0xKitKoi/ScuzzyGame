@@ -11,6 +11,7 @@
 #include "Source/Enemies.hpp"
 #include "Source/GameState.hpp"
 #include "Source/Item.hpp"
+#include "Source/ItemRegistry.hpp"
 
 #include <random>
 
@@ -172,7 +173,11 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			Entities.push_back(MerchantGuy);	
 			collisionBoxes.push_back(&MerchantGuy->m_Collider);
 			std::vector<std::string> SHOPdialogue = {"GETT OUUTA ME HEADD!!!"};
-			std::vector<MerchantNPC::ShopItem> stock = {MerchantNPC::ShopItem{2, 2, "test"}, MerchantNPC::ShopItem{1, 2, "weenie"} };
+			//std::vector<MerchantNPC::ShopItem> stock = {MerchantNPC::ShopItem{2, 2, "test"}, MerchantNPC::ShopItem{1, 2, "weenie"} };
+			std::vector<MerchantNPC::ShopItem> stock = {
+				MerchantNPC::ShopItem{1, 5},
+				MerchantNPC::ShopItem{2222, 5},
+			};
 			std::shared_ptr<MerchantNPC> shopdood = std::make_shared<MerchantNPC>(SHOPdialogue, MerchantGuy, stock);
 			MerchantGuy->setNPC(shopdood);
 
@@ -1340,7 +1345,12 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			collisionBoxes.push_back(&CafeCat->m_Collider);
 			std::vector<std::string> SHOPdialogue = {"meow meow meow MEOWWWWWW meow meow mree mreow meow meow mreow meow meow meow meow meow"};
 
-			std::vector<SpecialMerchantNPC::ShopItem> stock = {SpecialMerchantNPC::ShopItem{4, 5, "CatCafe Special", 10, "pupcup for kitty cats. catcup..? naw pupcup sounds better."}, SpecialMerchantNPC::ShopItem{4, 5, "CatCafe Flavored Band-Aid", 5, "A band-aid with a ... cat flavor. yeah."}, MerchantNPC::ShopItem{3, 1, "Catnip"}};
+			//std::vector<SpecialMerchantNPC::ShopItem> stock = {SpecialMerchantNPC::ShopItem{4, 5, "CatCafe Special", 10, "pupcup for kitty cats. catcup..? naw pupcup sounds better."}, SpecialMerchantNPC::ShopItem{4, 5, "CatCafe Flavored Band-Aid", 5, "A band-aid with a ... cat flavor. yeah."}, MerchantNPC::ShopItem{3, 1, "Catnip"}};
+			std::vector<SpecialMerchantNPC::ShopItem> stock = {
+				SpecialMerchantNPC::ShopItem{1001, 5},
+				SpecialMerchantNPC::ShopItem{1002, 5},
+				SpecialMerchantNPC::ShopItem{1003, 1}
+			};
 
 			std::shared_ptr<SpecialMerchantNPC> shopdood = std::make_shared<SpecialMerchantNPC>(
 				SHOPdialogue, CafeCat, stock,

@@ -61,7 +61,8 @@ int Catnip::Use() {
 	    for (auto& entity : Entities) {
         auto merchant = std::dynamic_pointer_cast<MerchantNPC>(entity->m_NPC);
         if (merchant /* && some way to identify THIS merchant */) {
-            merchant->m_Stock.push_back(MerchantNPC::ShopItem{2222, 3, "KittyCat Key", 88, "Meow. (its a cat shaped key. You caught a glint of light in one of the merchant's cabinets.)"});
+            //merchant->m_Stock.push_back(MerchantNPC::ShopItem{2222, 3, "KittyCat Key", 88, "Meow. (its a cat shaped key. You caught a glint of light in one of the merchant's cabinets.)"});
+			merchant->m_Stock.push_back(MerchantNPC::ShopItem{2222, 10, 88});
             gameState.Text = { "The merchant's eyes light up when you openned the catnip." };
             gameState.shouldAnimateText = true;
             gameState.currentDisplayText = "";

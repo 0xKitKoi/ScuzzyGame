@@ -4,6 +4,7 @@
 #include "Source/MenuSystem.hpp"
 #include "Source/CutSceneManager.hpp"
 #include "Source/Enums.hpp"
+#include "Source/ItemRegistry.hpp"
 #include <functional>
 #include <vector>
 #include <string>
@@ -440,15 +441,23 @@ public:
 class MerchantNPC : public NPC {
 public:
 
+    // struct ShopItem {
+    //     int itemID;
+    //     int price;
+    //     std::string name;
+    //     int param = 0; // extra data, this holds  the door id for keys to point to a specific door.
+    //     std::string description = ""; // optional override; empty = use item's default
+
+    //     ShopItem(int id = 0, int p = 0, std::string n = "", int extra = 0, std::string desc = "")
+    //         : itemID(id), price(p), name(n), param(extra), description(desc) {}
+    // };
     struct ShopItem {
         int itemID;
         int price;
-        std::string name;
-        int param = 0; // extra data, this holds  the door id for keys to point to a specific door.
-        std::string description = ""; // optional override; empty = use item's default
+        int param = 0;
 
-        ShopItem(int id = 0, int p = 0, std::string n = "", int extra = 0, std::string desc = "")
-            : itemID(id), price(p), name(n), param(extra), description(desc) {}
+        ShopItem(int id = 0, int p = 0, int extra = 0)
+            : itemID(id), price(p), param(extra) {}
     };
 
     std::string m_CancelPrompt;
@@ -516,8 +525,33 @@ public:
         return gameState.money >= m_Stock[idx].price;
     }
 
+    // bool purchase(size_t idx) {
+    //     if (idx >= m_Stock.size()) return false;
+    //     const ShopItem& it = m_Stock[idx];
+
+    //     if (gameState.money < it.price) {
+    //         playReaction(MerchantReaction::CantAfford);
+    //         return false;
+    //     }
+
+    //     gameState.money -= it.price;
+
+    //     std::shared_ptr<Item> newItem;
+    //     auto factoryIt = kItemFactories.find(it.itemID);
+    //     if (factoryIt != kItemFactories.end()) {
+    //         newItem = factoryIt->second(it);
+    //     } else {
+    //         printf("\n [!] WARNING: purchase() unknown itemID %d, giving generic Item", it.itemID);
+    //         newItem = std::make_shared<Item>();
+    //     }
+
+    //     gameState.Inventory.push_back(newItem);
+    //     playReaction(MerchantReaction::PurchaseSuccess);
+    //     return true;
+    // }
     bool purchase(size_t idx) {
         if (idx >= m_Stock.size()) return false;
+
         const ShopItem& it = m_Stock[idx];
 
         if (gameState.money < it.price) {
@@ -527,16 +561,10 @@ public:
 
         gameState.money -= it.price;
 
-        std::shared_ptr<Item> newItem;
-        auto factoryIt = kItemFactories.find(it.itemID);
-        if (factoryIt != kItemFactories.end()) {
-            newItem = factoryIt->second(it);
-        } else {
-            printf("\n [!] WARNING: purchase() unknown itemID %d, giving generic Item", it.itemID);
-            newItem = std::make_shared<Item>();
-        }
+        auto newItem = ItemRegistry::Create(it.itemID, it.param);
 
         gameState.Inventory.push_back(newItem);
+
         playReaction(MerchantReaction::PurchaseSuccess);
         return true;
     }
@@ -544,8 +572,8 @@ public:
     std::vector<ShopItem> m_Stock;
 
 private:
-    using ItemFactory = std::function<std::shared_ptr<Item>(const ShopItem&)>;
-    static const std::unordered_map<int, ItemFactory> kItemFactories;
+    // using ItemFactory = std::function<std::shared_ptr<Item>(const ShopItem&)>;
+    // static const std::unordered_map<int, ItemFactory> kItemFactories;
 
     std::unordered_map<MerchantReaction, std::string> m_ReactionAnims;
 };
@@ -555,15 +583,15 @@ private:
 // Each itemID corresponds to a lambda that takes a ShopItem and returns a shared_ptr<Item> of the appropriate type.
 // This allows for easy extension: to add a new item type, just add a new entry here with the itemID and a lambda that constructs the item.
 // items are reusable, like keys for example. You can customize the keys name and description in the ShopItem, and the factory will use those values when creating the Key object.
-inline const std::unordered_map<int, MerchantNPC::ItemFactory> MerchantNPC::kItemFactories = {
-    { 1, [](const ShopItem&)    { return std::make_shared<BandAid>(); } },
-    { 2222, [](const ShopItem& it) { // this one is a key template. 
-        std::string desc = it.description.empty() ? "A key that opens a matching door." : it.description;
-        return std::make_shared<Key>(it.param, it.name, desc);
-    } },
-    { 3, [](const ShopItem&)    { return std::make_shared<Catnip>(); } },
-    { 4, [](const ShopItem& it) { return std::make_shared<HealingItem>(it.name, it.description, it.param); } }, // healing item template. 
-};
+// inline const std::unordered_map<int, MerchantNPC::ItemFactory> MerchantNPC::kItemFactories = {
+//     { 1, [](const ShopItem&)    { return std::make_shared<BandAid>(); } },
+//     { 2222, [](const ShopItem& it) { // this one is a key template. 
+//         std::string desc = it.description.empty() ? "A key that opens a matching door." : it.description;
+//         return std::make_shared<Key>(it.param, it.name, desc);
+//     } },
+//     { 3, [](const ShopItem&)    { return std::make_shared<Catnip>(); } },
+//     { 4, [](const ShopItem& it) { return std::make_shared<HealingItem>(it.name, it.description, it.param); } }, // healing item template. 
+// };
 
 class SpecialMerchantNPC : public MerchantNPC {
 public:

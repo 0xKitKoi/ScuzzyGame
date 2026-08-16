@@ -455,12 +455,14 @@ void SaveGame(int x, int y)
 	{
 		file << item->m_ItemID;
 
+		int param = 0;
+
 		if (auto key = std::dynamic_pointer_cast<Key>(item))
 		{
-			file << ' ' << key->m_DoorID; // if this item is a key, also save the door ID it corresponds to.
+			param = key->m_DoorID;
 		}
 
-		file << '\n';
+		file << ' ' << param << '\n';
 	}
 
 	printf("Saved.\n");
@@ -518,37 +520,20 @@ bool LoadSave()
 	for (size_t i = 0; i < itemCount; i++)
 	{
 		int itemID;
+		int param;
 
-		if (!(file >> itemID))
+		if (!(file >> itemID >> param))
 			return false;
 
-		switch (itemID)
+		auto item = ItemRegistry::Create(itemID, param);
+
+		if (!item)
 		{
-		case 1: // BandAid
-		{
-			gameState.Inventory.push_back(
-				std::make_shared<BandAid>());
-			break;
-		}
-
-		case 2: // Key
-		{
-			int doorID;
-
-			if (!(file >> doorID))
-				return false;
-
-			auto key = std::make_shared<Key>(doorID);
-			key->m_DoorID = doorID;
-
-			gameState.Inventory.push_back(key);
-			break;
-		}
-
-		default:
 			printf("Unknown item ID: %d\n", itemID);
 			return false;
 		}
+
+		gameState.Inventory.push_back(item);
 	}
 
 	gameState.room = SaveData.room;
