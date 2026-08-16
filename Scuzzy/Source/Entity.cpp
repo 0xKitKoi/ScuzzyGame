@@ -319,13 +319,13 @@ void Entity::EnableBackLayer(SDL_Rect* backClips, int frameCountMax, float frame
 
 
 void Entity::AddAnimation(const std::string& name, std::vector<SDL_Rect> frames,
-                   float frameDuration, bool loop = true) {
+                   float frameDuration, bool loop ) {
     m_Animations[name] = Animation{ std::move(frames), frameDuration, loop };
 }
 
 // restart=true always resets to frame 0; restart=false lets you "re-select"
 // the same animation without interrupting it (e.g. calling Update() every frame)
-void Entity::PlayAnimation(const std::string& name, bool restart = true) {
+void Entity::PlayAnimation(const std::string& name, bool restart) {
     auto it = m_Animations.find(name);
     if (it == m_Animations.end()) {
         printf("\n [!] ERROR: Entity::PlayAnimation() unknown animation '%s'", name.c_str());
@@ -350,5 +350,3 @@ void Entity::SetAnimationSpeed(float ms) {
     if (it != m_Animations.end()) it->second.frameDuration = ms;
 }
 
-bool Entity::IsAnimationFinished() const { return m_AnimFinishedFlag; }
-const std::string& Entity::GetCurrentAnimation() const { return m_CurrentAnimation; }

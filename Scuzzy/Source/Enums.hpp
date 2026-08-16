@@ -28,4 +28,10 @@ enum class EncounterPhase { NONE, SOUL_PULL, SOUL_LAUNCH };
 
 // SoulRubberBandBall Menu Direction Enum
 enum class BackLayerDirection { TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT};
+
+    enum class MerchantReaction {
+        Greet, OfferTalk, OfferBuy, Decline, TalkBack,
+        PurchaseSuccess, CantAfford,
+    };
+
 #endif // !ENUMS_HPP

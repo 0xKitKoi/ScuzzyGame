@@ -4,6 +4,7 @@
 #include "Source/MenuSystem.hpp"
 #include "Source/CutSceneManager.hpp"
 #include "Source/Enums.hpp"
+#include <functional>
 #include <vector>
 #include <string>
 
@@ -162,12 +163,298 @@ public:
 };
 
 
+// class MerchantNPC : public NPC {
+// public:
+//     std::string m_CancelPrompt;
+//     //struct ShopItem { int itemID; int price; std::string name; ShopItem(int id=0,int p=0,std::string n="") : itemID(id), price(p), name(n){} };
+//     struct ShopItem {
+//         int itemID;
+//         int price;
+//         std::string name;
+//         int param = 0; // generic extra data (e.g. door ID for keys); ignored by items that don't need it
+
+//         ShopItem(int id = 0, int p = 0, std::string n = "", int extra = 0)
+//             : itemID(id), price(p), name(n), param(extra) {}
+//     };
+
+//     MerchantNPC(const std::vector<std::string>& dialogue, std::shared_ptr<Entity> entity) : NPC(entity, dialogue) {}
+
+//     MerchantNPC(const std::vector<std::string>& dialogue, std::shared_ptr<Entity> entity, const std::vector<ShopItem>& stock)
+//         : NPC(entity, dialogue), m_Stock(stock) {
+//         m_prompt = "hey kid, want a weenie ?";
+//         m_Choices = {"damn straight I want a weenie", "...naw"};
+//         m_CancelPrompt = "no weenie..? :(";
+//     }
+
+//     // When the player checks the merchant, open the shop menu
+//     void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override {
+//         m_Entity->moving = true;
+//         if (m_checked) {
+//             gameState.currentNPC = this; // expose ourselves to the menu system
+// 			gameState.callbackNPC = this; // set callback for menu choices
+//             gameState.inMenu = true;
+//             //currentMenu = SHOP_MENU; // The MenuSystem variable is exposed, so the Merchant can manipulate it
+// 			currentMenu = QUESTION_MENU;
+//             MS_selectedIndex = 0;
+//             m_checked = false;
+//         }
+//         /*
+//         // play animation in the sprite clippings:
+//         m_Entity->lastFrameTime += deltaT * 1000.0f;
+// 		if (m_Entity->lastFrameTime >= m_Entity->frameDuration) {
+// 			m_Entity->currentFrameCount = (m_Entity->currentFrameCount + 1) % m_Entity->FRAME_COUNT;
+// 			m_Entity->lastFrameTime = 0;
+// 		}
+//         SDL_Rect srcRect = m_Entity->m_Clips[m_Entity->currentFrameCount]; // render the sprite at index of animation
+
+//         m_Entity->getTex()->render(m_Entity->m_PosX, m_Entity->m_PosY, &srcRect);*/
+// 	}
+
+//     void handleChoice(int choice) override {
+//         switch (choice) {
+// 		case -1: // player pressed X to exit question prompt.
+// 			currentMenu = MAIN_MENU;
+// 			gameState.Text.push_back(m_CancelPrompt);
+// 			gameState.textIndex = 0;
+//             gameState.textAvailable = true;
+// 			gameState.inMenu = false;
+// 			//gameState.callbackNPC = nullptr;  // fuck ass bug
+//             break;
+//         case 0: // 0th index of options
+//             //gameState.Text = { "WHAT??? NO!!! DONT TALK TO STRANGERS!!!" };
+//             //gameState.textIndex = 0;
+//             //gameState.textAvailable = true;
+//             //gameState.inMenu = false;
+// 			currentMenu = SHOP_MENU;
+// 			break;
+//         case 1: // 1st index of options
+//             gameState.Text.clear();
+//             gameState.Text.push_back(m_CancelPrompt);
+//             gameState.textIndex = 0;
+// 			gameState.textAvailable = true;
+//             gameState.inMenu = false;
+// 			/*gameState.callbackNPC = nullptr;*/
+// 		default:
+// 			printf("\n [!] ERROR: MerchantNPC::handleChoice() received invalid choice index: %d", choice);
+//         }
+
+// 	}
+	
+  
+
+//     // Check if player can afford item at index
+//     bool canAfford(size_t idx) const {
+//         if (idx >= m_Stock.size()) return false;
+//         return gameState.money >= m_Stock[idx].price;
+//     }
+
+//     // Attempt to purchase; returns true if purchased
+//     bool purchase(size_t idx) {
+//         if (idx >= m_Stock.size()) return false;
+//         const ShopItem &it = m_Stock[idx];
+//         if (gameState.money < it.price) return false;
+//         gameState.money -= it.price;
+
+//         // Create concrete item and add to inventory
+//         std::shared_ptr<Item> newItem;
+//         switch (it.itemID) {
+//         case 1:
+//             newItem = std::make_shared<BandAid>();
+//             break;
+//         case 2:
+//             newItem = std::make_shared<Key>(81); // HEY! This is important. Keys now go to doors. DoorID here is 81. 
+//             break;
+//         default:
+//             newItem = std::make_shared<Item>();
+//             break;
+//         }
+//         gameState.Inventory.push_back(newItem);
+//         return true;
+//     }
+
+//     std::vector<ShopItem> m_Stock;
+// };
+
+
+// // now that Merchant NPC is done, it is now a blueprint for custom merchants:
+
+// class SpecialMerchantNPC : public MerchantNPC {
+// public:
+//     enum class Stage { NONE, GREETING, MAIN_CHOICE, TALK_SUBMENU, AWAIT_ANSWER_READ, SHOP };
+
+
+//     SpecialMerchantNPC(const std::vector<std::string>& dialogue,
+//                         std::shared_ptr<Entity> entity,
+//                         const std::vector<ShopItem>& stock,
+//                         std::vector<std::string> talkQuestions,
+//                         std::vector<std::string> talkAnswers)
+//         : MerchantNPC(dialogue, entity, stock),
+//           m_TalkQuestions(std::move(talkQuestions)),
+//           m_TalkAnswers(std::move(talkAnswers)) {
+//         m_prompt   = "So, talk or business?";
+//         m_MainChoices = {"Talk", "Buy"};
+//         m_CancelPrompt = "Fine, be that way.";
+//     }
+
+
+//     // --- SpecialMerchantNPC quick setup ---
+//     // 1. Entity->AddAnimation(name, frames, speed, loop);   // set up expressions once
+//     // 2. make_shared<SpecialMerchantNPC>(dialogue, entity, stock, questions, answers);
+//     // 3. SetReactionAnimation(MerchantReaction::X, "animName");  // per event, skip if none
+//     // 4. SetTalkReactions({ "anim1", "anim2", ... });             // optional, per question
+//     // 5. m_prompt / SetMainChoices({...}) / m_CancelPrompt to override default text
+
+//     // Called once per merchant instance to configure its expressions
+//     void SetReactionAnimation(MerchantReaction reaction, std::string animName) {
+//         m_ReactionAnims[reaction] = std::move(animName);
+//     }
+
+//     // Per-question reaction, indexed same as m_TalkQuestions/m_TalkAnswers
+//     void SetTalkReactions(std::vector<std::string> anims) {
+//         m_TalkReactionAnims = std::move(anims);
+//     }
+
+//     void playReaction(MerchantReaction reaction) {
+//         auto it = m_ReactionAnims.find(reaction);
+//         if (it != m_ReactionAnims.end() && !it->second.empty()) {
+//             m_Entity->PlayAnimation(it->second);
+//         }
+//         // if this merchant didn't configure that reaction, do nothing —
+//         // it just keeps whatever animation was already playing.
+//     }
+
+//     void playTalkReaction(size_t idx) {
+//         if (idx < m_TalkReactionAnims.size() && !m_TalkReactionAnims[idx].empty()) {
+//             m_Entity->PlayAnimation(m_TalkReactionAnims[idx]);
+//         }
+//     }
+
+//     void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override {
+//         m_Entity->moving = true;
+
+//         if (m_checked) {
+//             gameState.Text = m_Dialogue; // greeting line(s)
+//             gameState.textIndex = 0;
+//             gameState.textAvailable = true;
+//             gameState.inMenu = false;
+//             m_stage = Stage::GREETING;
+//             m_checked = false;
+//         }
+
+//         if (m_stage == Stage::GREETING && !gameState.textAvailable) {
+//             openMainChoiceMenu();
+//         }
+
+//         if (m_stage == Stage::AWAIT_ANSWER_READ && !gameState.textAvailable) {
+//             openTalkMenu();
+//         }
+//     }
+
+//     void handleChoice(int choice) override {
+//         switch (m_stage) {
+//             case Stage::MAIN_CHOICE:  handleMainChoice(choice);  break;
+//             case Stage::TALK_SUBMENU: handleTalkChoice(choice);  break;
+//             default:
+//                 printf("\n [!] ERROR: SpecialMerchantNPC::handleChoice() bad stage %d", (int)m_stage);
+//         }
+//     }
+
+// private:
+//     std::vector<std::string> m_TalkQuestions;
+//     std::vector<std::string> m_TalkAnswers;
+//     std::vector<std::string> m_MainChoices; // "Talk"/"Buy", kept separate from m_Choices
+//     Stage m_stage = Stage::NONE;
+
+//     std::unordered_map<MerchantReaction, std::string> m_ReactionAnims;
+//     std::vector<std::string> m_TalkReactionAnims;
+
+//     void openMainChoiceMenu() {
+//         gameState.currentNPC = this;
+//         gameState.callbackNPC = this;
+//         gameState.inMenu = true;
+//         m_Choices = m_MainChoices;
+//         currentMenu = QUESTION_MENU;
+//         MS_selectedIndex = 0;
+//         m_stage = Stage::MAIN_CHOICE;
+//     }
+
+//     void handleMainChoice(int choice) {
+//         switch (choice) {
+//             case -1:
+//                 playReaction(MerchantReaction::Decline);
+//                 closeOut();
+//                 break;
+//             case 0:
+//                 playReaction(MerchantReaction::OfferTalk);
+//                 openTalkMenu();
+//                 break;
+//             case 1:
+//                 playReaction(MerchantReaction::OfferBuy);
+//                 currentMenu = SHOP_MENU;
+//                 m_stage = Stage::SHOP;
+//                 break;
+//             default:
+//                 printf("\n [!] ERROR: bad main choice %d", choice);
+//         }
+//     }
+
+//     void openTalkMenu() {
+//         gameState.currentNPC = this;
+//         gameState.callbackNPC = this;
+//         gameState.inMenu = true;
+//         m_Choices = m_TalkQuestions; // TALK_MENU renders off m_Choices
+//         currentMenu = TALK_MENU;
+//         MS_selectedIndex = 0;
+//         m_stage = Stage::TALK_SUBMENU;
+//     }
+
+// void handleTalkChoice(int choice) {
+//         if (choice == -1) {
+//             playReaction(MerchantReaction::TalkBack);
+//             openMainChoiceMenu();
+//             return;
+//         }
+//         if (choice < 0 || choice >= (int)m_TalkAnswers.size()) {
+//             printf("\n [!] ERROR: bad talk choice %d", choice);
+//             return;
+//         }
+//         playTalkReaction(choice);
+//         gameState.Text = { m_TalkAnswers[choice] };
+//         gameState.textIndex = 0;
+//         gameState.textAvailable = true;
+//         gameState.inMenu = false;
+//         m_stage = Stage::AWAIT_ANSWER_READ;
+//     }
+
+//     void closeOut() {
+//         currentMenu = MAIN_MENU;
+//         gameState.Text.push_back(m_CancelPrompt);
+//         gameState.textIndex = 0;
+//         gameState.textAvailable = true;
+//         gameState.inMenu = false;
+//         gameState.callbackNPC = nullptr; // real exit, safe to clear here
+//         m_stage = Stage::NONE;
+//     }
+// };
+
 class MerchantNPC : public NPC {
 public:
-    std::string m_CancelPrompt;
-    struct ShopItem { int itemID; int price; std::string name; ShopItem(int id=0,int p=0,std::string n="") : itemID(id), price(p), name(n){} };
 
-    MerchantNPC(const std::vector<std::string>& dialogue, std::shared_ptr<Entity> entity) : NPC(entity, dialogue) {}
+    struct ShopItem {
+        int itemID;
+        int price;
+        std::string name;
+        int param = 0; // extra data, this holds  the door id for keys to point to a specific door.
+        std::string description = ""; // optional override; empty = use item's default
+
+        ShopItem(int id = 0, int p = 0, std::string n = "", int extra = 0, std::string desc = "")
+            : itemID(id), price(p), name(n), param(extra), description(desc) {}
+    };
+
+    std::string m_CancelPrompt;
+
+    MerchantNPC(const std::vector<std::string>& dialogue, std::shared_ptr<Entity> entity)
+        : NPC(entity, dialogue) {}
 
     MerchantNPC(const std::vector<std::string>& dialogue, std::shared_ptr<Entity> entity, const std::vector<ShopItem>& stock)
         : NPC(entity, dialogue), m_Stock(stock) {
@@ -176,97 +463,107 @@ public:
         m_CancelPrompt = "no weenie..? :(";
     }
 
-    // When the player checks the merchant, open the shop menu
+    // --- reaction system, usable by any MerchantNPC (base or derived) ---
+    void SetReactionAnimation(MerchantReaction reaction, std::string animName) {
+        m_ReactionAnims[reaction] = std::move(animName);
+    }
+
+    void playReaction(MerchantReaction reaction) {
+        auto it = m_ReactionAnims.find(reaction);
+        if (it != m_ReactionAnims.end() && !it->second.empty()) {
+            m_Entity->PlayAnimation(it->second);
+        }
+    }
+
     void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override {
         m_Entity->moving = true;
         if (m_checked) {
-            gameState.currentNPC = this; // expose ourselves to the menu system
-			gameState.callbackNPC = this; // set callback for menu choices
+            gameState.currentNPC = this;
+            gameState.callbackNPC = this;
             gameState.inMenu = true;
-            //currentMenu = SHOP_MENU; // The MenuSystem variable is exposed, so the Merchant can manipulate it
-			currentMenu = QUESTION_MENU;
+            currentMenu = QUESTION_MENU;
             MS_selectedIndex = 0;
             m_checked = false;
         }
-        /*
-        // play animation in the sprite clippings:
-        m_Entity->lastFrameTime += deltaT * 1000.0f;
-		if (m_Entity->lastFrameTime >= m_Entity->frameDuration) {
-			m_Entity->currentFrameCount = (m_Entity->currentFrameCount + 1) % m_Entity->FRAME_COUNT;
-			m_Entity->lastFrameTime = 0;
-		}
-        SDL_Rect srcRect = m_Entity->m_Clips[m_Entity->currentFrameCount]; // render the sprite at index of animation
-
-        m_Entity->getTex()->render(m_Entity->m_PosX, m_Entity->m_PosY, &srcRect);*/
-	}
+    }
 
     void handleChoice(int choice) override {
         switch (choice) {
-		case -1: // player pressed X to exit question prompt.
-			currentMenu = MAIN_MENU;
-			gameState.Text.push_back(m_CancelPrompt);
-			gameState.textIndex = 0;
+        case -1:
+            currentMenu = MAIN_MENU;
+            gameState.Text.push_back(m_CancelPrompt);
+            gameState.textIndex = 0;
             gameState.textAvailable = true;
-			gameState.inMenu = false;
-			//gameState.callbackNPC = nullptr;  // fuck ass bug
+            gameState.inMenu = false;
             break;
-        case 0: // 0th index of options
-            //gameState.Text = { "WHAT??? NO!!! DONT TALK TO STRANGERS!!!" };
-            //gameState.textIndex = 0;
-            //gameState.textAvailable = true;
-            //gameState.inMenu = false;
-			currentMenu = SHOP_MENU;
-			break;
-        case 1: // 1st index of options
+        case 0:
+            currentMenu = SHOP_MENU;
+            break;
+        case 1:
             gameState.Text.clear();
             gameState.Text.push_back(m_CancelPrompt);
             gameState.textIndex = 0;
-			gameState.textAvailable = true;
+            gameState.textAvailable = true;
             gameState.inMenu = false;
-			/*gameState.callbackNPC = nullptr;*/
-		default:
-			printf("\n [!] ERROR: MerchantNPC::handleChoice() received invalid choice index: %d", choice);
+            break; // <-- fixed missing break from way back
+        default:
+            printf("\n [!] ERROR: MerchantNPC::handleChoice() received invalid choice index: %d", choice);
         }
+    }
 
-	}
-	
-  
-
-    // Check if player can afford item at index
     bool canAfford(size_t idx) const {
         if (idx >= m_Stock.size()) return false;
         return gameState.money >= m_Stock[idx].price;
     }
 
-    // Attempt to purchase; returns true if purchased
     bool purchase(size_t idx) {
         if (idx >= m_Stock.size()) return false;
-        const ShopItem &it = m_Stock[idx];
-        if (gameState.money < it.price) return false;
+        const ShopItem& it = m_Stock[idx];
+
+        if (gameState.money < it.price) {
+            playReaction(MerchantReaction::CantAfford);
+            return false;
+        }
+
         gameState.money -= it.price;
 
-        // Create concrete item and add to inventory
         std::shared_ptr<Item> newItem;
-        switch (it.itemID) {
-        case 1:
-            newItem = std::make_shared<BandAid>();
-            break;
-        case 2:
-            newItem = std::make_shared<Key>(81); // HEY! This is important. Keys now go to doors. DoorID here is 81. 
-            break;
-        default:
+        auto factoryIt = kItemFactories.find(it.itemID);
+        if (factoryIt != kItemFactories.end()) {
+            newItem = factoryIt->second(it);
+        } else {
+            printf("\n [!] WARNING: purchase() unknown itemID %d, giving generic Item", it.itemID);
             newItem = std::make_shared<Item>();
-            break;
         }
+
         gameState.Inventory.push_back(newItem);
+        playReaction(MerchantReaction::PurchaseSuccess);
         return true;
     }
 
     std::vector<ShopItem> m_Stock;
+
+private:
+    using ItemFactory = std::function<std::shared_ptr<Item>(const ShopItem&)>;
+    static const std::unordered_map<int, ItemFactory> kItemFactories;
+
+    std::unordered_map<MerchantReaction, std::string> m_ReactionAnims;
 };
 
 
-// now that Merchant NPC is done, it is now a blueprint for custom merchants:
+// this is a global static map of itemID -> factory function, used by all MerchantNPCs to create items on purchase.
+// Each itemID corresponds to a lambda that takes a ShopItem and returns a shared_ptr<Item> of the appropriate type.
+// This allows for easy extension: to add a new item type, just add a new entry here with the itemID and a lambda that constructs the item.
+// items are reusable, like keys for example. You can customize the keys name and description in the ShopItem, and the factory will use those values when creating the Key object.
+inline const std::unordered_map<int, MerchantNPC::ItemFactory> MerchantNPC::kItemFactories = {
+    { 1, [](const ShopItem&)    { return std::make_shared<BandAid>(); } },
+    { 2222, [](const ShopItem& it) { // this one is a key template. 
+        std::string desc = it.description.empty() ? "A key that opens a matching door." : it.description;
+        return std::make_shared<Key>(it.param, it.name, desc);
+    } },
+    { 3, [](const ShopItem&)    { return std::make_shared<Catnip>(); } },
+    { 4, [](const ShopItem& it) { return std::make_shared<HealingItem>(it.name, it.description, it.param); } }, // healing item template. 
+};
 
 class SpecialMerchantNPC : public MerchantNPC {
 public:
@@ -280,16 +577,29 @@ public:
         : MerchantNPC(dialogue, entity, stock),
           m_TalkQuestions(std::move(talkQuestions)),
           m_TalkAnswers(std::move(talkAnswers)) {
-        m_prompt   = "So, talk or business?";
+        m_prompt = "So, talk or business?";
         m_MainChoices = {"Talk", "Buy"};
         m_CancelPrompt = "Fine, be that way.";
+    }
+
+    void SetMainChoices(std::vector<std::string> choices) { m_MainChoices = std::move(choices); }
+
+    // Per-question reaction, indexed same as m_TalkQuestions/m_TalkAnswers
+    void SetTalkReactions(std::vector<std::string> anims) {
+        m_TalkReactionAnims = std::move(anims);
+    }
+
+    void playTalkReaction(size_t idx) {
+        if (idx < m_TalkReactionAnims.size() && !m_TalkReactionAnims[idx].empty()) {
+            m_Entity->PlayAnimation(m_TalkReactionAnims[idx]);
+        }
     }
 
     void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override {
         m_Entity->moving = true;
 
         if (m_checked) {
-            gameState.Text = m_Dialogue; // greeting line(s)
+            gameState.Text = m_Dialogue;
             gameState.textIndex = 0;
             gameState.textAvailable = true;
             gameState.inMenu = false;
@@ -318,7 +628,8 @@ public:
 private:
     std::vector<std::string> m_TalkQuestions;
     std::vector<std::string> m_TalkAnswers;
-    std::vector<std::string> m_MainChoices; // "Talk"/"Buy", kept separate from m_Choices
+    std::vector<std::string> m_MainChoices;
+    std::vector<std::string> m_TalkReactionAnims;
     Stage m_stage = Stage::NONE;
 
     void openMainChoiceMenu() {
@@ -334,17 +645,20 @@ private:
     void handleMainChoice(int choice) {
         switch (choice) {
             case -1:
+                playReaction(MerchantReaction::Decline);
                 closeOut();
                 break;
             case 0:
+                playReaction(MerchantReaction::OfferTalk);
                 openTalkMenu();
                 break;
             case 1:
+                playReaction(MerchantReaction::OfferBuy);
                 currentMenu = SHOP_MENU;
                 m_stage = Stage::SHOP;
                 break;
             default:
-                printf("\n [!] ERROR: SpecialMerchantNPC::handleMainChoice() bad choice %d", choice);
+                printf("\n [!] ERROR: bad main choice %d", choice);
         }
     }
 
@@ -352,7 +666,7 @@ private:
         gameState.currentNPC = this;
         gameState.callbackNPC = this;
         gameState.inMenu = true;
-        m_Choices = m_TalkQuestions; // TALK_MENU renders off m_Choices
+        m_Choices = m_TalkQuestions;
         currentMenu = TALK_MENU;
         MS_selectedIndex = 0;
         m_stage = Stage::TALK_SUBMENU;
@@ -360,18 +674,20 @@ private:
 
     void handleTalkChoice(int choice) {
         if (choice == -1) {
-            openMainChoiceMenu(); // X backs out to Talk/Buy, doesn't end convo
+            playReaction(MerchantReaction::TalkBack);
+            openMainChoiceMenu();
             return;
         }
         if (choice < 0 || choice >= (int)m_TalkAnswers.size()) {
-            printf("\n [!] ERROR: SpecialMerchantNPC::handleTalkChoice() bad index %d", choice);
+            printf("\n [!] ERROR: bad talk choice %d", choice);
             return;
         }
+        playTalkReaction(choice);
         gameState.Text = { m_TalkAnswers[choice] };
         gameState.textIndex = 0;
         gameState.textAvailable = true;
         gameState.inMenu = false;
-        m_stage = Stage::AWAIT_ANSWER_READ; // Update() reopens TALK_MENU once read
+        m_stage = Stage::AWAIT_ANSWER_READ;
     }
 
     void closeOut() {
@@ -380,7 +696,7 @@ private:
         gameState.textIndex = 0;
         gameState.textAvailable = true;
         gameState.inMenu = false;
-        gameState.callbackNPC = nullptr; // real exit, safe to clear here
+        gameState.callbackNPC = nullptr;
         m_stage = Stage::NONE;
     }
 };

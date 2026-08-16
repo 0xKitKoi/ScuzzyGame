@@ -54,3 +54,35 @@ int Key::Use() {
 
     return 1;
 }
+
+
+int Catnip::Use() {
+
+	    for (auto& entity : Entities) {
+        auto merchant = std::dynamic_pointer_cast<MerchantNPC>(entity->m_NPC);
+        if (merchant /* && some way to identify THIS merchant */) {
+            merchant->m_Stock.push_back(MerchantNPC::ShopItem{2222, 3, "KittyCat Key", 88, "Meow. (its a cat shaped key. You caught a glint of light in one of the merchant's cabinets.)"});
+            gameState.Text = { "The merchant's eyes light up when you openned the catnip." };
+            gameState.shouldAnimateText = true;
+            gameState.currentDisplayText = "";
+            gameState.textSoundEffectTick = 0;
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int HealingItem::Use() {
+
+	if (gameState.HP >= gameState.maxHP) {
+			gameState.Text = { "You dont need to use that right now." };
+			//gameState.textAvailable = true; // no need to, already handled.
+			gameState.shouldAnimateText = true;
+			gameState.currentDisplayText = "";
+			gameState.textSoundEffectTick = 0; // reset text sound effect timer for new dialogue
+		return 1;
+	}
+    gameState.HP += m_HealAmount;
+	// TODO: healing sound effect here. 
+    return 0;
+}

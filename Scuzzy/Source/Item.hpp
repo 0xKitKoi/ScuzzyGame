@@ -11,6 +11,7 @@ class GameState; // Forward declaration
 /// <summary>
 /// Items Can affect the GameState when used.
 /// Caller is responsible for deleting the item from inventory. This should happen in the Menu System. 
+/// any new items that can be sold should be added to the merchant class's item factory for creation: static const std::unordered_map<int, ItemFactory> kItemFactories
 /// </summary>
 class Item {
 public:
@@ -37,14 +38,36 @@ public:
 
 class Key : public Item {
 public:
-    Key(int DoorID) {
-		m_DoorID = DoorID;
-        m_ItemID = 2;
-        m_ItemName = "Key";
-        m_ItemDescription = "A small key that unlocks doors.";
+    Key(int DoorID, std::string name = "Key", std::string description = "A key that opens a matching door.") {
+        m_DoorID = DoorID;
+        m_ItemID = 2222;
+        m_ItemName = std::move(name);
+        m_ItemDescription = std::move(description);
     }
-	int m_DoorID = 0;
+    int m_DoorID = 0;
     int Use() override;
 };
+
+class Catnip : public Item {
+public:
+    Catnip() {
+        m_ItemID = 3;
+        m_ItemName = "Catnip";
+        m_ItemDescription = "Kitty Kat Drugs.";
+    }
+    int Use() override;
+};
+
+class HealingItem : public Item {
+public:
+    HealingItem(std::string name, std::string description, int healAmount) : m_HealAmount(healAmount) {
+        m_ItemID = 4; // Unique ID for HealingItem
+        m_ItemName = name;
+        m_ItemDescription = description;
+    }
+    int Use() override;
+    int m_HealAmount = 0;
+};
+
 
 #endif // ITEM_H

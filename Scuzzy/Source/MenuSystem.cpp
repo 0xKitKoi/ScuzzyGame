@@ -760,6 +760,7 @@ void handleShopMenuSelection(SDL_Event event) {
         }
         MS_selectedIndex = 0;
         gameState.currentNPC = nullptr;
+        gameState.callbackNPC = nullptr;
         return;
     }
 

@@ -1340,7 +1340,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			collisionBoxes.push_back(&CafeCat->m_Collider);
 			std::vector<std::string> SHOPdialogue = {"meow meow meow MEOWWWWWW meow meow mree mreow meow meow mreow meow meow meow meow meow"};
 
-			std::vector<SpecialMerchantNPC::ShopItem> stock = {SpecialMerchantNPC::ShopItem{2, 2, "Cat-Food"}, MerchantNPC::ShopItem{1, 2, "Weird Drink"} };
+			std::vector<SpecialMerchantNPC::ShopItem> stock = {SpecialMerchantNPC::ShopItem{4, 5, "CatCafe Special", 10, "pupcup for kitty cats. catcup..? naw pupcup sounds better."}, SpecialMerchantNPC::ShopItem{4, 5, "CatCafe Flavored Band-Aid", 5, "A band-aid with a ... cat flavor. yeah."}, MerchantNPC::ShopItem{3, 1, "Catnip"}};
 
 			std::shared_ptr<SpecialMerchantNPC> shopdood = std::make_shared<SpecialMerchantNPC>(
 				SHOPdialogue, CafeCat, stock,
@@ -1357,6 +1357,21 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			CafeCat->AddAnimation("happy",     { {0,0,128,128}, {128,0,128,128}}, 150.0f, true);
 
 			CafeCat->PlayAnimation("idle");
+
+
+			shopdood->SetReactionAnimation(MerchantReaction::Decline,   "surprised");
+			shopdood->SetReactionAnimation(MerchantReaction::OfferTalk, "happy");
+			shopdood->SetReactionAnimation(MerchantReaction::OfferBuy,  "happy");
+			shopdood->SetReactionAnimation(MerchantReaction::TalkBack,  "happy");
+
+			shopdood->SetTalkReactions({ "happy", "surprised" }); // one per talk question
+
+			// --- SpecialMerchantNPC quick setup ---
+			// 1. Entity->AddAnimation(name, frames, speed, loop);   // set up expressions once
+			// 2. make_shared<SpecialMerchantNPC>(dialogue, entity, stock, questions, answers);
+			// 3. SetReactionAnimation(MerchantReaction::X, "animName");  // per event, skip if none
+			// 4. SetTalkReactions({ "anim1", "anim2", ... });             // optional, per question
+			// 5. m_prompt / SetMainChoices({...}) / m_CancelPrompt to override default text
 
 
 
