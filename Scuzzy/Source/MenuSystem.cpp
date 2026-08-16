@@ -88,11 +88,61 @@ void MS_renderTextBox(SDL_Renderer* renderer) {
     SDL_RenderFillRect(renderer, &blacktemp);
 }
 
-void MS_renderText(SDL_Renderer* renderer, TTF_Font* font, std::string text, int x, int y, SDL_Color color) {
-    SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
+// void MS_renderText(SDL_Renderer* renderer, TTF_Font* font, std::string text, int x, int y, SDL_Color color) {
+//     SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
+//     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+//     SDL_Rect dstRect = { x, y, surface->w, surface->h };
+//     SDL_RenderCopy(renderer, texture, NULL, &dstRect);
+
+//     SDL_FreeSurface(surface);
+//     SDL_DestroyTexture(texture);
+// }
+
+void MS_renderText(
+    SDL_Renderer* renderer,
+    TTF_Font* font,
+    const std::string& text,
+    int x,
+    int y,
+    SDL_Color color,
+    int maxWidth = 0
+) {
+    SDL_Surface* surface = nullptr;
+
+    if (maxWidth > 0) {
+        surface = TTF_RenderText_Solid_Wrapped(
+            font,
+            text.c_str(),
+            color,
+            maxWidth
+        );
+    }
+    else {
+        surface = TTF_RenderText_Solid(
+            font,
+            text.c_str(),
+            color
+        );
+    }
+
+    if (!surface)
+        return;
+
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_Rect dstRect = { x, y, surface->w, surface->h };
-    SDL_RenderCopy(renderer, texture, NULL, &dstRect);
+
+    if (!texture) {
+        SDL_FreeSurface(surface);
+        return;
+    }
+
+    SDL_Rect dstRect = {
+        x,
+        y,
+        surface->w,
+        surface->h
+    };
+
+    SDL_RenderCopy(renderer, texture, nullptr, &dstRect);
 
     SDL_FreeSurface(surface);
     SDL_DestroyTexture(texture);
@@ -731,7 +781,18 @@ void renderShopMenu(SDL_Renderer* renderer, TTF_Font* font) {
             gameState.player->m_FightSpriteSheet.render(currentX, heartY, &heartClip);
         }
 
-        MS_renderText(renderer, font, line, currentX + textIndent, currentY, color);
+        //MS_renderText(renderer, font, line, currentX + textIndent, currentY, color);
+        int maxTextWidth = optionWidth - textIndent - 10;
+
+        MS_renderText(
+            renderer,
+            font,
+            line,
+            currentX + textIndent,
+            currentY,
+            color,
+            maxTextWidth
+        );
     }
 }
 

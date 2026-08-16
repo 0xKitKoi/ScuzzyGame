@@ -1347,7 +1347,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 			//std::vector<SpecialMerchantNPC::ShopItem> stock = {SpecialMerchantNPC::ShopItem{4, 5, "CatCafe Special", 10, "pupcup for kitty cats. catcup..? naw pupcup sounds better."}, SpecialMerchantNPC::ShopItem{4, 5, "CatCafe Flavored Band-Aid", 5, "A band-aid with a ... cat flavor. yeah."}, MerchantNPC::ShopItem{3, 1, "Catnip"}};
 			std::vector<SpecialMerchantNPC::ShopItem> stock = {
-				SpecialMerchantNPC::ShopItem{1001, 5},
+				SpecialMerchantNPC::ShopItem{1001, 5}, // see ItemRegistry for more info on this.
 				SpecialMerchantNPC::ShopItem{1002, 5},
 				SpecialMerchantNPC::ShopItem{1003, 1}
 			};
