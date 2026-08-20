@@ -174,9 +174,12 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			collisionBoxes.push_back(&MerchantGuy->m_Collider);
 			std::vector<std::string> SHOPdialogue = {"GETT OUUTA ME HEADD!!!"};
 			//std::vector<MerchantNPC::ShopItem> stock = {MerchantNPC::ShopItem{2, 2, "test"}, MerchantNPC::ShopItem{1, 2, "weenie"} };
+			//std::vector<MerchantNPC::ShopItem> stock = {
+			//	MerchantNPC::ShopItem{1, 5},
+			//	MerchantNPC::ShopItem{2222, 5},
+			//};
 			std::vector<MerchantNPC::ShopItem> stock = {
-				MerchantNPC::ShopItem{1, 5},
-				MerchantNPC::ShopItem{2222, 5},
+				MerchantNPC::ShopItem {1, 5, "Weenie Key", 81, "test"}
 			};
 			std::shared_ptr<MerchantNPC> shopdood = std::make_shared<MerchantNPC>(SHOPdialogue, MerchantGuy, stock);
 			MerchantGuy->setNPC(shopdood);
@@ -251,7 +254,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			auto Doorentity = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
 			Entities.push_back(Doorentity); // vector of all entities to render.
 			Vector2f outpos(300, 200);
-			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity, "Level1", outpos, 81); // DOOR ID 81 added. important for keys!
+			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity, "DarkAlley", outpos, 81); // DOOR ID 81 added. important for keys!
 			
 			doornpc->m_Entity = Doorentity;
 			Doorentity->setNPC(doornpc);
@@ -419,7 +422,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			Entities.push_back(entity); // vector of all entities to render.
 			collisionBoxes.push_back(&entity->m_Collider);
 			
-			*/
+		 */
 
 
 			// TEST OF doodoomart box enemy
@@ -454,7 +457,6 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			//entity->m_Enemy->m_EnemySpriteClips = clips;
 			Entities.push_back(entity); // vector of all entities to render.
 			collisionBoxes.push_back(&entity->m_Collider);
-
 
 
 		}
@@ -536,7 +538,6 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			doornpc->m_Entity = Doorentity;
 			Doorentity->setNPC(doornpc);
 			collisionBoxes.push_back(&Doorentity->m_Collider);
-
 
 
 			Vector2f PuddlePos(1025, 420);
@@ -1505,5 +1506,7 @@ void SaveInventory(std::vector<int>& outItemIDs) {
 		outItemIDs.push_back(item->m_ItemID);
 	}
 }	
+
+
 
 

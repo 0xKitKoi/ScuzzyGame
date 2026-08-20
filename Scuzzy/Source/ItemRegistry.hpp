@@ -83,7 +83,28 @@ ItemRegistry::kDefinitions = {
         [](int, const std::string& name, const std::string& desc) {
             return std::make_shared<Catnip>(name, desc);
         }
-    }}
+    }},
+	{
+		1,
+		{
+			"weenie key",
+			"its a weird key thats made entirely out of hotdog.",
+			[](int param, const std::string& name, const std::string& desc) {
+				return std::make_shared<Key>(param, name, desc);
+			}
+		}
+	}
+	/*
+	{
+		ItemIDNumber, {
+			"Default Name",
+			"Default Description",
+			[](int param, const std::string& name, const std::string& desc) {
+				return std::make_shared<Item>(param, name, desc);
+			}
+		}
+	}
+	*/
 };
 
 #endif // ITEM_REGISTRY_H
