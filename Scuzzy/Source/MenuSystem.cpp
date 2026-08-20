@@ -313,49 +313,170 @@ int handleMenuInputGrid(SDL_Event event, std::vector<std::string>* options) {
 }
 
 
+//void renderResponse(SDL_Renderer* renderer, TTF_Font* font) {
+//    // Get screen dimensions
+//    int screenWidth, screenHeight;
+//    SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+//
+//    // Render the text box at the bottom of the screen
+//    MS_renderTextBox(renderer);
+//
+//    // Calculate text rendering position
+//    int boxWidth = screenWidth * 0.9;
+//    int xOffset = screenWidth * 0.05 + 30;  // Start slightly inside the text box
+//    int yOffset = screenHeight - 275;       // Place the text inside the box
+//    int maxTextWidth = boxWidth - 60;
+//	MS_renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, {255, 255, 255}), maxTextWidth;
+//}
+
 void renderResponse(SDL_Renderer* renderer, TTF_Font* font) {
-    // Get screen dimensions
-    int screenWidth, screenHeight;
-    SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+	// Get screen dimensions
+	int screenWidth, screenHeight;
+	SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
 
-    // Render the text box at the bottom of the screen
-    MS_renderTextBox(renderer);
+	// Render the text box at the bottom of the screen
+	MS_renderTextBox(renderer);
 
-    // Calculate text rendering position
-    int boxWidth = screenWidth * 0.9;
-    int xOffset = screenWidth * 0.05 + 30;  // Start slightly inside the text box
-    int yOffset = screenHeight - 275;       // Place the text inside the box
-    int maxTextWidth = boxWidth - 60;
-	MS_renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, {255, 255, 255}), maxTextWidth;
+	// Calculate text position inside the text box
+	int boxWidth = screenWidth * 0.9;
+	int xOffset = screenWidth * 0.05 + 20;  // Small margin inside the box
+	int yOffset = screenHeight - 275;       // Positioning inside the text box
+
+	// Ensure we have valid text to display
+	if (gameState.Text.empty() || gameState.textIndex < 0 || static_cast<size_t>(gameState.textIndex) >= gameState.Text.size()) {
+		// Nothing to render
+		return;
+	}
+
+	// If the current line exists, update and render it
+	if (gameState.currentCharIndex < gameState.Text.at(gameState.textIndex).size()) {
+		// somewhere here, add logic to play one of three character voice sounds for each character in string.
+
+		// Update text animation if needed
+		if (gameState.shouldAnimateText && gameState.textAnimating) {
+			gameState.textTimer += 1.0f / 60.0f;//60.0f; // Assuming 60 FPS
+			// if (gameState.textTimer >= gameState.textSpeed) {
+			//     gameState.textTimer = 0.0f;
+			//     if (gameState.currentCharIndex < gameState.Text.at(gameState.textIndex).length()) {
+			//         gameState.currentDisplayText += gameState.Text.at(gameState.textIndex).at(gameState.currentCharIndex);
+			//         gameState.currentCharIndex++;
+			//     }
+			//     else {
+			//         gameState.textAnimating = false;
+			//     }
+			// }
+			if (gameState.textTimer >= gameState.textSpeed) {
+				gameState.textTimer = 0.0f;
+				if (gameState.currentCharIndex < gameState.Text.at(gameState.textIndex).length()) {
+					char c = gameState.Text.at(gameState.textIndex).at(gameState.currentCharIndex);
+					gameState.currentDisplayText += c;
+					gameState.currentCharIndex++;
+					static float blipCooldown = 0.0f;
+					blipCooldown += 1.0f / 60.0f;
+
+					if (!isspace(static_cast<unsigned char>(c)) && blipCooldown >= 0.06f) { // ~60ms min gap
+						blipCooldown = 0.0f;
+						Mix_Chunk* blips[] = { gTextCharSound1, gTextCharSound2, gTextCharSound3 };
+						Mix_PlayChannel(2, blips[rand() % 3], 0);
+					}
+
+					// // Play a random blip, but skip spaces/punctuation so it doesn't sound jittery
+					// if (!isspace(static_cast<unsigned char>(c))) {
+					//     Mix_Chunk* blips[] = { gTextCharSound1, gTextCharSound2, gTextCharSound3 };
+					//     int idx = rand() % 3;
+					//     Mix_PlayChannel(-1, blips[idx], 0);
+					// }
+					// play random blip for each character, regardless of what it is, because it sounds better that way.
+					// Mix_Chunk* blips[] = { gTextCharSound1, gTextCharSound2, gTextCharSound3 };
+					// int idx = rand() % 3;
+					// Mix_PlayChannel(-1, blips[idx], 0);
+
+
+				}
+				else {
+					gameState.textAnimating = false;
+				}
+			}
+		}
+
+
+	}
+	// Render the current text
+	SDL_Color white = { 255, 255, 255 };  // Normal text color
+	int maxTextWidth = boxWidth - 40;
+	// HEY! when gameState.currentDisplayText.length() is zero, we cant try to generate the size of nothing for the sdl surface,
+	// which means crash. 
+	if (gameState.shouldAnimateText && gameState.textAnimating && gameState.currentDisplayText.length() != 0) {
+		MS_renderText(renderer, font, gameState.currentDisplayText, xOffset, yOffset, white, maxTextWidth);
+	}
+	else {
+		MS_renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, white, maxTextWidth);
+	}
 }
 
+
+//void handleResponse(SDL_Event event) {
+//    //if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z || event.key.keysym.sym == SDLK_x) {
+//	if (event.type == SDL_KEYDOWN && (event.key.keysym.sym == SDLK_z || event.key.keysym.sym == SDLK_x)) {
+//        /*if (gameState.shouldAnimateText && gameState.textAnimating) {
+//            // If text is still animating, show the full text immediately
+//            gameState.currentDisplayText = gameState.Text[gameState.textIndex];
+//            gameState.textAnimating = false;
+//        }
+//        else
+//        if (gameState.textIndex < gameState.Text.size() - 1) {
+//            // Move to next line and start animating if needed
+//            gameState.textIndex++;
+//            if (gameState.shouldAnimateText) {
+//                gameState.currentCharIndex = 0;
+//                gameState.textTimer = 0.0f;
+//                gameState.textAnimating = true;
+//                gameState.currentDisplayText = "";
+//            }
+//        }
+//        else */ 
+//            // Response finished
+//            gameState.textIndex = 0;
+//            gameState.Text.clear();
+//            gameState.textAvailable = false;
+//            gameState.textAnimating = false;
+//            currentMenu = lastMenuState; // go back
+//        
+//    }
+//}
 void handleResponse(SDL_Event event) {
-    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z || event.key.keysym.sym == SDLK_x) {
-        /*if (gameState.shouldAnimateText && gameState.textAnimating) {
-            // If text is still animating, show the full text immediately
-            gameState.currentDisplayText = gameState.Text[gameState.textIndex];
-            gameState.textAnimating = false;
-        }
-        else
-        if (gameState.textIndex < gameState.Text.size() - 1) {
-            // Move to next line and start animating if needed
-            gameState.textIndex++;
-            if (gameState.shouldAnimateText) {
-                gameState.currentCharIndex = 0;
-                gameState.textTimer = 0.0f;
-                gameState.textAnimating = true;
-                gameState.currentDisplayText = "";
-            }
-        }
-        else */ 
-            // Response finished
-            gameState.textIndex = 0;
-            gameState.Text.clear();
-            gameState.textAvailable = false;
-            gameState.textAnimating = false;
-            currentMenu = lastMenuState; // go back
-        
-    }
+	if (event.type != SDL_KEYDOWN) return;
+	if (event.key.keysym.sym != SDLK_z && event.key.keysym.sym != SDLK_x) return;
+
+	// Case 1: text is still animating -> snap to full line, don't advance
+	if (gameState.shouldAnimateText && gameState.textAnimating) {
+		gameState.currentDisplayText = gameState.Text[gameState.textIndex];
+		gameState.currentCharIndex = gameState.Text[gameState.textIndex].size();
+		gameState.textAnimating = false;
+		return;
+	}
+
+	// Case 2: line is fully shown, but more lines remain -> advance
+	if (gameState.textIndex + 1 < gameState.Text.size()) {
+		gameState.textIndex++;
+		if (gameState.shouldAnimateText) {
+			gameState.currentCharIndex = 0;
+			gameState.textTimer = 0.0f;
+			gameState.textAnimating = true;
+			gameState.currentDisplayText.clear();
+		}
+		else {
+			gameState.currentDisplayText = gameState.Text[gameState.textIndex];
+		}
+		return;
+	}
+
+	// Case 3: last line was fully shown -> close response
+	gameState.textIndex = 0;
+	gameState.Text.clear();
+	gameState.textAvailable = false;
+	gameState.textAnimating = false;
+	currentMenu = lastMenuState;
 }
 
 
@@ -847,8 +968,23 @@ void handleShopMenuSelection(SDL_Event event) {
         if (ok) {
             Mix_PlayChannel(-1, gSelectSound, 0);
             //gameState.Text = { std::string("You bought ") + merchant->m_Stock[sel].name + "." };
-            gameState.Text = { std::string("You bought ") + ItemRegistry::GetDefaultName(merchant->m_Stock[sel].itemID) + "." };
-            gameState.textIndex = 0;
+			//gameState.Text.clear();
+   //         gameState.Text = { std::string("You bought ") + ItemRegistry::GetDefaultName(merchant->m_Stock[sel].itemID) + "." };
+   //         gameState.textIndex = 0;
+			//gameState.currentDisplayText = gameState.Text[gameState.textIndex];
+			//gameState.shouldAnimateText = true;
+			//gameState.textAnimating = true;
+
+			gameState.Text.clear();
+			gameState.Text = { std::string("You bought ") + ItemRegistry::GetDefaultName(merchant->m_Stock[sel].itemID) + "." };
+			gameState.textIndex = 0;
+			gameState.shouldAnimateText = true;
+			gameState.textAnimating = true;
+			gameState.currentCharIndex = 0;        // start from the beginning
+			gameState.currentDisplayText.clear();  // nothing shown yet — let the animation build it
+			gameState.textTimer = 0.0f;            // don't inherit a stale timer value
+
+
             lastMenuState = SHOP_MENU;
             currentMenu = RESPONSE;
             return;
@@ -1038,9 +1174,14 @@ void handleItemOptionsMenuSelection(SDL_Event event) {
                 if (gameState.DebugMode) {
                     printf("\nUsing item: %s", gameState.Inventory.at(gameState.selectionIndex)->m_ItemName.c_str());
                 }
-                
-				gameState.Text = { "You used " + gameState.Inventory.at(gameState.selectionIndex)->m_ItemName + "." }; // Set response text
-				gameState.textIndex = 0; // Reset text index
+				gameState.Text.clear();
+				gameState.Text = { "You used " + gameState.Inventory.at(gameState.selectionIndex)->m_ItemName + "." };
+				gameState.textIndex = 0;
+				gameState.shouldAnimateText = true;
+				gameState.textAnimating = true;
+				gameState.currentCharIndex = 0;        // start from the beginning
+				gameState.currentDisplayText.clear();  // nothing shown yet — let the animation build it
+				gameState.textTimer = 0.0f;            // don't inherit a stale timer value
 
 				//UseItem(gameState.Inventory[gameState.selectionIndex]); // Use the item
                  if (!gameState.Inventory.at(gameState.selectionIndex)->Use()) { // 0 on item used. 
