@@ -158,10 +158,13 @@ public:
     Vector2f m_Pos;
     std::vector<SDL_Rect> m_Clips;
     int m_FrameCount;
-    int duration; // in milliseconds
+    int duration; // total display time in milliseconds
     int m_CurrentFrame = 0;
     bool m_loop = false;
     bool m_AnimationFinished = false;
+    float m_ElapsedMs = 0.0f;
+    float m_FrameElapsedMs = 0.0f;
+    float m_FrameDurationMs = 100.0f; // 10 animation frames per second
 
     SpriteShowAction(std::shared_ptr<LTexture> texture, std::vector<SDL_Rect> clips, Vector2f position, int frameCount, int durationMs, bool loop = false);
     void Enter() override;
@@ -175,7 +178,8 @@ public:
     Mix_Chunk* m_SoundEffect = NULL;
     bool m_repeat = false;
     int m_repeatCount = 0; // how many times to repeat the sound effect. 0 = no repeat, 1 = play twice, etc.
-    SoundEffectAction(Mix_Chunk* soundEffect);
+    bool m_Played = false;
+    SoundEffectAction(Mix_Chunk* soundEffect, bool repeat, int repeatCount);
     void Enter() override;
     bool Update(float deltaTime) override;
     void Exit() override;

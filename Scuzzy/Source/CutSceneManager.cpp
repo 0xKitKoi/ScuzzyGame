@@ -209,12 +209,19 @@ SpriteShowAction::SpriteShowAction(std::shared_ptr<LTexture> texture, std::vecto
 void SpriteShowAction::Enter() {
     m_CurrentFrame = 0;
     m_AnimationFinished = false;
+    m_ElapsedMs = 0.0f;
+    m_FrameElapsedMs = 0.0f;
 }
 void SpriteShowAction::Render() {
-    if (m_AnimationFinished) return;
+    if (m_AnimationFinished || !m_Texture || m_Clips.empty()) return;
+
+    const int frameCount = std::min(m_FrameCount, static_cast<int>(m_Clips.size()));
+    if (frameCount <= 0) return;
 
     SDL_Rect srcRect = m_Clips[m_CurrentFrame];
-    m_Texture->render(m_Pos.x, m_Pos.y, &srcRect);
+    const int screenX = static_cast<int>(m_Pos.x - gameState.cameraRect.x);
+    const int screenY = static_cast<int>(m_Pos.y - gameState.cameraRect.y);
+    m_Texture->render(screenX, screenY, &srcRect);
 }
 void SpriteShowAction::Exit() {
     printf("SpriteShowAction completed.\n");
@@ -223,35 +230,54 @@ void SpriteShowAction::Exit() {
 bool SpriteShowAction::Update(float deltaTime) {
     if (m_AnimationFinished) return true;
 
-    m_CurrentFrame++;
-    if (m_CurrentFrame >= m_FrameCount) {
-        if (m_loop) {
+    const int frameCount = std::min(m_FrameCount, static_cast<int>(m_Clips.size()));
+    if (duration <= 0 || frameCount <= 0) {
+        m_AnimationFinished = true;
+        return true;
+    }
+
+    const float deltaMs = deltaTime * 1000.0f;
+    m_ElapsedMs += deltaMs;
+    m_FrameElapsedMs += deltaMs;
+
+    // Advance at a fixed rate. A non-looping animation holds its last frame
+    // until the requested display duration ends; a looping one wraps instead.
+    while (m_FrameElapsedMs >= m_FrameDurationMs) {
+        m_FrameElapsedMs -= m_FrameDurationMs;
+        if (m_CurrentFrame + 1 < frameCount) {
+            ++m_CurrentFrame;
+        } else if (m_loop) {
             m_CurrentFrame = 0;
-        } else {
-            m_AnimationFinished = true;
-            return true;
         }
     }
+
+    if (m_ElapsedMs >= duration) {
+        m_AnimationFinished = true;
+        return true;
+    }
+
     return false;
 }
 
 
-SoundEffectAction::SoundEffectAction(Mix_Chunk* soundEffect)
-    : m_SoundEffect(soundEffect) {}
+SoundEffectAction::SoundEffectAction(Mix_Chunk* soundEffect, bool repeat, int repeatCount)
+    : m_SoundEffect(soundEffect), m_repeat(repeat), m_repeatCount(repeatCount) {}
 
 
 void SoundEffectAction::Enter() {
+    m_Played = false;
     if (m_SoundEffect) {
-        Mix_PlayChannel(-1, m_SoundEffect, 0);
+        // SDL_mixer performs repeats asynchronously. The loops argument is
+        // the number of additional plays, matching m_repeatCount's contract.
+        const int loops = m_repeat ? m_repeatCount : 0;
+        Mix_PlayChannel(-1, m_SoundEffect, loops);
     }
+    m_Played = true;
 }
 bool SoundEffectAction::Update(float deltaTime) {
-    if(m_repeat) {
-        for (int i = 0; i < m_repeatCount; ++i) {
-            Mix_PlayChannel(-1, m_SoundEffect, 0); // this is blocking but funny asf 
-        }   
-    }
-    return false;
+    // The sound keeps playing on SDL_mixer after this action completes.
+    // Do not keep the cutscene stuck here or start overlapping copies.
+    return m_Played;
 }
 // void SoundEffectAction::Render() {
 //     // Sound effects do not render anything.
