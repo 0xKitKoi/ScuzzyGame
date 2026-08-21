@@ -12,6 +12,7 @@
 extern GameState gameState;
 extern Mix_Chunk* gExplosionSound;
 
+
 // Orchestrator class managing the cutscene flow
 
     void CutsceneManager::AddAction(std::unique_ptr<CutsceneAction> action) {
@@ -198,5 +199,56 @@ void ExplosionAction::Render() {
 
 void ExplosionAction::Exit() {
     printf("esploded action completed.\n");
+    //gameState.inCutScene = false; // signal cutscene manager to advance to next action or end cutscene
+}
+
+
+
+
+void SpriteShowAction::Enter() {
+    m_CurrentFrame = 0;
+    m_AnimationFinished = false;
+}
+void SpriteShowAction::Render() {
+    if (m_AnimationFinished) return;
+
+    SDL_Rect srcRect = m_Clips[m_CurrentFrame];
+    m_Texture->render(m_Pos.x, m_Pos.y, &srcRect);
+}
+void SpriteShowAction::Exit() {
+    printf("SpriteShowAction completed.\n");
+    //gameState.inCutScene = false; // signal cutscene manager to advance to next action or end cutscene
+}
+void SpriteShowAction::Update(float deltaTime) {
+    if (m_AnimationFinished) return;
+
+    m_CurrentFrame++;
+    if (m_CurrentFrame >= m_FrameCount) {
+        if (m_loop) {
+            m_CurrentFrame = 0;
+        } else {
+            m_AnimationFinished = true;
+        }
+    }
+}
+
+
+void SoundEffectAction::Enter() {
+    if (m_Sound) {
+        Mix_PlayChannel(-1, m_Sound, 0);
+    }
+}
+void SoundEffectAction::Update(float deltaTime) {
+    if(m_repeat) {
+        for (int i = 0; i < m_repeatCount; ++i) {
+            Mix_PlayChannel(-1, m_Sound, 0); // this is blocking but funny asf 
+        }   
+    }
+}
+void SoundEffectAction::Render() {
+    // Sound effects do not render anything.
+}
+void SoundEffectAction::Exit() {
+    printf("SoundEffectAction completed.\n");
     //gameState.inCutScene = false; // signal cutscene manager to advance to next action or end cutscene
 }

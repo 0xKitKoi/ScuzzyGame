@@ -118,6 +118,7 @@ Mix_Chunk* gTextCharSound8 = NULL; // character 2 b
 Mix_Chunk* gTextCharSound9 = NULL; // character 2 c
 
 Mix_Chunk* gExplosionSound = NULL;
+Mix_Chunk* gAwHellNawSound = NULL;
 
 //Rendered TEXT texture
 LTexture gTextTexture;
@@ -770,6 +771,9 @@ bool loadMedia()
 	soulRubberBandBall->m_Texture->setBlendMode(SDL_BLENDMODE_BLEND);
 
 	gExplosionSound = Mix_LoadWAV("data/mus/snd_badexplosion.wav");
+
+	gAwHellNawSound = Mix_LoadWAV("data/mus/whattt.wav");
+
 	/*
 	gExplosionSound = Mix_LoadWAV("data/mus/snd_badexplosion.wav");
 

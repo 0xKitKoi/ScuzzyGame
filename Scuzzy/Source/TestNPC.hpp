@@ -73,8 +73,21 @@ public:
     void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override { 
         if (m_checked && m_Unlocked) {
 			//m_Entity->moving = true;
-			m_Entity->m_SpriteRect = m_Entity->m_Clips[1]; // this is the open door sprite
-			m_Entity->m_Texture->render(m_Entity->m_PosX, m_Entity->m_PosY, &m_Entity->m_Clips[1]); // render the open door sprite when the door is unlocked and checked. this is a quick and dirty way to show the door opening, but it works for now. ideally we would have an animation of the door opening, but that can be added later.
+			//m_Entity->m_SpriteRect = m_Entity->m_Clips[1]; // this is the open door sprite
+			//m_Entity->m_Texture->render(m_Entity->m_PosX, m_Entity->m_PosY, &m_Entity->m_Clips[1]); // render the open door sprite when the door is unlocked and checked. this is a quick and dirty way to show the door opening, but it works for now. ideally we would have an animation of the door opening, but that can be added later.
+                    // Only update/render the door sprite if this door has a texture.
+                if (m_Entity->m_Texture) {
+
+                    if (m_Entity->m_Clips.size() > 1) {
+                        m_Entity->m_SpriteRect = m_Entity->m_Clips[1];
+
+                        m_Entity->m_Texture->render(
+                            m_Entity->m_PosX,
+                            m_Entity->m_PosY,
+                            &m_Entity->m_Clips[1]
+                        );
+                    }
+                }
 			printf("Loading new room: %s\n", m_room.c_str());
             gameState.room = m_room;
 			gameState.LoadingScreen = true;\
@@ -93,7 +106,8 @@ public:
 			//m_Unlocked = true;
 			
 
-			gameState.Text = { "This Door is locked. There are actions you have not yet taken." };
+			//gameState.Text = { "This Door is locked. There are actions you have not yet taken." };
+            gameState.Text = m_prompt.empty() ? std::vector<std::string>{"This Door is locked. There are actions you have not yet taken."} : std::vector<std::string>{m_prompt};
 			gameState.textIndex = 0;
 			gameState.textAvailable = true;
 			gameState.shouldAnimateText = true;
@@ -720,6 +734,7 @@ private:
 
     void closeOut() {
         currentMenu = MAIN_MENU;
+        gameState.Text.clear();
         gameState.Text.push_back(m_CancelPrompt);
         gameState.textIndex = 0;
         gameState.textAvailable = true;

@@ -151,4 +151,34 @@ public:
     void Exit() override;
 };
 
+class SpriteShowAction : public CutsceneAction {
+public:
+    std::shared_ptr<LTexture> m_Texture;
+    SDL_Rect m_SpriteRect;
+    Vector2f m_Pos;
+    std::vector<SDL_Rect> m_Clips;
+    int m_FrameCount;
+    int duration; // in milliseconds
+    int m_CurrentFrame = 0;
+    bool m_loop = false;
+    bool m_AnimationFinished = false;
+
+    SpriteShowAction(std::shared_ptr<LTexture> texture, std::vector<SDL_Rect> clips, Vector2f position, int frameCount, int durationMs, bool loop = false);
+    void Enter() override;
+    bool Update(float deltaTime) override;
+    void Render() override;
+    void Exit() override;
+};
+
+class SoundEffectAction : public CutsceneAction {
+public:
+    Mix_Chunk* m_SoundEffect = NULL;
+    bool m_repeat = false;
+    int m_repeatCount = 0; // how many times to repeat the sound effect. 0 = no repeat, 1 = play twice, etc.
+    SoundEffectAction(Mix_Chunk* soundEffect);
+    void Enter() override;
+    bool Update(float deltaTime) override;
+    void Exit() override;
+};
+
 #endif // CUTSCENEMANAGER_H

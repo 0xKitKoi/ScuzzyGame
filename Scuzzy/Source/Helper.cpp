@@ -21,6 +21,7 @@ extern std::vector<SDL_Rect> staticCollisionBoxes;
 extern std::vector<SDL_Rect> clips;
 
 extern Mix_Chunk* gExplosionSound;
+extern Mix_Chunk* gAwHellNawSound;
 
 extern Camera camera;
 
@@ -1046,7 +1047,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			SDL_Rect CafePuddleCB = { CafePuddlePos.x, CafePuddlePos.y, 200, 200 };
 			auto CafePuddleEntity = std::make_shared<Entity>(CafePuddlePos, CafePuddleCB, CafePuddleRect, getTexture("data/Puddle.png"), 7, clips, 69);
 			Entities.push_back(CafePuddleEntity);
-			Vector2f CafePuddleOutPos(400, 400);
+			Vector2f CafePuddleOutPos(2400, 1400);
 			std::shared_ptr<NPC> CafePuddleNPC = std::make_shared<DoorNPC>(CafePuddleEntity, "NoomSideCafe", CafePuddleOutPos);
 			CafePuddleNPC->m_Entity = CafePuddleEntity;
 			CafePuddleEntity->moving = true;
@@ -1079,6 +1080,64 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			PuddleEntity->moving = true;
 			PuddleEntity->setNPC(PuddleNPC);
 			collisionBoxes.push_back(&PuddleEntity->m_Collider);
+
+
+
+			// instant replay cutscene at 2160, 370
+			/*
+									// CutScene trigger2 
+			Vector2f triggerPos2(2000, 1100);
+			SDL_Rect triggerRect2 = { 0, 0, 72, 100 };
+			SDL_Rect triggerCB2 = { triggerPos2.x, triggerPos2.y, 128, 128 };
+			std::vector<SDL_Rect> explClips;
+			for (int i = 0; i < 15; i++) {
+				explClips.push_back( SDL_Rect{ 72*i, 0, 72, 100});
+			}
+
+			//auto triggerEntity = std::make_shared<Entity>(triggerPos, triggerCB, triggerRect, 1, 401);
+			auto triggerEntity2 = std::make_shared<Entity>(
+				triggerPos2, triggerCB2, triggerRect2,
+				nullptr, //getTexture("data/RealisticExplosion72x100x18.png"), //nullptr,           // or a real texture 
+				1,                 // framecount
+				explClips,  // clips
+				402                // EntityID
+			);
+			Entities.push_back(triggerEntity2);
+			//collisionBoxes.push_back(&triggerEntity->m_Collider);
+			std::vector<std::unique_ptr<CutsceneAction>> cutsceneActions2;
+			cutsceneActions2.push_back(std::make_unique<DialogueAction>(gameState, std::vector<std::string>{"You stepped on a cutscene trigger!", "you stepped on it so hard that it died."}));
+			cutsceneActions2.push_back(std::make_unique<ExplosionAction>(gExplosionSound, getTexture("data/RealisticExplosion72x100x18.png"), 15, explClips, triggerPos2));
+			std::shared_ptr<NPC> triggerNPC2 = std::make_shared<TriggerNPC>(triggerEntity2, triggerCB2, std::move(cutsceneActions2));
+			triggerEntity2->setNPC(triggerNPC2);
+			*/
+			Vector2f triggerPos(2160, 370);
+			SDL_Rect triggerRect = { 0, 0, 300, 300 };
+			SDL_Rect triggerCB = { triggerPos.x, triggerPos.y, 300, 300 };
+			std::vector<SDL_Rect> instantReplayClips;
+			instantReplayClips.push_back({ 0, 0, 0, 0 }); // no starting frame.
+			instantReplayClips.push_back({ 0, 0, 1080, 967 }); // wojack meme
+			std::vector<SDL_Rect> explClips;
+			for (int i = 0; i < 15; i++) {
+				explClips.push_back(SDL_Rect{ 72 * i, 0, 72, 100 });
+			}
+			auto triggerEntity = std::make_shared<Entity>(
+				triggerPos, triggerCB, triggerRect,
+				nullptr, //getTexture("data/RealisticExplosion72x100x18.png"), //nullptr,           // or a real texture 
+				1,                 // framecount
+				instantReplayClips,  // clips
+				4003                // EntityID
+			);
+			Entities.push_back(triggerEntity);
+			std::vector<std::unique_ptr<CutsceneAction>> cutsceneActions;
+			cutsceneActions.push_back(std::make_unique<DialogueAction>(gameState, std::vector<std::string>{"wtf bro just clipped onto the roof did u fucking see that"}));
+			cutsceneActions.push_back(std::make_unique<ExplosionAction>(gExplosionSound, getTexture("data/RealisticExplosion72x100x18.png"), 15, explClips, triggerPos));
+			cutsceneActions.push_back(std::make_unique<SpriteShowAction>(getTexture("data/instantreplaywojack.png"), instantReplayClips, triggerPos, 2, 1000, true));
+			cutsceneActions.push_back(std::make_unique<SoundEffectAction>(gAwHellNawSound));
+			std::shared_ptr<NPC> triggerNPC = std::make_shared<TriggerNPC>(triggerEntity, triggerCB, std::move(cutsceneActions));
+			triggerEntity->setNPC(triggerNPC);
+
+
+
 		}
 
 		break;
@@ -1386,6 +1445,25 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 
 
+			// 2200, 925 secret locked door, code 89.
+			Vector2f CafeSecretDoorPos(2200, 925);
+			SDL_Rect CafeSecretDoorRect = { 0, 0, 128, 128 };
+			clips.clear();
+			clips.push_back({ 0, 0, 0, 0 });
+			SDL_Rect CafeSecretDoorCollisionBox = { CafeSecretDoorPos.x, CafeSecretDoorPos.y, 128, 128 };
+			std::shared_ptr<LTexture> noTexture = nullptr;
+			auto CafeSecretDoorEntity = std::make_shared<Entity>(CafeSecretDoorPos, CafeSecretDoorCollisionBox, CafeSecretDoorRect, nullptr, 0, clips, 89);
+			Entities.push_back(CafeSecretDoorEntity);
+			collisionBoxes.push_back(&CafeSecretDoorEntity->m_Collider);
+			auto CafeSecretDoorNPC = std::make_shared<DoorNPC>(CafeSecretDoorEntity, "MAGICANT", Vector2f(500, 222));
+			CafeSecretDoorNPC->m_Entity = CafeSecretDoorEntity;
+			CafeSecretDoorEntity->setNPC(CafeSecretDoorNPC);
+			CafeSecretDoorNPC->m_Unlocked = false; // lock the door until the player gets the key item.
+			CafeSecretDoorNPC->m_DoorID = 89; // set the door ID to match the key item ID.
+			CafeSecretDoorNPC->m_prompt = "There is something here, but its locked. A kitty shaped key hole.";
+			CafeSecretDoorNPC->m_Dialogue = { "The door is locked. It seems to require a special key." };
+
+
 			// cafe duck pos: 1488, 1356
 			Vector2f CafeDuckPOS = { 1488, 1430 };
 			SDL_Rect cafeDuckRect = {0, 0, 64, 64} ;
@@ -1402,6 +1480,25 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			CafeDuck->moving = true;
 			Entities.push_back(CafeDuck);	
 			collisionBoxes.push_back(&CafeDuck->m_Collider);
+
+			// 2600, 1400 unlocked cafe exit door puddle.
+			Vector2f CafeExitDoorPos(2600, 1400);
+			SDL_Rect CafeExitDoorRect = { 0, 0, 200, 200 };
+			clips.clear();
+			clips.push_back({ 0, 0, 200, 200 });
+			clips.push_back({ 200,0,200, 200 });
+			clips.push_back({ 400,0,200, 200 });
+			clips.push_back({ 0,200,200, 200 });
+			SDL_Rect CafeExitDoorCollisionBox = { CafeExitDoorPos.x, CafeExitDoorPos.y, 200, 200 };
+			auto CafeExitDoorEntity = std::make_shared<Entity>(CafeExitDoorPos, CafeExitDoorCollisionBox, CafeExitDoorRect, getTexture("data/Puddle.png"), 4, clips, 9001);
+			Entities.push_back(CafeExitDoorEntity);
+			collisionBoxes.push_back(&CafeExitDoorEntity->m_Collider);
+			auto CafeExitDoorNPC = std::make_shared<DoorNPC>(CafeExitDoorEntity, "NOOMSIDE", Vector2f(740, 1300));
+			CafeExitDoorNPC->m_Entity = CafeExitDoorEntity;
+			CafeExitDoorEntity->setNPC(CafeExitDoorNPC);
+			CafeExitDoorNPC->m_Unlocked = true; // unlock the door.
+			//CafeExitDoorNPC->m_DoorID = 0; // set the door ID to 0.
+			CafeExitDoorEntity->moving = true;
 
 
 		}
