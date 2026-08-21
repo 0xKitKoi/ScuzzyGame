@@ -203,7 +203,8 @@ void ExplosionAction::Exit() {
 }
 
 
-
+SpriteShowAction::SpriteShowAction(std::shared_ptr<LTexture> texture, std::vector<SDL_Rect> clips, Vector2f position, int frameCount, int durationMs, bool loop)
+    : m_Texture(texture), m_Clips(clips), m_Pos(position), m_FrameCount(frameCount), duration(durationMs), m_loop(loop) {}
 
 void SpriteShowAction::Enter() {
     m_CurrentFrame = 0;
@@ -219,8 +220,8 @@ void SpriteShowAction::Exit() {
     printf("SpriteShowAction completed.\n");
     //gameState.inCutScene = false; // signal cutscene manager to advance to next action or end cutscene
 }
-void SpriteShowAction::Update(float deltaTime) {
-    if (m_AnimationFinished) return;
+bool SpriteShowAction::Update(float deltaTime) {
+    if (m_AnimationFinished) return true;
 
     m_CurrentFrame++;
     if (m_CurrentFrame >= m_FrameCount) {
@@ -228,26 +229,33 @@ void SpriteShowAction::Update(float deltaTime) {
             m_CurrentFrame = 0;
         } else {
             m_AnimationFinished = true;
+            return true;
         }
     }
+    return false;
 }
+
+
+SoundEffectAction::SoundEffectAction(Mix_Chunk* soundEffect)
+    : m_SoundEffect(soundEffect) {}
 
 
 void SoundEffectAction::Enter() {
-    if (m_Sound) {
-        Mix_PlayChannel(-1, m_Sound, 0);
+    if (m_SoundEffect) {
+        Mix_PlayChannel(-1, m_SoundEffect, 0);
     }
 }
-void SoundEffectAction::Update(float deltaTime) {
+bool SoundEffectAction::Update(float deltaTime) {
     if(m_repeat) {
         for (int i = 0; i < m_repeatCount; ++i) {
-            Mix_PlayChannel(-1, m_Sound, 0); // this is blocking but funny asf 
+            Mix_PlayChannel(-1, m_SoundEffect, 0); // this is blocking but funny asf 
         }   
     }
+    return false;
 }
-void SoundEffectAction::Render() {
-    // Sound effects do not render anything.
-}
+// void SoundEffectAction::Render() {
+//     // Sound effects do not render anything.
+// }
 void SoundEffectAction::Exit() {
     printf("SoundEffectAction completed.\n");
     //gameState.inCutScene = false; // signal cutscene manager to advance to next action or end cutscene

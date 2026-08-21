@@ -1,9 +1,9 @@
-#include "Helper.hpp"
-#include "Math.hpp"
-#include "LTexture.hpp"
-#include "Entity.hpp"
-#include "Enemy.hpp"
-#include "NPC.hpp"
+#include "Source/Helper.hpp"
+#include "Source/Math.hpp"
+#include "Source/LTexture.hpp"
+#include "Source/Entity.hpp"
+#include "Source/Enemy.hpp"
+#include "Source/NPC.hpp"
 
 #include <string>
 #include <vector>

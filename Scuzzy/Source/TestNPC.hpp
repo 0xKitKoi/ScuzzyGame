@@ -747,6 +747,13 @@ private:
         gameState.Text = { m_TalkAnswers[choice] };
         gameState.textIndex = 0;
         gameState.textAvailable = true;
+        gameState.shouldAnimateText = true;
+        gameState.textAnimating = true;
+        // This answer replaces the previous dialogue line, so its animation
+        // must not inherit the previous line's cursor or timer.
+        gameState.currentCharIndex = 0;
+        gameState.textTimer = 0.0f;
+        gameState.currentDisplayText.clear();
         gameState.inMenu = false;
         m_stage = Stage::AWAIT_ANSWER_READ;
     }
