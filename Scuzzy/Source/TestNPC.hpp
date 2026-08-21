@@ -465,14 +465,33 @@ public:
     //     ShopItem(int id = 0, int p = 0, std::string n = "", int extra = 0, std::string desc = "")
     //         : itemID(id), price(p), name(n), param(extra), description(desc) {}
     // };
-    struct ShopItem {
-        int itemID;
-        int price;
-        int param = 0;
+    //struct ShopItem {
+    //    int itemID;
+    //    int price;
+    //    int param = 0;
 
-        ShopItem(int id = 0, int p = 0, int extra = 0)
-            : itemID(id), price(p), param(extra) {}
-    };
+    //    ShopItem(int id = 0, int p = 0, int extra = 0)
+    //        : itemID(id), price(p), param(extra) {}
+    //};
+
+	struct ShopItem {
+		int itemID;
+		int price;
+		int param = 0;
+		std::string name;
+		std::string description;
+
+		// simple constructor (current usage)
+		ShopItem(int id = 0, int p = 0, int extra = 0)
+			: itemID(id), price(p), param(extra), name(), description() {
+		}
+
+		// compatibility constructor (restores previous API that took name/description)
+		ShopItem(int id, int p, std::string n, int extra = 0, std::string desc = "")
+			: itemID(id), price(p), param(extra), name(std::move(n)), description(std::move(desc)) {
+		}
+	};
+
 
     std::string m_CancelPrompt;
 
