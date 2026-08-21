@@ -1112,6 +1112,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			triggerEntity2->setNPC(triggerNPC2);
 			*/
 			Vector2f triggerPos(2160, 370);
+			Vector2f wojackpos(triggerPos.x-500, triggerPos.y - 200);
 			SDL_Rect triggerRect = { 0, 0, 300, 300 };
 			SDL_Rect triggerCB = { triggerPos.x, triggerPos.y, 300, 300 };
 			std::vector<SDL_Rect> instantReplayClips;
@@ -1133,7 +1134,10 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			cutsceneActions.push_back(std::make_unique<SoundEffectAction>(gAwHellNawSound, false, 0));
 			cutsceneActions.push_back(std::make_unique<DialogueAction>(gameState, std::vector<std::string>{"wtf bro just clipped onto the roof did u fucking see that"}));
 			cutsceneActions.push_back(std::make_unique<ExplosionAction>(gExplosionSound, getTexture("data/RealisticExplosion72x100x18.png"), 15, explClips, triggerPos));
-			cutsceneActions.push_back(std::make_unique<SpriteShowAction>(getTexture("data/instantreplaywojack.png"), instantReplayClips, triggerPos, 2, 1000, true));
+			cutsceneActions.push_back(std::make_unique<SpriteShowAction>(getTexture("data/instantreplaywojack.png"), instantReplayClips, wojackpos, 2, 1000, false));
+			//cutsceneActions.push_back(std::make_unique<HidePlayerAction>(100));
+			//cutsceneActions.push_back(std::make_unique<SpriteShowAction>(getTexture("data/instantreplaywojack.png"), instantReplayClips, wojackpos, 2, 1000, true));
+			//cutsceneActions.push_back(std::make_unique<MoveEntityAction>(gameState.player, Vector2f(wojackpos.x + 500, wojackpos.y + 200), 1.0f));
 			
 			std::shared_ptr<NPC> triggerNPC = std::make_shared<TriggerNPC>(triggerEntity, triggerCB, std::move(cutsceneActions));
 			triggerEntity->setNPC(triggerNPC);

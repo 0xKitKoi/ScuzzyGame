@@ -185,4 +185,21 @@ public:
     void Exit() override;
 };
 
+
+class HidePlayerAction : public CutsceneAction {
+    float m_Duration;
+public:
+    HidePlayerAction(float duration) : m_Duration(duration) {}
+    void Enter() override {
+        gameState.player->m_Invisible = true;
+    };
+    bool Update(float deltaTime) override {
+        m_Duration -= deltaTime;
+        return m_Duration <= 0;
+    };
+    void Exit() override {
+        gameState.player->m_Invisible = false;
+    };
+};
+
 #endif // CUTSCENEMANAGER_H

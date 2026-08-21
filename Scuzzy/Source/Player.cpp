@@ -629,6 +629,7 @@ void Player::clearInputState() {
 /// <param name="camX">Camera Position.</param>
 /// <param name="camY">Camera Position.</param>
 void Player::render(int camX, int camY) {
+	if (m_Invisible) return;
 	// Advance animation frames
 	lastFrameTime += gameState.deltaTime * 1000.0f;
 	if (lastFrameTime >= frameDuration) {

@@ -63,7 +63,7 @@ public:
 	std::vector<std::shared_ptr<Entity>>& AllEntities;
 	SDL_Rect m_CheckBox;
 
-
+	bool m_Invisible = false;
 	LTexture m_FightSpriteSheet;
 	Vector2f m_HeartPos; // = { float(screenWidth) / 2.0f - 32.0f, float(screenheight) / 2.0f - 32.0f };
 	Vector2f m_HeartVelocity;
