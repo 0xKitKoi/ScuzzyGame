@@ -331,7 +331,7 @@ bool MovePlayerAction::Update(float deltaTime) {
     float distance = direction.Length();
     // printf("MovePlayerAction: Distance: %f\n", distance);
     if (distance == 0.0f) {
-        printf("MovePlayerAction: FINISHED - zero distance\n");
+        //printf("MovePlayerAction: FINISHED - zero distance\n");
         return true;
     }
 	// if (distance == 0.0f) return true;
@@ -380,18 +380,19 @@ bool MovePlayerAction::Update(float deltaTime) {
 			currentFrame = (currentFrame + 1) % 4;
 			lastFrameTime -= frameDuration;  // Subtract instead of setting to 0
 		}
-        printf("FRAME: %d\n", currentFrame);
+        //printf("FRAME: %d\n", currentFrame);
         gameState.player->m_CutsceneClip = m_Clips[currentFrame];
 
-        printf(
-            "FRAME %d: clip = {%d, %d, %d, %d}\n",
-            currentFrame,
-            m_Clips[currentFrame].x,
-            m_Clips[currentFrame].y,
-            m_Clips[currentFrame].w,
-            m_Clips[currentFrame].h
-        );
-		//render that...?
+        // printf(
+        //     "FRAME %d: clip = {%d, %d, %d, %d}\n",
+        //     currentFrame,
+        //     m_Clips[currentFrame].x,
+        //     m_Clips[currentFrame].y,
+        //     m_Clips[currentFrame].w,
+        //     m_Clips[currentFrame].h
+        // );
+        
+		//render that...? EDIT: no, rendering still needs to be handled by the player. ANimations will be driven by the cutscene though. Player->m_CutsceneClip = m_Clips[currentFrame]; // this is the clip that the player will render in its render function.
 		//gameState.player->CurrentSprite.render(gameState.player->m_PosX - gameState.cameraRect.x, gameState.player->m_PosY - gameState.cameraRect.y, &m_Clips[currentFrame]);
         //gameState.player->render(gameState.player->m_PosX - gameState.cameraRect.x, gameState.player->m_PosY - gameState.cameraRect.y); //, &m_Clips[currentFrame]);
         //gameState.player->SpriteSheet.render(gameState.player->m_PosX - gameState.cameraRect.x, gameState.player->m_PosY - gameState.cameraRect.y, &m_Clips[currentFrame]);

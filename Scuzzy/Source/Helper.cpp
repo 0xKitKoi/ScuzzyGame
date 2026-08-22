@@ -1163,6 +1163,26 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 
 
+			// (88, 987) "Woah you clipped onto that roof! i wonder what other roofs you can to that to."
+			// NPC here with this dialogue or simmilar. 
+
+			// (2487, 425) // this is the hatch for the montonoli building. The boss room. 
+
+			// (3411, 930) // this is the Yellow door. Probably save room, i had plans about a basement dungeon here. 
+
+
+			// Wizard teaches the player how to use the magic system.
+
+			// (2060, 2014) // this is the main entrance to the montonoli building.
+			// the top floor will be barracaded, leaving the only entrance to the boss room to be the hatch on the roof.
+			// other floors are to be decided, most probably shops, better equipment maybe, food mostly.
+			// Duck location in here, help it be mischevious. 
+
+			// (4234, 2719) // this is the homeless tent door. this NPC will probably be the Jenka Cavestory rewrite, collect the ducks for them.
+			// Spritesheet to be decided. Dialogue to be decided, but will probably be a rewrite of some goofy interations i liked in memes. 0 
+
+
+
 		}
 
 		break;
@@ -1307,11 +1327,11 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 
 						// DOOR TEST
-			Vector2f entityPos(450, 770);
+			Vector2f entityPos(678, 324);
 			SDL_Rect entityRect = { 0,0,128,128 };
 			SDL_Rect tmp, entity_cb;
 			clips.clear();
-			Vector2f doorPos(472, 770);
+			Vector2f doorPos(678, 324);
 			entityRect = { 0,0,128,128 };
 			tmp = { 0,0,128,128 };
 			clips.push_back(tmp);
