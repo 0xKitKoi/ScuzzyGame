@@ -201,4 +201,27 @@ public:
 	void Exit() override;
 };
 
+
+
+class MovePlayerAction : public CutsceneAction {
+	Vector2f m_ReturnPosition; // position to return the player to after the cutscene..?
+	Vector2f m_StartPosition;
+	Vector2f m_TargetPosition;
+	float m_Speed;
+	bool m_AnimationFinished = false;
+	int lastFrameTime = 0;
+	int frameDuration = 100; // milliseconds per frame
+	int currentFrame = 0;
+	// Sprite sheet clips for animation. 
+	std::vector<SDL_Rect> m_Clips;
+	MovePlayerAction(Vector2f start, Vector2f target, float speed, std::vector<SDL_Rect> clips, Vector2f returnPosition = Vector2f(0.0f, 0.0f))
+		: m_StartPosition(start), m_TargetPosition(target), m_Speed(speed), m_Clips(clips), m_ReturnPosition(returnPosition) { }
+	//void Enter(Vector2f position) override; member function declared with 'override' does not override a base class member Oopsies
+	void Enter() override;
+	bool Update(float deltaTime) override;
+	void Exit() override;
+};
+
+
+
 #endif // CUTSCENEMANAGER_H

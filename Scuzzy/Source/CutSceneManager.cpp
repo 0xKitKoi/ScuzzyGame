@@ -295,3 +295,59 @@ void HidePlayerAction::Enter() {
 void HidePlayerAction::Exit() {
 	gameState.player->m_Invisible = false;
 };
+
+
+
+
+bool MovePlayerAction::Update(float deltaTime) {
+	Vector2f direction = m_TargetPosition - m_StartPosition;
+	float distance = direction.Length();
+	if (distance == 0.0f) return true;
+	Vector2f normalizedDirection = direction.Normalized();
+	float moveDistance = m_Speed * deltaTime;
+	Vector2f newPosition = Vector2f {float(gameState.player->GetPosX()), float(gameState.player->GetPosY())} + normalizedDirection * moveDistance;
+	// Check if the player has reached or passed the target position
+	if ((normalizedDirection.x > 0 && newPosition.x >= m_TargetPosition.x) ||
+		(normalizedDirection.x < 0 && newPosition.x <= m_TargetPosition.x) ||
+		(normalizedDirection.y > 0 && newPosition.y >= m_TargetPosition.y) ||
+		(normalizedDirection.y < 0 && newPosition.y <= m_TargetPosition.y)) {
+		gameState.player->m_PosX = static_cast<int>(m_TargetPosition.x);
+		gameState.player->m_PosY = static_cast<int>(m_TargetPosition.y);
+		m_AnimationFinished = true;
+		return true;
+	}
+	else {
+		//gameState.player->m_PosX = static_cast<int>(newPosition.x);
+		//gameState.player->m_PosY = static_cast<int>(newPosition.y);
+		
+		// LERP to position for smoother movement
+		gameState.player->m_PosX = static_cast<int>(gameState.player->m_PosX + (newPosition.x - gameState.player->m_PosX) * 0.1f);
+		gameState.player->m_PosY = static_cast<int>(gameState.player->m_PosY + (newPosition.y - gameState.player->m_PosY) * 0.1f);
+
+		// ANIMATE the player sprite, using the given clippings.
+		lastFrameTime += deltaTime * 1000.0f;
+		if (!gameState.inFight) {
+			frameDuration = 100;
+		}
+		else { frameDuration = 400; }
+		while (lastFrameTime >= frameDuration) {
+			currentFrame = (currentFrame + 1) % 4;
+			lastFrameTime -= frameDuration;  // Subtract instead of setting to 0
+		}
+		//render that...?
+		//gameState.player->CurrentSprite.render(gameState.player->m_PosX - gameState.cameraRect.x, gameState.player->m_PosY - gameState.cameraRect.y, &m_Clips[currentFrame]);
+
+
+	}
+	return false;
+}
+
+void MovePlayerAction::Exit() {
+	// return the player to its original position if specified
+	if (m_ReturnPosition.x != 0.0f || m_ReturnPosition.y != 0.0f) {
+		gameState.player->m_PosX = static_cast<int>(m_ReturnPosition.x);
+		gameState.player->m_PosY = static_cast<int>(m_ReturnPosition.y);
+	}
+	//gameState.player->m_Invisible = false; // ensure player is visible after cutscene..?
+
+}

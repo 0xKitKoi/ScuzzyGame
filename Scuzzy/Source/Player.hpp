@@ -25,6 +25,15 @@ enum class Direction {
 class Player {
 public:
 
+
+	// Each "State" holds rects that point to different images on the sprite sheet.
+	std::vector<SDL_Rect> UpWalking; // the first frame of each state is the "idle" frame.
+	std::vector<SDL_Rect> idleDown;
+	std::vector<SDL_Rect> DownWalking;
+	std::vector<SDL_Rect> LeftWalking;
+	std::vector<SDL_Rect> RightWalking;
+	std::vector<SDL_Rect> Emotes;
+
 	Player(Vector2f initPos, std::vector<std::shared_ptr<Entity>>& entityVec); // init
 	~Player();
 	void reset(Vector2f initPos);

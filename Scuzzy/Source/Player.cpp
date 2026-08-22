@@ -35,13 +35,13 @@ extern SDL_Rect CheckBox;
 
 int FRAME_COUNT = 4; // each animation has 4 frames
 
-// Each "State" holds rects that point to different images on the sprite sheet.
-std::vector<SDL_Rect> UpWalking; // the first frame of each state is the "idle" frame.
-std::vector<SDL_Rect> idleDown; 
-std::vector<SDL_Rect> DownWalking;
-std::vector<SDL_Rect> LeftWalking;
-std::vector<SDL_Rect> RightWalking;
-std::vector<SDL_Rect> Emotes;
+//// Each "State" holds rects that point to different images on the sprite sheet.
+//std::vector<SDL_Rect> UpWalking; // the first frame of each state is the "idle" frame.
+//std::vector<SDL_Rect> idleDown; 
+//std::vector<SDL_Rect> DownWalking;
+//std::vector<SDL_Rect> LeftWalking;
+//std::vector<SDL_Rect> RightWalking;
+//std::vector<SDL_Rect> Emotes;
 
 /// <summary>
 /// Initializes Player.

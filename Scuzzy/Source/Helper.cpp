@@ -1133,6 +1133,8 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			std::vector<std::unique_ptr<CutsceneAction>> cutsceneActions;
 			cutsceneActions.push_back(std::make_unique<SoundEffectAction>(gAwHellNawSound, false, 0));
 			cutsceneActions.push_back(std::make_unique<DialogueAction>(gameState, std::vector<std::string>{"wtf bro just clipped onto the roof did u fucking see that"}));
+			//MovePlayerAction(Vector2f start, Vector2f target, float speed, std::vector<SDL_Rect> clips, Vector2f returnPosition = Vector2f(0.0f, 0.0f))
+			cutsceneActions.push_back(std::make_unique<MovePlayerAction>(Vector2f(gameState.player->m_PosX, gameState.player->m_PosY -300), Vector2f(gameState.player->m_PosX, gameState.player->m_PosY), 1.0f, gameState.player->DownWalking  /*std::vector<SDL_Rect>(gameState.player->DownWalking))*/ ) );
 			cutsceneActions.push_back(std::make_unique<ExplosionAction>(gExplosionSound, getTexture("data/RealisticExplosion72x100x18.png"), 15, explClips, triggerPos));
 			cutsceneActions.push_back(std::make_unique<SpriteShowAction>(getTexture("data/instantreplaywojack.png"), instantReplayClips, wojackpos, 2, 1000, false));
 			//cutsceneActions.push_back(std::make_unique<HidePlayerAction>(100));
