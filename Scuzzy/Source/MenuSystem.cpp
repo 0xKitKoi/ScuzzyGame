@@ -1301,10 +1301,11 @@ void handleDialogue(SDL_Event event) {
             // Move to next line and start animating if needed
             gameState.textIndex++;
             if (gameState.shouldAnimateText) {
-                gameState.currentCharIndex = 0;
+                // Start animation with the first character already displayed to avoid empty-display crashes
+                gameState.currentCharIndex = 1;
                 gameState.textTimer = 0.0f;
                 gameState.textAnimating = true;
-                gameState.currentDisplayText = "";
+                gameState.currentDisplayText = !gameState.Text.empty() ? gameState.Text[gameState.textIndex].substr(0, 1) : std::string();
             }
         }
         else {

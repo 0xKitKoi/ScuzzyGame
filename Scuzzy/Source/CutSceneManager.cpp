@@ -286,3 +286,12 @@ void SoundEffectAction::Exit() {
     printf("SoundEffectAction completed.\n");
     //gameState.inCutScene = false; // signal cutscene manager to advance to next action or end cutscene
 }
+
+
+void HidePlayerAction::Enter() {
+	gameState.player->m_Invisible = true;
+}
+
+void HidePlayerAction::Exit() {
+	gameState.player->m_Invisible = false;
+};

@@ -46,12 +46,14 @@ public:
 			// this needs to be replaced with a mech to trigger Puddle unlocking.
 			m_Unlocked = true;
 
-			gameState.Text = { "You can't go through the puddle yet. There are actions you have not taken." };
-			gameState.textIndex = 0;
-			gameState.textAvailable = true;
-			gameState.shouldAnimateText = true;
-			gameState.textAnimating = true;
-			gameState.currentDisplayText = "";
+            gameState.Text = { "You can't go through the puddle yet. There are actions you have not taken." };
+            gameState.textIndex = 0;
+            gameState.textAvailable = true;
+            gameState.shouldAnimateText = true;
+            gameState.textAnimating = true;
+            gameState.textTimer = 0.0f;	
+            gameState.currentCharIndex = 1; // start with first char pre-displayed to avoid empty-render crash
+            gameState.currentDisplayText = !gameState.Text.empty() ? gameState.Text[0].substr(0, 1) : std::string();
 			m_checked = false;
 
 		}
@@ -108,11 +110,13 @@ public:
 
 			//gameState.Text = { "This Door is locked. There are actions you have not yet taken." };
             gameState.Text = m_prompt.empty() ? std::vector<std::string>{"This Door is locked. There are actions you have not yet taken."} : std::vector<std::string>{m_prompt};
-			gameState.textIndex = 0;
-			gameState.textAvailable = true;
-			gameState.shouldAnimateText = true;
-			gameState.textAnimating = true;
-			gameState.currentDisplayText = "";
+            gameState.textIndex = 0;
+            gameState.textAvailable = true;
+            gameState.shouldAnimateText = true;
+            gameState.textAnimating = true;
+            gameState.textTimer = 0.0f;
+            gameState.currentCharIndex = 1;
+            gameState.currentDisplayText = !gameState.Text.empty() ? gameState.Text[0].substr(0, 1) : std::string();
 			m_checked = false;
 
 		}
