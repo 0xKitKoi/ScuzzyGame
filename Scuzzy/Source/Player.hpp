@@ -91,7 +91,7 @@ public:
 	SDL_Rect m_Collider;
 
 	LTexture SpriteSheet;
-	SDL_Rect m_CutsceneClip = { 0, 0, SpriteWidth, SpriteHeight }; // Default cutscene clip
+	SDL_Rect m_CutsceneClip = { 0, 0, SpriteWidth, SpriteHeight }; // should be downward..
 private:
 	
 	

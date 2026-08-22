@@ -311,6 +311,7 @@ void MovePlayerAction::Enter() {
     m_AnimationFinished = false;
     lastFrameTime = 0;
     currentFrame = 0;
+    gameState.player->m_CutsceneClip = m_Clips[currentFrame];
 }
 
 

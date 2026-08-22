@@ -26,6 +26,7 @@ public:
     virtual bool Update(float deltaTime) = 0; // Returns true when completed
     virtual void Render() {};
     virtual void Exit() = 0;
+    bool m_Finished = false; // Track if the action has finished
 };
 
 // Orchestrator class managing the cutscene flow
@@ -223,6 +224,68 @@ public:
 	void Exit() override;
 };
 
+class ParallelAction : public CutsceneAction
+{
+private:
+    std::vector<std::unique_ptr<CutsceneAction>> m_Actions;
 
+public:
+    ParallelAction(std::vector<std::unique_ptr<CutsceneAction>> actions)
+        : m_Actions(std::move(actions))
+    {
+    }
+
+    void Enter() override
+    {
+        for (auto& action : m_Actions)
+            action->Enter();
+    }
+
+    // bool Update(float deltaTime) override
+    // {
+    //     bool allFinished = true;
+
+    //     for (auto& action : m_Actions)
+    //     {
+    //         if (!action->Update(deltaTime))
+    //             allFinished = false;
+    //     }
+
+    //     return allFinished;
+    // }
+    bool Update(float deltaTime) override
+    {
+        bool allFinished = true;
+
+        for (auto& child : m_Actions)
+        {
+            if (!child->m_Finished)
+            {
+                child->m_Finished = child->Update(deltaTime);
+
+                if (child->m_Finished)
+                    child->Exit();
+            }
+
+            if (!child->m_Finished)
+                allFinished = false;
+        }
+
+        return allFinished;
+    }
+
+
+    void Render() override
+    {
+        for (auto& action : m_Actions)
+            action->Render();
+    }
+
+    void Exit() override
+    {
+        for (auto& action : m_Actions)
+            action->Exit();
+    }
+};
 
 #endif // CUTSCENEMANAGER_H
