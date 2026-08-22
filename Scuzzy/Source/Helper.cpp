@@ -1133,10 +1133,22 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			std::vector<std::unique_ptr<CutsceneAction>> cutsceneActions;
 			cutsceneActions.push_back(std::make_unique<SoundEffectAction>(gAwHellNawSound, false, 0));
 			cutsceneActions.push_back(std::make_unique<DialogueAction>(gameState, std::vector<std::string>{"wtf bro just clipped onto the roof did u fucking see that"}));
+			cutsceneActions.push_back(std::make_unique<SpriteShowAction>(getTexture("data/instantreplaywojack.png"), instantReplayClips, wojackpos, 2, 1000, true));
 			//MovePlayerAction(Vector2f start, Vector2f target, float speed, std::vector<SDL_Rect> clips, Vector2f returnPosition = Vector2f(0.0f, 0.0f))
-			cutsceneActions.push_back(std::make_unique<MovePlayerAction>(Vector2f(gameState.player->m_PosX, gameState.player->m_PosY -300), Vector2f(gameState.player->m_PosX, gameState.player->m_PosY), 1.0f, gameState.player->DownWalking  /*std::vector<SDL_Rect>(gameState.player->DownWalking))*/ ) );
+			//cutsceneActions.push_back(std::make_unique<MovePlayerAction>(Vector2f(gameState.player->m_PosX, gameState.player->m_PosY -100), Vector2f(gameState.player->m_PosX, gameState.player->m_PosY), 200.0f, gameState.player->DownWalking  /*std::vector<SDL_Rect>(gameState.player->DownWalking))*/ ) );
+			float x = static_cast<float>(gameState.player->m_PosX);
+			float y = static_cast<float>(gameState.player->m_PosY);
+
+			cutsceneActions.push_back(
+				std::make_unique<MovePlayerAction>(
+					Vector2f(x-200.0f, y - 30.0f),
+					Vector2f(x-200, y+100.0f),
+					200.0f,
+					gameState.player->DownWalking
+				)
+			);
 			cutsceneActions.push_back(std::make_unique<ExplosionAction>(gExplosionSound, getTexture("data/RealisticExplosion72x100x18.png"), 15, explClips, triggerPos));
-			cutsceneActions.push_back(std::make_unique<SpriteShowAction>(getTexture("data/instantreplaywojack.png"), instantReplayClips, wojackpos, 2, 1000, false));
+			
 			//cutsceneActions.push_back(std::make_unique<HidePlayerAction>(100));
 			//cutsceneActions.push_back(std::make_unique<SpriteShowAction>(getTexture("data/instantreplaywojack.png"), instantReplayClips, wojackpos, 2, 1000, true));
 			//cutsceneActions.push_back(std::make_unique<MoveEntityAction>(gameState.player, Vector2f(wojackpos.x + 500, wojackpos.y + 200), 1.0f));

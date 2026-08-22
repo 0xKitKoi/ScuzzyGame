@@ -124,8 +124,8 @@ Mix_Chunk* gAwHellNawSound = NULL;
 LTexture gTextTexture;
 
 //std::vector<std::shared_ptr<Entity>> Entities;
-Vector2f playerinitpos;
-SDL_Rect CheckBox;
+Vector2f playerinitpos = {0,0};
+SDL_Rect CheckBox; 
 
 //Box collision detector
 //bool checkCollision(SDL_Rect a, SDL_Rect b);
@@ -168,11 +168,25 @@ float lerp(float x, float y, float t) {
 }
 
 
-GameState gameState;
+	GameState gameState;
+	//Player player = Player(playerinitpos, Entities);
+			// Player player(playerinitpos, Entities);
+			// gameState.player = &player;
+			// LTexture heart;
+			// heart.loadFromFile("data/HeartSpriteSheet.png");
+			// player.m_FightSpriteSheet = heart;
 
 
 std::vector<std::shared_ptr<Entity>> Entities; // This is the one and only vector of entities.
-
+std::unique_ptr<Player> player;
+LTexture heart;
+//Player player; // Global pointer to the player object, initialized later in main().
+// Player player(playerinitpos, Entities);
+// LTexture heart;
+			// //gameState.player = &player;
+			// LTexture heart;
+			// heart.loadFromFile("data/HeartSpriteSheet.png");
+			// player.m_FightSpriteSheet = heart;
 
 std::vector<SDL_Rect> clips; // sprite sheet mapings TODO: Doesnt need to be global, i was just lazy
 
@@ -801,13 +815,22 @@ bool loadMedia()
 			//MerchantNPC sells key with ID 81, so this door should unlock when the player buys the key from the merchant and uses it.
 	*/
 
-
+	//player(playerinitpos, Entities);
+	player = std::make_unique<Player>(playerinitpos, Entities);
+	gameState.player = player.get();
+	//gameState.player = &player;
+	//LTexture heart;
+	heart.loadFromFile("data/HeartSpriteSheet.png");
+	player->m_FightSpriteSheet = heart;
 
 	LoadSave();
 	LoadLevel(SaveData.room, &Map);
 	levelHeight = Map.getHeight();
 	levelWidth = Map.getWidth();
 	deathScreen.loadFromFile("data/Death.png");
+
+	player->m_PosX = SaveData.pos.x;
+	player->m_PosY = SaveData.pos.y;
 
 	return success;
 }
@@ -1003,6 +1026,9 @@ void update_camera(int player_x, int player_y, int map_width, int map_height) {
 }
 		*/
 void update_camera(int player_x, int player_y, int map_width, int map_height) {
+	// if (gameState.inCutScene ) {
+	// 	return; // don't update camera during cutscene
+	// }
     float scale = gameState.mapScaling;
     int scaledMapW = map_width * scale;
     int scaledMapH = map_height * scale;
@@ -1202,6 +1228,9 @@ int main(int argc, char* args[])
 		else
 		{
 			
+
+
+
 			//The frames per second timer
 			Timer fpsTimer;
 
@@ -1216,14 +1245,28 @@ int main(int argc, char* args[])
 			fpsTimer.start();
 
 
+
+			//std::unique_ptr<Player> player = std::make_unique<Player>(playerinitpos, Entities);
+
+			// TODO: MOVE PLAYER CREATION TO INIT
+			// Player player(playerinitpos, Entities);
+			// gameState.player = &player;
+			// LTexture heart;
+			// heart.loadFromFile("data/HeartSpriteSheet.png");
+			// player.m_FightSpriteSheet = heart;
+
+			// // MOVED HERE FROM loadMedia() TO HERE BECAUSE IT NEEDS TO BE AFTER PLAYER IS CREATED
+			// LoadSave();
+		    // LoadLevel(SaveData.room, &Map);
+			// levelHeight = Map.getHeight();
+			// levelWidth = Map.getWidth();
+
+
+
+
 			GameStart();
 			
-			//std::unique_ptr<Player> player = std::make_unique<Player>(playerinitpos, Entities);
-			Player player(playerinitpos, Entities);
-			gameState.player = &player;
-			LTexture heart;
-			heart.loadFromFile("data/HeartSpriteSheet.png");
-			player.m_FightSpriteSheet = heart;
+
 
 			
 
@@ -1323,7 +1366,7 @@ int main(int argc, char* args[])
 						/* Check the SDLKey values and move change the coords */
 						switch (e.key.keysym.sym) {
 						case SDLK_F10:
-							SaveGame(player.GetPosX(), player.GetPosY());
+							SaveGame(player->GetPosX(), player->GetPosY());
 							break;
 						case SDLK_F11:
 							LoadSave();
@@ -1391,7 +1434,7 @@ int main(int argc, char* args[])
 
 						if (gameState.textAvailable) {
 							//gameState.player->clearInputState(); // prevent player input from being buffered and triggering after dialogue ends.
-							player.clearInputState();
+							player->clearInputState();
 							gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
 							// either text or an NPC!
 							/*
@@ -1432,10 +1475,10 @@ int main(int argc, char* args[])
 						else if (gameState.inFight) {
 
 							FS_HandleInput(gRenderer, gFont, e); // Give control to FightSystem
-							player.handleEvent(e, deltaTime); // player heart controls
+							player->handleEvent(e, deltaTime); // player heart controls
 						}
 						else {
-							player.handleEvent(e, deltaTime); // normal overworld controls
+							player->handleEvent(e, deltaTime); // normal overworld controls
 						}
 						
 					}
@@ -1494,10 +1537,10 @@ int main(int argc, char* args[])
 					else if (deathResetArmed) {
 						printf("[!] Player has died. Reseting the game. Main()-> death screen branch\n");
 						LoadSave();
-						player.reset(SaveData.pos);
-						player.SetPosX(SaveData.pos.x);
-						player.SetPosY(SaveData.pos.y);
-						player.currentState = State::Idle;
+						player->reset(SaveData.pos);
+						player->SetPosX(SaveData.pos.x);
+						player->SetPosY(SaveData.pos.y);
+						player->currentState = State::Idle;
 						GameStart();
 						gameState.dead = false;
 						gameState.inFight = false;
@@ -1559,7 +1602,7 @@ int main(int argc, char* args[])
 						//Center the camera
 						//camera.x = (player.GetPosX() + player.SpriteWidth / 2) - screenwidth / 2;
 						//camera.y = (player.GetPosY() + player.SpriteHeight / 2) - screenheight / 2;
-						camera.centerOn(player.GetPosX(), player.GetPosY());
+						camera.centerOn(player->GetPosX(), player->GetPosY());
 
 						/*
 						//Keep the camera in bounds
@@ -1598,7 +1641,7 @@ int main(int argc, char* args[])
 						Uint8 a = 0;
 						int count = 255;
 						Map.setAlpha(a);
-						player.CurrentSprite.setAlpha(a);
+						player->CurrentSprite.setAlpha(a);
 						while (count > 0) { // fade level in
 							//Cap if over 255
 							if (a + 32 > 255)
@@ -1618,8 +1661,9 @@ int main(int argc, char* args[])
 							SDL_Rect what = {camera.x, camera.y, camera.width, camera.height};
     						SDL_RenderCopy(gRenderer, Map.getTexture(), &what, &mapScreenPos);
 
-							player.CurrentSprite.setAlpha(a);
-							player.render(camera.x, camera.y); // i need to render the player in the right spot relative to the camera. 
+
+							player->CurrentSprite.setAlpha(a);
+							player->render(camera.x, camera.y); // i need to render the player in the right spot relative to the camera. 
 							SDL_RenderPresent(gRenderer);
 							count -= 1;
 						}
@@ -1764,7 +1808,7 @@ int main(int argc, char* args[])
 
 					gameState.MapoffsetX = center_offset_x;
 					gameState.MapoffsetY = center_offset_y;
-					update_camera(player.GetPosX(), player.GetPosY(), Map.getWidth(), Map.getHeight());
+					update_camera(player->GetPosX(), player->GetPosY(), Map.getWidth(), Map.getHeight());
 					//printf("AFTER update_camera: camX=%.1f camY=%.1f\n", camera.x, camera.y);
 
 					float mapScale = gameState.mapScaling; // or whatever scale factor matches Tiled's appearance
@@ -1832,17 +1876,17 @@ int main(int argc, char* args[])
 					// Pass the filtered collision boxes to the player
 					//player.Update(surroundingBoxes, deltaTime);
 					//player.handleEvent(e); // player heart controls
-					player.Update(collisionBoxes, deltaTime);
+					player->Update(collisionBoxes, deltaTime);
 
 
 					
 
 					//SDL_RenderDrawRect(gRenderer, &player.GetColliderAddress());
 					SDL_Rect renderBox = {
-						player.GetCollider().x - camera.x ,
-						player.GetCollider().y - camera.y,
-						player.GetCollider().w,
-						player.GetCollider().h
+						player->GetCollider().x - camera.x ,
+						player->GetCollider().y - camera.y,
+						player->GetCollider().w,
+						player->GetCollider().h
 					};
 					// Draw the player's collision box
 					//SDL_RenderDrawRect(gRenderer, &renderBox);
@@ -2003,7 +2047,7 @@ int main(int argc, char* args[])
 							continue;
 						}
 
-						Entities.at(i)->Update(deltaTime, camera, player.GetCollider());
+						Entities.at(i)->Update(deltaTime, camera, player->GetCollider());
 
 						SDL_Rect cameraRect = { camera.x, camera.y, camera.width, camera.height };
 
@@ -2028,7 +2072,7 @@ int main(int argc, char* args[])
 					// PLAYER COLLISION BOX
 					// ===============================
 					{
-						SDL_Rect checkb = player.m_CheckBox;
+						SDL_Rect checkb = player->m_CheckBox;
 
 						SDL_Rect rendercheckBox =
 						{
@@ -2069,9 +2113,9 @@ int main(int argc, char* args[])
 					if (levelWidth > windowWidth || levelHeight > windowHeight) {
 						player.render(camera.x + MapoffsetX, camera.y + MapoffsetY); // Use camera for larger maps
 					} else {
-						player.render(MapoffsetX, MapoffsetY); // Use offsets for smaller maps
+						player->render(MapoffsetX, MapoffsetY); // Use offsets for smaller maps
 					}*/
-					player.render(camera.x, camera.y); // Use camera for larger maps
+					player->render(camera.x, camera.y); // Use camera for larger maps
 
 
 					SDL_RenderDrawRect(gRenderer, &renderBox); // render players collision box above player.
@@ -2087,20 +2131,20 @@ int main(int argc, char* args[])
 
 					if (gameState.textAvailable) {
 						renderDialogue(gRenderer, gFont);
-						player.currentState = State::Idle;
-						player.reset({float(player.GetPosX()), float(player.GetPosY())}); // reset the player position to the current position, so it doesn't move while dialogue is active.
+						player->currentState = State::Idle;
+						player->reset({float(player->GetPosX()), float(player->GetPosY())}); // reset the player position to the current position, so it doesn't move while dialogue is active.
 					}
 					else if (gameState.OpenedMenu) {
 						renderMenuSideBySide(gRenderer, gFont);
-						player.currentState = State::Idle;
-						player.reset({ float(player.GetPosX()), float(player.GetPosY()) });
+						player->currentState = State::Idle;
+						player->reset({ float(player->GetPosX()), float(player->GetPosY()) });
 
 					}
 					else if (gameState.inMenu) {
 						//renderMenuSideBySide(gRenderer, gFont);
 						MS_renderMenu(gRenderer, gFont);
-						player.currentState = State::Idle;
-						player.reset({ float(player.GetPosX()), float(player.GetPosY()) });
+						player->currentState = State::Idle;
+						player->reset({ float(player->GetPosX()), float(player->GetPosY()) });
 					}
 
 
@@ -2109,7 +2153,7 @@ int main(int argc, char* args[])
 						gameState.SimplePressZ = false;
 						bool someone = false;
 						for (const auto& entity : Entities) {
-							if (SDL_HasIntersection(&player.m_CheckBox, &entity->m_Collider)) { // &entity->m_Collider
+							if (SDL_HasIntersection(&player->m_CheckBox, &entity->m_Collider)) { // &entity->m_Collider
 								//printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
 								printf(std::to_string(entity->m_EntityID).c_str());
 								someone = true;
@@ -2126,10 +2170,10 @@ int main(int argc, char* args[])
 
 					if (gameState.checkFlag && !gameState.SimplePressZ) {
 						bool someone = false;
-						player.currentState = State::Idle;
-						player.reset({ float(player.GetPosX()), float(player.GetPosY()) });
+						player->currentState = State::Idle;
+						player->reset({ float(player->GetPosX()), float(player->GetPosY()) });
 						for (const auto& entity : Entities) {
-							if (SDL_HasIntersection(&player.m_CheckBox, &entity->m_Collider)) { // &entity->m_Collider
+							if (SDL_HasIntersection(&player->m_CheckBox, &entity->m_Collider)) { // &entity->m_Collider
 								//printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
 								printf(std::to_string(entity->m_EntityID).c_str());
 								someone = true;
@@ -2265,7 +2309,7 @@ int main(int argc, char* args[])
 					*/
 			
 
-					player.handleEvent(e, deltaTime);
+					player->handleEvent(e, deltaTime);
 					FS_HandleInput(gRenderer, gFont, e); // Give control to FightSystem
 
 					// Player gets first move. dialogue box with options. turn based. 

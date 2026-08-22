@@ -48,6 +48,8 @@ int FRAME_COUNT = 4; // each animation has 4 frames
 /// </summary>
 /// <param name="initPos">Starting position. Should be loaded from save file.</param>
 Player::Player(Vector2f initPos, std::vector<std::shared_ptr<Entity>>& entityVec) : AllEntities(entityVec) {
+	gameState.player = this; // Set the global player pointer to this instance
+	//AllEntities = Entities; // Assign the global Entities vector to the player's reference
 	m_PosX = initPos.x;
 	m_PosY = initPos.y;
 	m_Collider.w = SpriteWidth;
@@ -212,6 +214,9 @@ Player::~Player() {
 /// <param name="boxes">Vector of Rects full of map's boundaries and obstructions.</param>
 /// <param name="deltaTime">Scales movement and animations based on time between frames.</param>
 void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
+	if (gameState.inCutScene) {
+		return; // Don't update player during cutscenes
+	}
 	if (gameState.HP <= 0) {	return; 	}
 
 	if (gameState.inMenu || gameState.inFight ) {
@@ -629,6 +634,35 @@ void Player::clearInputState() {
 /// <param name="camX">Camera Position.</param>
 /// <param name="camY">Camera Position.</param>
 void Player::render(int camX, int camY) {
+	if (gameState.inCutScene)
+    {
+        // int screenX = m_PosX - gameState.cameraRect.x;
+        // int screenY = m_PosY - gameState.cameraRect.y;
+
+        // SDL_Rect renderQuad = {
+        //     screenX,
+        //     screenY,
+        //     SpriteWidth,
+        //     SpriteHeight
+        // };
+
+        // SDL_RenderCopy(
+        //     gRenderer,
+        //     SpriteSheet.getTexture(),
+        //     &m_CutsceneClip,
+        //     &renderQuad
+        // );
+		int screenX = (gameState.player->m_PosX - gameState.cameraRect.x);	
+	    int screenY = (gameState.player->m_PosY - gameState.cameraRect.y);
+        SDL_Rect renderQuad = { screenX, screenY, gameState.player->SpriteWidth, gameState.player->SpriteHeight };
+	    SDL_RenderCopy(gRenderer, gameState.player->SpriteSheet.getTexture(), &m_CutsceneClip, &renderQuad);
+        //SDL_RenderPresent(gRenderer); // Force update to show player movement immediately
+
+        return;
+    }
+
+
+
 	if (m_Invisible) return;
 	// Advance animation frames
 	lastFrameTime += gameState.deltaTime * 1000.0f;

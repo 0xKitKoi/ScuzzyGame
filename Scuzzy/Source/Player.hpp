@@ -89,11 +89,14 @@ public:
 	int m_PosX, m_PosY;
 	int m_VelX, m_VelY;
 	SDL_Rect m_Collider;
+
+	LTexture SpriteSheet;
+	SDL_Rect m_CutsceneClip = { 0, 0, SpriteWidth, SpriteHeight }; // Default cutscene clip
 private:
 	
 	
 	//LTexture CurrentSprite;
-	LTexture SpriteSheet;
+	
 	
 
 	bool menuOpened = false;

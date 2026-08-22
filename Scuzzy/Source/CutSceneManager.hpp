@@ -204,6 +204,7 @@ public:
 
 
 class MovePlayerAction : public CutsceneAction {
+public:
 	Vector2f m_ReturnPosition; // position to return the player to after the cutscene..?
 	Vector2f m_StartPosition;
 	Vector2f m_TargetPosition;
