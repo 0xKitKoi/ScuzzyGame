@@ -213,7 +213,12 @@ struct saveData {
 	int money = 0;
 } SaveData;
 
-
+LTexture cloud1Layer;
+LTexture cloud2Layer;
+LTexture cloud3Layer;
+LTexture cloud4Layer;
+LTexture floorLayer;
+LTexture moonLayer;
 
 
 bool init()
@@ -752,6 +757,15 @@ bool loadMedia()
 		}
 	}
 
+	cloud1Layer.loadFromFile("data/wizardcliffcloud1layer.png");
+	cloud2Layer.loadFromFile("data/wizardcliffcloud2layer.png");
+	cloud3Layer.loadFromFile("data/wizardcliffcloud3layer.png");
+	cloud4Layer.loadFromFile("data/wizardcliffcloud4layer.png");
+
+	floorLayer.loadFromFile("data/wizardcliffFloorlayer.png");
+	moonLayer.loadFromFile("data/wizardcliffMoonlayer.png");
+
+
 	// load sound effects:
 	gSelectSound = Mix_LoadWAV("data/mus/SelectSound.wav");
 	gDeSelectSound = Mix_LoadWAV("data/mus/deSelectSound.wav");
@@ -1202,6 +1216,46 @@ void initSoulRubberBandBallMenu() {
 		}
 	}
 }
+
+
+void RenderScrollingLayer (
+    LTexture& texture,
+    float offset,
+    int y = 0
+)
+{
+    int width = texture.getWidth();
+    int height = texture.getHeight();
+
+    int x = -static_cast<int>(offset);
+
+    while (x < screenwidth)
+    {
+        SDL_Rect dst = {
+            x,
+            y,
+            width,
+            height
+        };
+
+        SDL_RenderCopy(
+            gRenderer,
+            texture.getTexture(),
+            nullptr,
+            &dst
+        );
+
+        x += width;
+    }
+}
+
+
+
+
+						float cloud1Offset = 0.0f;
+						float cloud2Offset = 0.0f;
+						float cloud3Offset = 0.0f;
+						float cloud4Offset = 0.0f;
 
 
 
@@ -1843,13 +1897,41 @@ int main(int argc, char* args[])
 					//};
 
 					//SDL_RenderCopy(gRenderer, Map.getTexture(), NULL, &mapQuad);
-					SDL_Rect mapQuad = {
-						(int)(0 - camera.x),        // screen space, no extra multiply needed
-						(int)(0 - camera.y),
-						Map.getWidth() * mapScale,
-						Map.getHeight() * mapScale
-					};
-					SDL_RenderCopy(gRenderer, Map.getTexture(), NULL, &mapQuad);  // NO RenderSetScale
+
+					// MAP RENDERING.
+					// TODO: Special Maps have special rendering. 
+					if (gameState.room == "WizardCliff") {
+						// paralax background rendering for WizardCliff.
+
+
+						cloud1Offset += 10.0f * gameState.deltaTime;
+						cloud2Offset += 20.0f * gameState.deltaTime;
+						cloud3Offset += 30.0f * gameState.deltaTime;
+						cloud4Offset += 40.0f * gameState.deltaTime;
+						
+						RenderScrollingLayer(cloud4Layer, cloud4Offset);
+						RenderScrollingLayer(cloud3Layer, cloud3Offset);
+						RenderScrollingLayer(cloud2Layer, cloud2Offset);
+						RenderScrollingLayer(cloud1Layer, cloud1Offset);
+					}
+					else {
+						// Normal map rendering for other maps.
+						SDL_Rect mapQuad = {
+							(int)(0 - camera.x),        // screen space, no extra multiply needed
+							(int)(0 - camera.y),
+							Map.getWidth() * mapScale,
+							Map.getHeight() * mapScale
+						};
+						SDL_RenderCopy(gRenderer, Map.getTexture(), NULL, &mapQuad);  // NO RenderSetScale
+					}
+
+					// SDL_Rect mapQuad = {
+					// 	(int)(0 - camera.x),        // screen space, no extra multiply needed
+					// 	(int)(0 - camera.y),
+					// 	Map.getWidth() * mapScale,
+					// 	Map.getHeight() * mapScale
+					// };
+					// SDL_RenderCopy(gRenderer, Map.getTexture(), NULL, &mapQuad);  // NO RenderSetScale
 
 
 
