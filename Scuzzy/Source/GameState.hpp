@@ -113,6 +113,7 @@ struct GameState {
 
 
     // Flags
+    bool TutorialFightCompleted = false;
     bool doubleOrNothingActive = false;
 	FightState fightState;
     bool DebugMode = false; // Debug mode for testing

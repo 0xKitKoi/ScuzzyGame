@@ -893,35 +893,154 @@ std::vector<NPCAction>{
     }
 */
 
+// class TheNPC : public NPC {
+//     std::vector<NPCAction> m_Actions;
+//     //std::vector<std::string> m_Dialogue;
+//     bool m_TriggerOnce;
+//     bool m_Fired = false;
+// public:
+//     // Custom Dialogue and Actions. See Above snippet for lambda example. 
+//     TheNPC(std::shared_ptr<Entity> entity,
+//                std::vector<std::string> dialogue,
+//                std::vector<NPCAction> actions,
+//                bool triggerOnce = true)
+//         : NPC(entity, std::move(dialogue))
+//         , m_Actions(std::move(actions))
+//         , m_TriggerOnce(triggerOnce)
+//         //, m_Dialogue(std::move(dialogue))
+//     {}
+
+//     void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override {
+//         if (!m_checked) return;
+        
+//         if (m_TriggerOnce && m_Fired) {
+//             m_checked = false;
+//             return;
+//         }
+//         m_Fired = true;
+
+//         if (!m_Dialogue.empty()) {
+//             // // Populates gameState.Text, sets callbackNPC = this, starts animation, etc.
+//             // NPC::Update(deltaT, CameraRect, PlayerPos);
+//             gameState.callbackNPC = this;
+//             gameState.Text = m_Dialogue;
+//             gameState.textIndex = 0;
+//             gameState.textAvailable = true;
+//             gameState.shouldAnimateText = true;
+//             gameState.textAnimating = true;
+//             gameState.textTimer = 0.0f;
+//             gameState.currentCharIndex = 1;
+//             gameState.currentDisplayText = !gameState.Text.empty() ? gameState.Text[0].substr(0, 1) : std::string();
+// 			m_checked = false;
+
+//         } else {
+//             // No dialogue: fire immediately on contact. Player checks the NPC, and the action is executed.
+//             m_checked = false;
+//             m_Fired = true;
+//             if (!m_Actions.empty()) m_Actions[0](*this);
+//         }
+//     }
+
+//     // To Be decided. This should probably be reworked to be more flexible.
+//     void handleChoice(int choice) override {
+//         m_Fired = true;
+//         if (choice >= 0 && choice < static_cast<int>(m_Actions.size())) {
+//             m_Actions[choice](*this);
+//         }
+//     }
+
+
+// };
+
+// class TheNPC : public NPC {
+//     std::vector<NPCAction> m_Actions;
+//     bool m_TriggerOnce;
+//     bool m_Fired = false;
+//     int m_ActionCounter = 0;
+// public:
+//     TheNPC(std::shared_ptr<Entity> entity,
+//            std::vector<std::string> dialogue,
+//            std::vector<NPCAction> actions,
+//            bool triggerOnce = true)
+//         : NPC(entity, std::move(dialogue))
+//         , m_Actions(std::move(actions))
+//         , m_TriggerOnce(triggerOnce)
+//     {}
+
+//     void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override {
+//         if (!m_checked) return;
+//         if (m_TriggerOnce && m_Fired) {
+//             m_checked = false;
+//             return;
+//         }
+
+//         if (!m_Dialogue.empty()) {
+//             gameState.callbackNPC = this;
+//             gameState.Text = m_Dialogue;
+//             gameState.textIndex = 0;
+//             gameState.textAvailable = true;
+//             gameState.shouldAnimateText = true;
+//             gameState.textAnimating = true;
+//             gameState.textTimer = 0.0f;
+//             gameState.currentCharIndex = 1;
+//             gameState.currentDisplayText = !gameState.Text.empty() ? gameState.Text[0].substr(0, 1) : std::string();
+//             m_checked = false;
+//         } else {
+//             m_checked = false;
+//             m_Fired = true;
+//             fireAction();
+//         }
+//     }
+
+//     void handleChoice(int choice) override {
+//         m_Fired = true;
+//         fireAction();
+//     }
+
+// private:
+//     void fireAction() {
+//         if (m_Actions.empty()) return;
+//         int idx = std::min(m_ActionCounter, static_cast<int>(m_Actions.size()) - 1);
+//         m_Actions[idx](*this);
+//         m_ActionCounter = std::min(m_ActionCounter + 1, static_cast<int>(m_Actions.size()) - 1);
+//     }
+// };
+
 class TheNPC : public NPC {
     std::vector<NPCAction> m_Actions;
-    //std::vector<std::string> m_Dialogue;
     bool m_TriggerOnce;
     bool m_Fired = false;
+    int m_ActionCounter = 0;
+
+    // Generic "wait for a condition before advancing" mechanism.
+    std::function<bool()> m_WaitCondition = nullptr;
+    std::vector<std::string> m_PendingDialogue;
+
 public:
-    // Custom Dialogue and Actions. See Above snippet for lambda example. 
     TheNPC(std::shared_ptr<Entity> entity,
-               std::vector<std::string> dialogue,
-               std::vector<NPCAction> actions,
-               bool triggerOnce = true)
+           std::vector<std::string> dialogue,
+           std::vector<NPCAction> actions,
+           bool triggerOnce = true)
         : NPC(entity, std::move(dialogue))
         , m_Actions(std::move(actions))
         , m_TriggerOnce(triggerOnce)
-        //, m_Dialogue(std::move(dialogue))
     {}
 
     void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override {
         if (!m_checked) return;
-        
         if (m_TriggerOnce && m_Fired) {
             m_checked = false;
             return;
         }
-        m_Fired = true;
+
+        // If we're waiting on something (e.g. fight completion), check it
+        // each time the player re-approaches, and swap dialogue once true.
+        if (m_WaitCondition && m_WaitCondition()) {
+            m_Dialogue = m_PendingDialogue;
+            m_WaitCondition = nullptr;
+        }
 
         if (!m_Dialogue.empty()) {
-            // // Populates gameState.Text, sets callbackNPC = this, starts animation, etc.
-            // NPC::Update(deltaT, CameraRect, PlayerPos);
             gameState.callbackNPC = this;
             gameState.Text = m_Dialogue;
             gameState.textIndex = 0;
@@ -931,23 +1050,32 @@ public:
             gameState.textTimer = 0.0f;
             gameState.currentCharIndex = 1;
             gameState.currentDisplayText = !gameState.Text.empty() ? gameState.Text[0].substr(0, 1) : std::string();
-			m_checked = false;
-
+            m_checked = false;
         } else {
-            // No dialogue: fire immediately on contact. Player checks the NPC, and the action is executed.
             m_checked = false;
             m_Fired = true;
-            if (!m_Actions.empty()) m_Actions[0](*this);
+            fireAction();
         }
     }
 
-    // To Be decided. This should probably be reworked to be more flexible.
     void handleChoice(int choice) override {
         m_Fired = true;
-        if (choice >= 0 && choice < static_cast<int>(m_Actions.size())) {
-            m_Actions[choice](*this);
-        }
+        fireAction();
     }
 
+    // Actions call this to register a wait + the dialogue to show once it's satisfied.
+    void WaitThenSetDialogue(std::function<bool()> condition, std::vector<std::string> nextDialogue) {
+        m_WaitCondition = std::move(condition);
+        m_PendingDialogue = std::move(nextDialogue);
+        m_Dialogue.clear(); // clear current dialogue so the NPC will wait for the condition next time
+        m_Dialogue = nextDialogue; // set the next dialogue to show once the condition is satisfied
+    }
 
+private:
+    void fireAction() {
+        if (m_Actions.empty()) return;
+        int idx = std::min(m_ActionCounter, static_cast<int>(m_Actions.size()) - 1);
+        m_Actions[idx](*this);
+        m_ActionCounter = std::min(m_ActionCounter + 1, static_cast<int>(m_Actions.size()) - 1);
+    }
 };

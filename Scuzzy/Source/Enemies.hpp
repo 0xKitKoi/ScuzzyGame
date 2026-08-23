@@ -499,4 +499,5 @@ public:
 	}
 	TutorialStep m_tutorialStep = TutorialStep::DODGE;
 	size_t m_tutorialPromptLine = 0;
+	bool m_TutorialComplete = false;
 };

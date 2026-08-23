@@ -1621,23 +1621,77 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			Entities.push_back(WizardEntity);
 			std::vector<std::string> WizardDialogue = { "This place was created by the will of your soul. Something traumatic happened to you.", "I can even see your soul faintly. you must feel it too.", "I can tell you dont really know how to use your soul. Seeing as you accidentaly used it to hide inside of it.", "here.", "Let me show you your soul."};
 			//std::shared_ptr<NPC> WizardNPC = std::make_shared<SIGNNPC>(WizardDialogue, WizardSheetEntity);
+			// auto WizardNPC = std::make_shared<TheNPC>(
+			// 	WizardEntity,
+			// 	WizardDialogue,
+			// 	std::vector<NPCAction>{
+			// 		[wizardEnemy](TheNPC& self) {
+			// 			gameState.playerSoulVisible = true;
+			// 			// Tutorial Fight here.
+			// 			// todo: impliment a tutorial fight. killing the wizard will be impossible. After the player uses an action and casts an ability, 
+			// 			// the fight will end. 
+			// 			// Teach player about dodging, attacking, acting, items, and most importantly the magic system. 
+			// 			// player will unlock the magic system after this fight. and will be able to use it in the next area.
+			// 			// RubberBandBall Soul Direction will influence magic system. TODO: Add text in stats menu about viewing the rubberbandball soul menu.
+			// 			//wizardEnemy->TriggerFight();
+			// 			if (!gameState.TutorialFightCompleted) {
+			// 				wizardEnemy->TriggerFight();
+			// 			}
+			// 			else {
+			// 				// fights done, player talks to the wizard to go back to the forgotten cave. 
+			// 				gameState.Text = {"ok cool get outta here i got fireballs to cast."};
+			// 				gameState.textAvailable = true;
+			// 				gameState.shouldAnimateText = true;
+			// 				gameState.currentDisplayText = "";
+			// 				gameState.textIndex = 0;
+			// 				gameState.textAnimating = true;
+			// 				// trigger level load to forgotten cave.
+			// 				printf("Loading new room: %s\n", "ForgottenCave");
+			// 				gameState.room = "ForgottenCave";
+			// 				gameState.LoadingScreen = true;
+			// 				gameState.DoneLoading = false;
+			// 				gameState.fade = true;
+			// 				gameState.textAvailable;
+			// 				//gameState.callbackNPC = this;
+			// 				//m_checked = false;
+			// 				gameState.player->SetPosX(200);
+			// 				gameState.player->SetPosY(200);
+			// 				gameState.player->reset({ 200, 200 });
+							
+			// 			}
+
+			// 		}
+			// 	},
+			// 	false
+			// );
 			auto WizardNPC = std::make_shared<TheNPC>(
-				WizardEntity,
-				WizardDialogue,
-				std::vector<NPCAction>{
-					[wizardEnemy](TheNPC& self) {
-						gameState.playerSoulVisible = true;
-						// Tutorial Fight here.
-						// todo: impliment a tutorial fight. killing the wizard will be impossible. After the player uses an action and casts an ability, 
-						// the fight will end. 
-						// Teach player about dodging, attacking, acting, items, and most importantly the magic system. 
-						// player will unlock the magic system after this fight. and will be able to use it in the next area.
-						// RubberBandBall Soul Direction will influence magic system. TODO: Add text in stats menu about viewing the rubberbandball soul menu.
-						wizardEnemy->TriggerFight();
-					}
-				},
-				false
-			);
+					WizardEntity,
+					WizardDialogue, // "You shouldn't have come here."
+					std::vector<NPCAction>{
+						// action 0: fires when pre-fight dialogue is dismissed
+						[wizardEnemy](TheNPC& self) {
+							gameState.playerSoulVisible = true;
+							wizardEnemy->TriggerFight(); // no args, matches your current signature
+
+							self.WaitThenSetDialogue(
+								[]() { return gameState.TutorialFightCompleted; },
+								{"ok cool get outta here i got fireballs to cast."}
+							);
+						},
+						// action 1: fires when post-fight dialogue is dismissed
+						[](TheNPC& self) {
+							printf("Loading new room: %s\n", "ForgottenCave");
+							gameState.room = "ForgottenCave";
+							gameState.LoadingScreen = true;
+							gameState.DoneLoading = false;
+							gameState.fade = true;
+							gameState.player->SetPosX(200);
+							gameState.player->SetPosY(200);
+							gameState.player->reset({ 200, 200 });
+						}
+					},
+					false
+				);
 			WizardNPC->m_Entity = WizardEntity;
 			WizardEntity->moving = true;
 			WizardEntity->setNPC(WizardNPC);
