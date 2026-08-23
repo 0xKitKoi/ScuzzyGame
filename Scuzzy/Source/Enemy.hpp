@@ -30,6 +30,8 @@ public:
 	void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos);
 	void Update(float deltaT, int screenhight, int screenwidth);
 
+	void TriggerFight();
+
 	virtual void ResetProjectiles();
 
 	virtual std::string FightActionResponse(int actionIndex);

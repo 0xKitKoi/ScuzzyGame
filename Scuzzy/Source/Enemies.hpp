@@ -255,3 +255,147 @@ public:
 	}
 
 };
+
+
+// TODO: i want the wizard enemy specifically to be the tutorial, and it needs to talk to the player, directing them on how to use the FightSystem.
+
+class WizardEnemy : public Enemy {
+public:
+	WizardEnemy(std::shared_ptr<Entity> entity) : Enemy(entity) {
+		m_EnemySoulSpriteSheet = getTexture("data/EnemySoul2.png");
+		m_Name = "Wizard";
+		m_AttackDamage = 0;
+		m_EnemyDialogue = { "The Wizard forced your soul to face theirs!",
+			"The Wizard wants you to try acting.",
+			"The Wizard wants you to try casting soul magic." };
+
+		m_Actions = { "Info", "Talk" };
+
+		m_ActionResponse = { "This will contain info about the enemy you are fighting. You can feel the wizards soul across from you, but you cant see it.",
+			"Good, you can usually take actions in combat. Sometimes doing something special will make something happen. Try this often. Maybe you don't have to kill whatever you are fighting."};
+
+		m_EnemyFightSpriteSheet = getTexture("data/wizard.png");
+
+		m_EnemySpriteClips = { { 0,0,128,128 } };
+
+		FRAME_COUNT = 1;
+
+		m_EnemyProjectile = std::make_shared<FallingProjectile>(getTexture("data/box.png"), SDL_Rect{0,0,20,20}, Vector2f(0,0), Vector2f(200,200), 1);
+		m_projectileCount = 10;
+		m_layer1 = 284;
+		m_layer2 = 194;
+	}
+
+	std::string FightActionResponse(int actionIndex) override {
+		if (gameState.DebugMode) {
+			printf("WizardEnemy FightActionResponse called with actionIndex: %d\n", actionIndex);
+		}
+		// by default, return the action response at the given index.
+		if (actionIndex < 0 || actionIndex >= m_ActionResponse.size()) {
+			return "Invalid action.";
+		}
+		if (gameState.SillyMeter >= 5) {
+			// I want the actions and responses to change here
+			return "The Wizard seems pleased.";
+		}
+		// increase silly mode?
+		if (actionIndex == 1) {
+			if (gameState.DebugMode) {
+				printf("Silly mode INCREASED!!!!!!!!!!");
+			}
+			gameState.SillyMeter += 5;
+		}
+		return m_ActionResponse[actionIndex];
+	}
+
+	void ResetProjectiles() override {
+    	m_EnemyProjectiles.clear();
+                        // init the projectiles
+        for (int i = 0; i < m_projectileCount; i++) {
+		    //m_EnemyProjectiles.push_back(std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1));
+            // using the m_EnemyProjectile as a template, create new projectiles
+            float subx = float(randomInt(0, gameState.screenwidth));
+            float suby = float(randomInt(0, gameState.screenheight));
+            m_EnemyProjectiles.push_back(std::make_shared<FallingProjectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f( subx, suby ), Vector2f(200,200), 1));
+            // randomize vector2f(x,y) position:
+        }
+        float subx = float(randomInt(0, gameState.screenwidth));
+        float suby = float(randomInt(0, gameState.screenheight));
+        m_EnemyProjectiles[0] = std::make_shared<HomingProjectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f(subx, suby), Vector2f(200, 200), 1);
+	}
+
+	bool m_introDialogueDone = false;
+	bool m_actionDialogueDone = false;
+	bool m_magicDialogueDone = false;
+	bool m_FightActionComplete = false;
+	bool m_tutorialComplete = false;
+	void Update(float deltaT, int screenheight, int screenwidth ) {
+		// custom fight update for the wizard enemy. 
+		// needs a couple of trigger flags, for the intro dialouge, 
+		// and directing the player to use each part of the fight system.
+		// this will be a tutorial fight, so the wizard will not attack the player,
+		// but projectiles will still be spawned, and the player will need to dodge them.
+		// It will be impossible to die here, and impossible to kill the wizard.
+		// Fight will end on SillyMeter reaching 10.
+		if (!m_introDialogueDone) {
+			// tell the player what this screen is. 
+			// "If you ever get in a fight, your soul will be forced to face the enemies soul."
+			// "You can fight back, cast soul magic, or act to try to resolve the fight without violence."
+			// "Lets try dodging. That heart is YOUR soul, and you should really take good care of it."
+			// "Dodge the projectiles to avoid taking damage. Use the arrow keys to move your soul around the screen."
+
+			m_introDialogueDone = true;
+			return; // fall into the actions dialouge.
+		}
+		if (!m_actionDialogueDone) {
+			// tell the player to use the action button. 
+			/*
+			"Lets try acting first. Select Actions with your soul, and pick something to do. Often, theres something special you can do to make something happen."
+			*/
+			m_actionDialogueDone = true;
+			return;
+		}
+		if (!m_magicDialogueDone) {
+			// tell the player to use the magic button.
+			/*
+			"Next, lets try casting some soul magic. Select Magic with your soul, and pick an ability to cast."
+			"Since you got here, you've already reached into your soul. Try reaching into it again."
+			" You'll learn more abilities as your soul changes. Sometimes the shape of your sould will effect what abilities you have."
+			" Youll have to figure out your own soul. No one can help you with that."
+			"Try casting something."
+			// after the player has casted the only spell available, say this:
+			"Ah, that ability is called DoubleOrNothing. It will double your attack damage, but it will also make you extremely fragile."
+			"When an enemy is about to die, the usually reach into their souls, much like you just did to get here..."
+			"when that happens they usually get a burst of extreme power. But as strong as they are, they are also extremely fragile and will die in a single hit. 
+			"If you can see their soul, you can probably kill them."
+			"That being said, you should be careful when casting DoubleOrNothing. You'll also be extremely fragile, but powerful."
+			*/
+			m_magicDialogueDone = true;
+			return;
+		}
+		if (!m_FightActionComplete) {
+			// tell the player to use the fight button.
+			/*
+			"okay good. Lets try fighting."
+			"when its your turn to fight, your soul will show you an aiming meter. try to hit Z at the right time to hit them hard."
+			"The more you hurt an enemy, the more you can see their soul coming out of them. If you can see their soul, you can probably kill them."
+			"Fighting doesnt really require your soul, just punch me or something, idk."
+			// after the player has used the fight button, say this:
+
+			
+			*/
+			m_FightActionComplete = true;
+			return;
+		}
+		if (!m_tutorialComplete) {
+			// End the Fight, and set the tutorial complete flag.
+			/*
+			"okay good, you can fight now. Try not to die. Remember, if you can see your soul, you are probably near an enemy. "
+			"As long as you know the shape of your own soul, you'll be alright."
+			*/
+			m_tutorialComplete = true;
+			return;
+		}
+
+	}
+};

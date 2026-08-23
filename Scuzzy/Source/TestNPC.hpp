@@ -922,6 +922,7 @@ public:
         if (!m_Dialogue.empty()) {
             // // Populates gameState.Text, sets callbackNPC = this, starts animation, etc.
             // NPC::Update(deltaT, CameraRect, PlayerPos);
+            gameState.callbackNPC = this;
             gameState.Text = m_Dialogue;
             gameState.textIndex = 0;
             gameState.textAvailable = true;

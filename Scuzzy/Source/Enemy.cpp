@@ -403,3 +403,19 @@ void Enemy::RenderSoul(SDL_Renderer* renderer) {
     m_EnemySoulSpriteSheet->render(x, y, &clip);
     SDL_SetTextureAlphaMod(tex, 255);
 }
+
+void Enemy::TriggerFight() {
+    //if (gameState.encounterPhase == EncounterPhase::NONE && this->alive) {
+        if (gameState.DebugMode) {
+            printf("Enemy TriggerFight() has been called! Starting soul pull...\n");
+        }
+
+                    gameState.enemyID = m_EnemyID;
+                    gameState.enemy = this;
+                    gameState.encounterPhase = EncounterPhase::SOUL_PULL;
+                    gameState.encounterTimer = 0.0f;
+                    m_Entity->moving = false; // freeze enemy in place during the animation
+                    //gameState.player->moving = false; // freeze player input too, if not already locked
+                    gameState.player->reset({ float(gameState.player->m_PosX), float(gameState.player->m_PosY) }); // fix player stuck issue
+    //}
+}

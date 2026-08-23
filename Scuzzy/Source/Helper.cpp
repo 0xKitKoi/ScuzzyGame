@@ -1587,6 +1587,29 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 				collisionBoxes.clear();
 				std::vector<SDL_Rect> boundaryBoxes = {};
 
+
+			// create wizard tutorial enemy for FightSystem.
+			Vector2f WizardEnemyPos(5000, 0);
+			SDL_Rect WizardEnemyRect = { 0,0,128,128 };
+			clips.push_back({ 0,0,128,128 });
+			clips.push_back({ 128,0,128,128 });
+			clips.push_back({ 128 * 2,0,128,128 });
+			clips.push_back({ 128 * 3,0,128,128 });
+			SDL_Rect entity_cb = { int(WizardEnemyPos.x + 25), int(WizardEnemyPos.y + 25), int(WizardEnemyRect.w - 45), int(WizardEnemyRect.h - 55) }; // custom per entity but whatever
+			std::vector<std::string> enemydialogue = { "The Box Full of \"Fuck You\" Appeared!", "The Box of fuck you said ... \"Fuck you\"", "You opened the box. There was \"fuck you\" inside." };
+			auto entity = std::make_shared<Entity>(WizardEnemyPos, entity_cb, WizardEnemyRect, getTexture("data/wizard.png"), 1, clips, 778);
+			// create the enemy and bind it to the entity
+			//std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity); // make an enemy object initialized with the entity object
+			std::shared_ptr<Enemy> wizardEnemy = std::make_shared<WizardEnemy>(entity); // polymorphisim
+			entity->setEnemy(wizardEnemy); // bind the new enemy object to the entity
+			wizardEnemy->m_MaxHP = 1000;
+			wizardEnemy->HP = 1000;
+			//entity->m_Enemy->m_EnemyProjectile = std::make_shared<Projectile>(getTexture("data/boolet.png"), {0,0,0,0}, {0,0}, {0,0}, 1);
+
+			Entities.push_back(entity); // vector of all entities to render.
+			//collisionBoxes.push_back(&entity->m_Collider);
+
+
 				// (520, 400) wizzard position
 			Vector2f WizardPos(520, 400);
 			SDL_Rect WizardRect = { 0, 0, 200, 200 };
@@ -1602,7 +1625,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 				WizardEntity,
 				WizardDialogue,
 				std::vector<NPCAction>{
-					[](TheNPC& self) {
+					[wizardEnemy](TheNPC& self) {
 						gameState.playerSoulVisible = true;
 						// Tutorial Fight here.
 						// todo: impliment a tutorial fight. killing the wizard will be impossible. After the player uses an action and casts an ability, 
@@ -1610,6 +1633,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 						// Teach player about dodging, attacking, acting, items, and most importantly the magic system. 
 						// player will unlock the magic system after this fight. and will be able to use it in the next area.
 						// RubberBandBall Soul Direction will influence magic system. TODO: Add text in stats menu about viewing the rubberbandball soul menu.
+						wizardEnemy->TriggerFight();
 					}
 				},
 				false
