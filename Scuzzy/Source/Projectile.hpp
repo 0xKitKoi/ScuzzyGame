@@ -163,4 +163,41 @@ public:
 	}
 };
 
+class TutorialProjectile : public Projectile {
+public:
+	float m_TurnSpeed = 5.0f;
+
+	using Projectile::Projectile;
+
+	void Update(float deltaT, Vector2f playerPos) override {
+		if (!m_Active) {
+			return; // do nothing if not active
+		}
+
+		if (m_Init) {
+			// this is the first update call, set target position.
+			m_TargetPosition.x = playerPos.x;
+			m_TargetPosition.y = playerPos.y;
+			m_Init = false;
+		}
+		else {
+
+			Vector2f direction = (playerPos - m_Position).Normalized();
+			m_Velocity = lerp(m_Velocity, direction * m_Velocity.Length(), m_TurnSpeed * deltaT);
+			m_Position += m_Velocity * deltaT;
+			m_Collider = { int(m_Position.x), int(m_Position.y), m_SpriteClip.w, m_SpriteClip.h };
+			if (SDL_HasIntersection(&m_Collider, &gameState.player->m_HeartCollider)) {
+				m_TensionHit = true;
+				//gameState.HP -= m_Damage; // Tutorial Projectiles will do nothing.
+				Mix_PlayChannel(-1, gPlayerHurtSound, 0);
+				//gameState.DamageTaken += m_Damage;
+				m_Active = false; // deactivate on hit
+				//gameState.TensionMeter -= 5;
+				gameState.TensionMeter += 5; // cant decide if projectiles should increase or decrease tension on hit
+
+			}
+		}
+	}
+};
+
 #endif

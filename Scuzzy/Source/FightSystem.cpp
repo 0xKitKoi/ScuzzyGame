@@ -1,11 +1,14 @@
 #include "Source/FightSystem.hpp"
 #include "Source/Helper.hpp"
+#include "Source/Enemies.hpp"
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
 #include <stdio.h>
 #include <string>
 #include <random>
+#include <sstream>
+#include <vector>
 #include "Source/GameState.hpp"
 #include "Source/Item.hpp"
 #include "Source/BackgroundLayer.h"
@@ -138,33 +141,58 @@ void FS_renderText(SDL_Renderer* renderer, TTF_Font* font, std::string text, int
     SDL_DestroyTexture(texture);
 }
 
+std::vector<std::string> FS_WrapText(TTF_Font* font, const std::string& text, int maxWidth) {
+    std::vector<std::string> lines;
+    std::istringstream paragraphs(text);
+    std::string paragraph;
+
+    while (std::getline(paragraphs, paragraph)) {
+        std::istringstream words(paragraph);
+        std::string word;
+        std::string line;
+
+        while (words >> word) {
+            const std::string candidate = line.empty() ? word : line + " " + word;
+            int width = 0;
+            TTF_SizeText(font, candidate.c_str(), &width, nullptr);
+
+            if (width <= maxWidth || line.empty()) {
+                line = candidate;
+            }
+            else {
+                lines.push_back(line);
+                line = word;
+            }
+        }
+        if (!line.empty()) lines.push_back(line);
+        if (paragraph.empty()) lines.push_back("");
+    }
+    return lines;
+}
+
+void FS_renderWrappedText(SDL_Renderer* renderer, TTF_Font* font, const std::string& text,
+    int x, int y, int maxWidth, SDL_Color color) {
+    if (!renderer || !font || text.empty()) return;
+
+    const int lineHeight = TTF_FontHeight(font) + 5;
+    const std::vector<std::string> lines = FS_WrapText(font, text, maxWidth);
+    for (size_t i = 0; i < lines.size(); ++i) {
+        FS_renderText(renderer, font, lines[i], x, y + static_cast<int>(i) * lineHeight, color);
+    }
+}
+
 // Render text inside the text box
 void FS_renderText(SDL_Renderer* renderer, TTF_Font* font, std::string text, SDL_Color color) {
     FS_renderTextBox(renderer);
     if (!renderer || !font) return; // Defensive: ensure we have what we need
     if (text.empty()) return; // Nothing to render inside box
 
-    SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
-    if (!surface) {
-        printf("TTF_RenderText_Solid failed: %s\n", TTF_GetError());
-        return;
-    }
-
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    if (!texture) {
-        printf("SDL_CreateTextureFromSurface failed: %s\n", SDL_GetError());
-        SDL_FreeSurface(surface);
-        return;
-    }
-
     int screenWidth, screenHeight;
     SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
     int xOffset = screenWidth * 0.05 + 30;  // Start slightly inside the text box
     int yOffset = screenHeight - 275;       // Place the text inside the box
-    SDL_Rect dstRect = { xOffset, yOffset, surface->w, surface->h };
-    SDL_RenderCopy(renderer, texture, NULL, &dstRect);
-    SDL_FreeSurface(surface);
-    SDL_DestroyTexture(texture);
+    const int boxWidth = static_cast<int>(screenWidth * 0.9);
+    FS_renderWrappedText(renderer, font, text, xOffset, yOffset, boxWidth - 60, color);
 }
 
 // Helper: clear any queued/dialogue animation (use when entering input-driven states)
@@ -179,6 +207,25 @@ void FS_ClearFightTextQueue() {
     fightText.clear();
 }
 
+// Tutorial text belongs to the enemy, while the FightSystem only decides where
+// it is drawn. This lets tutorial enemies guide the same menus used by normal
+// fights without special-casing a particular enemy type here.
+WizardEnemy* FS_GetWizardTutorial() {
+    return gameState.enemy ? dynamic_cast<WizardEnemy*>(gameState.enemy) : nullptr;
+}
+
+void FS_RenderTutorialInstruction(SDL_Renderer* renderer, TTF_Font* font, int x, int y) {
+    WizardEnemy* wizard = FS_GetWizardTutorial();
+    if (!wizard) return;
+
+    const std::string instruction = wizard->GetTutorialInstruction();
+    if (!instruction.empty()) {
+        int screenWidth, screenHeight;
+        SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+        FS_renderWrappedText(renderer, font, instruction, x, y, static_cast<int>(screenWidth * 0.9) - 60, { 255, 255, 0, 255 });
+    }
+}
+
 // Helper: queue fight text for animated display
 void FS_QueueFightText(const std::string& text) {
     // Use fight-local buffers so we don't affect global NPC/dialogue flow
@@ -186,8 +233,8 @@ void FS_QueueFightText(const std::string& text) {
     fightText = text; // keep top-level fightText as a fallback/full-text holder
     fightCurrentCharIndex = (text.empty() ? 0 : 1);
     fightTextTimer = 0.0f;
-    fightTextAnimating = true;
-    fightShouldAnimateText = true;
+    fightTextAnimating = !text.empty();
+    fightShouldAnimateText = !text.empty();
     fightCurrentDisplay = (text.empty() ? std::string() : text.substr(0, fightCurrentCharIndex));
 }
 
@@ -265,6 +312,7 @@ void FS_UpdateAndRenderAnimatedText(SDL_Renderer* renderer, TTF_Font* font, SDL_
 }
 
 // State handler functions
+void EndFightAndReturnToFlow();
 void HandleIntroState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     // Ensure the current intro dialogue is queued for animated display
     if (gameState.enemy && gameState.Plot < gameState.enemy->m_EnemyDialogue.size()) {
@@ -281,10 +329,18 @@ void HandleIntroState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
         Mix_PlayChannel(-1, gSelectSound, 0);
         if (!fightTextAnimating) {
-            // after the player sees the intro text, select the first action.
             gameState.Plot++;
-            gameState.fightState = FightState::PLAYER_TURN_MENU;
-            selection = 0; // Reset selection for menu
+            if (gameState.Plot >= gameState.enemy->m_EnemyDialogue.size()) {
+                if (WizardEnemy* wizard = FS_GetWizardTutorial()) {
+                    gameState.fightState = wizard->ShouldStartTutorialDodge()
+                        ? FightState::DODGE_MECHANIC
+                        : FightState::TUTORIAL_PROMPT;
+                }
+                else {
+                    gameState.fightState = FightState::PLAYER_TURN_MENU;
+                }
+                selection = 0; // Reset selection for menu
+            }
         }
 
         //// If we've reached the end of intro dialogue, move to player's turn
@@ -292,6 +348,31 @@ void HandleIntroState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
         //    gameState.fightState = FightState::PLAYER_TURN_MENU;
         //    selection = 0; // Reset selection for menu
         //}
+    }
+}
+
+void HandleTutorialPromptState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
+    WizardEnemy* wizard = FS_GetWizardTutorial();
+    if (!wizard) {
+        gameState.fightState = FightState::PLAYER_TURN_MENU;
+        return;
+    }
+
+    const std::string prompt = wizard->GetTutorialInstruction();
+    if (fightFullText != prompt) FS_QueueFightText(prompt);
+    FS_UpdateAndRenderAnimatedText(renderer, font, { 255, 255, 255 }, event);
+
+    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z && !fightTextAnimating) {
+        Mix_PlayChannel(-1, gSelectSound, 0);
+        if (wizard->AdvanceTutorialPrompt()) {
+            selection = 0;
+            if (wizard->IsTutorialComplete()) {
+                EndFightAndReturnToFlow();
+            }
+            else {
+                gameState.fightState = FightState::PLAYER_TURN_MENU;
+            }
+        }
     }
 }
 
@@ -338,6 +419,7 @@ bool AttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
 
 	SDL_Rect fightBoxTemp = { xPos, yPos, boxWidth, boxHeight };
 	FS_RenderFightBox(renderer, fightBoxTemp);
+	FS_RenderTutorialInstruction(renderer, font, fightBoxTemp.x + 30, fightBoxTemp.y + 30);
 
 	// render number line imagery
 	SDL_Rect lineRect = { fightBoxTemp.x + 200, fightBoxTemp.y + fightBoxTemp.h / 2 + 10, fightBoxTemp.w - 500 , 5 };
@@ -435,6 +517,9 @@ void HandleAttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
                 gameState.fightState = FightState::FIGHT_END;
             }
             else {
+                // A tutorial attack can also end by running out of time. It is
+                // still a completed attempt, so let the Wizard advance.
+                if (WizardEnemy* wizard = FS_GetWizardTutorial()) wizard->OnTutorialFightResolved();
                 gameState.fightState = FightState::PLAYER_ACTION_RESULT /*FightState::PLAYER_ACTION_RESULT*/;
             }
 
@@ -456,7 +541,7 @@ void HandleAttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
                 }
                 else {
                     FS_QueueFightText("You hit the " + gameState.enemy->m_Name + "! \n");
-                    gameState.enemy->HP -= 1; // normal hit
+                gameState.enemy->HP -= 1; // normal hit
                 }
 
                 // If enemy died from this hit, record victory and go to result dialogue
@@ -476,6 +561,7 @@ void HandleAttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
                 // Otherwise, end the turn and show the player's action result
                 gameState.fightTurnTimer.stop();
                 gameState.FightAttackAttempt = true;
+                if (WizardEnemy* wizard = FS_GetWizardTutorial()) wizard->OnTutorialFightResolved();
                 gameState.fightState = FightState::PLAYER_ACTION_RESULT;
                 return;
             }
@@ -492,6 +578,7 @@ void HandleAttackMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
                 // End the turn immediately and show result so no further inputs apply this turn
                 gameState.fightTurnTimer.stop();
                 gameState.FightAttackAttempt = true;
+                if (WizardEnemy* wizard = FS_GetWizardTutorial()) wizard->OnTutorialFightResolved();
                 gameState.fightState = FightState::PLAYER_ACTION_RESULT;
                 return;
             }
@@ -599,6 +686,8 @@ void HandlePlayerTurnMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event
     int xOffset = screenWidth * 0.05 + 30;
     int yOffset = screenHeight - 275;
 
+    FS_RenderTutorialInstruction(renderer, font, xOffset, yOffset + 65);
+
     SDL_Rect heartClip = gameState.player->m_HeartClips[0];
     const int heartPadding = 8;
     int textIndent = heartClip.w + heartPadding;
@@ -628,7 +717,13 @@ void HandlePlayerTurnMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event
             if (selection >= fightMenu.size()) selection = 0;
         }
         else if (event.key.keysym.sym == SDLK_z) {
+            WizardEnemy* wizard = FS_GetWizardTutorial();
+            const int requiredSelection = wizard ? wizard->TutorialRequiredMainMenuSelection() : -1;
+            if (requiredSelection >= 0 && selection != requiredSelection) {
+                return;
+            }
             Mix_PlayChannel(-1, gSelectSound, 0);
+            if (wizard) wizard->OnTutorialMainMenuSelected(selection);
             // Handle selection
             switch (selection) {
             case 0: // Fight
@@ -741,6 +836,8 @@ void HandlePlayerMagicMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
     SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
     int xOffset = screenWidth * 0.05 + 30;
     int yOffset = screenHeight - 275;
+
+    FS_RenderTutorialInstruction(renderer, font, xOffset, yOffset + 65);
     SDL_Color white = { 255,255,255 };
     SDL_Color red = { 237,28,36 };
     SDL_Color grey = { 128,128,128 };
@@ -785,6 +882,7 @@ void HandlePlayerMagicMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
                 FS_QueueFightText("Magic Menu: You used " + actionMenu->at(selection)->m_abilityName + "!\n");
                 gameState.TensionMeter -= actionMenu->at(selection)->m_TensionCost;
                 gameState.player->m_Abilities.at(selection)->Cast();
+                if (WizardEnemy* wizard = FS_GetWizardTutorial()) wizard->OnTutorialMagicSelected(selection);
                 gameState.fightState = FightState::PLAYER_ACTION_RESULT;
                 gameState.turnCount++;
                 selection = 0;
@@ -795,6 +893,9 @@ void HandlePlayerMagicMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Even
             }
         }
         else if (event.key.keysym.sym == SDLK_x) {
+            if (FS_GetWizardTutorial()) {
+                return;
+            }
             Mix_PlayChannel(-1, gDeSelectSound, 0);
             gameState.fightState = FightState::PLAYER_TURN_MENU;
             selection = 1;
@@ -817,6 +918,8 @@ void HandlePlayerActionsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Ev
     SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
     int xOffset = screenWidth * 0.05 + 30;
     int yOffset = screenHeight - 275;
+
+    FS_RenderTutorialInstruction(renderer, font, xOffset, yOffset + 65);
 
     SDL_Rect heartClip = gameState.player->m_HeartClips[0];
     const int heartPadding = 8;
@@ -845,6 +948,11 @@ void HandlePlayerActionsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Ev
             if (selection >= actionMenu.size()) selection = 0;
         }
         else if (event.key.keysym.sym == SDLK_z) {
+			WizardEnemy* wizard = FS_GetWizardTutorial();
+			const int requiredSelection = wizard ? wizard->TutorialRequiredActionSelection() : -1;
+			if (requiredSelection >= 0 && selection != requiredSelection) {
+				return;
+			}
 			Mix_PlayChannel(-1, gSelectSound, 0);
             // Set text based on selected action
 			// The enemy will effect the gameState based on the action chosen here.
@@ -862,6 +970,9 @@ void HandlePlayerActionsMenuState(SDL_Renderer* renderer, TTF_Font* font, SDL_Ev
             }
         }
         else if (event.key.keysym.sym == SDLK_x) {
+			if (FS_GetWizardTutorial()) {
+				return;
+			}
 			Mix_PlayChannel(-1, gDeSelectSound, 0);
             // Go back to main menu
             gameState.fightState = FightState::PLAYER_TURN_MENU;
@@ -1003,8 +1114,11 @@ void HandlePlayerActionResultState(SDL_Renderer* renderer, TTF_Font* font, SDL_E
     // Mix_PlayChannel(-1, gSelectSound, 0);
     if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
         if (!fightTextAnimating) {
-            // Move to enemy's turn
-            gameState.fightState = FightState::ENEMY_TURN;
+            // A completed tutorial has no enemy turn: the Wizard ends the lesson.
+            WizardEnemy* wizard = FS_GetWizardTutorial();
+            gameState.fightState = (wizard && wizard->IsTutorialComplete())
+                ? FightState::FIGHT_END
+                : (wizard ? FightState::TUTORIAL_PROMPT : FightState::ENEMY_TURN);
         }
         // If text is animating, Z does nothing; X is the skip key
     }
@@ -1153,7 +1267,12 @@ void HandleFightEndState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event
     else {
         if (!FightEndConsumed) {
             printf("Handling fight end state. Dead: %d, Enemy Alive: %d, Enemy HP: %d\n", gameState.dead, gameState.enemy->alive, gameState.enemy->HP);
-            fightText = "The Enemy Stopped Moving!";
+            if (WizardEnemy* wizard = FS_GetWizardTutorial()) {
+                fightText = wizard->GetFightEndText();
+            }
+            else {
+                fightText = "The Enemy Stopped Moving!";
+            }
             FS_QueueFightText(fightText);
             fightShouldAnimateText = true;
             FightEndConsumed = true;
@@ -1301,7 +1420,13 @@ void HandleDodgeingMechanic(SDL_Renderer* renderer, TTF_Font* font, SDL_Event ev
             //gameState.fightState = FightState::ENEMY_TURN;
 
 			//gameState.fightState = FightState::RESULT_DIALOGUE;
-            gameState.fightState = FightState::PLAYER_TURN_MENU;
+            if (WizardEnemy* wizard = FS_GetWizardTutorial()) {
+                wizard->OnTutorialDodgeComplete();
+                gameState.fightState = FightState::TUTORIAL_PROMPT;
+            }
+            else {
+                gameState.fightState = FightState::PLAYER_TURN_MENU;
+            }
             //if (gameState.DebugMode) {
 			 //   printf("DODGE TIMER UP! FightState  is now Result_Dialogue\n");
             //}
@@ -1382,6 +1507,10 @@ void FS_HandleInput(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
         HandleIntroState(renderer, font, event);
         break;
 
+    case FightState::TUTORIAL_PROMPT:
+        HandleTutorialPromptState(renderer, font, event);
+        break;
+
     case FightState::PLAYER_TURN_MENU:
         // This state expects immediate menu input; clear any lingering dialogue animation
         FS_ClearFightTextQueue();
@@ -1452,6 +1581,9 @@ void FS_InitFight() {
     // Set initial state
     gameState.TensionMeter = 0;
     gameState.fightState = FightState::INTRO;
+    if (WizardEnemy* wizard = FS_GetWizardTutorial()) {
+        wizard->ResetFightTutorial();
+    }
 
     // Initialize RNG if not already done
     if (!rngInitialized) {

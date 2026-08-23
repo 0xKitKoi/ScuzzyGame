@@ -14,7 +14,8 @@ enum class FightState {
     RESULT_DIALOGUE,    // Showing results of an action
     FIGHT_END,          // Fight is over (win/lose)
 	PLAYER_FIGHT,       // Player is timing an attack
-	PLAYER_MAGIC        // Player is selecting ability.
+	PLAYER_MAGIC,       // Player is selecting ability.
+	TUTORIAL_PROMPT     // Wizard explains the next required tutorial input.
 
 };
 

@@ -265,9 +265,12 @@ public:
 		m_EnemySoulSpriteSheet = getTexture("data/EnemySoul2.png");
 		m_Name = "Wizard";
 		m_AttackDamage = 0;
-		m_EnemyDialogue = { "The Wizard forced your soul to face theirs!",
-			"The Wizard wants you to try acting.",
-			"The Wizard wants you to try casting soul magic." };
+		m_EnemyDialogue = {
+			"If you ever get in a fight, your soul will be forced to face the enemies soul.",
+			"You can fight back, cast soul magic, or act to try to resolve the fight without violence.",
+			"Lets try dodging. That heart is YOUR soul, and you should really take good care of it.",
+			"Dodge the projectiles to avoid taking damage. Use the arrow keys to move your soul around the screen."
+		};
 
 		m_Actions = { "Info", "Talk" };
 
@@ -280,7 +283,7 @@ public:
 
 		FRAME_COUNT = 1;
 
-		m_EnemyProjectile = std::make_shared<FallingProjectile>(getTexture("data/box.png"), SDL_Rect{0,0,20,20}, Vector2f(0,0), Vector2f(200,200), 1);
+		m_EnemyProjectile = std::make_shared<TutorialProjectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 0);
 		m_projectileCount = 10;
 		m_layer1 = 284;
 		m_layer2 = 194;
@@ -294,43 +297,30 @@ public:
 		if (actionIndex < 0 || actionIndex >= m_ActionResponse.size()) {
 			return "Invalid action.";
 		}
-		if (gameState.SillyMeter >= 5) {
-			// I want the actions and responses to change here
-			return "The Wizard seems pleased.";
-		}
-		// increase silly mode?
-		if (actionIndex == 1) {
-			if (gameState.DebugMode) {
-				printf("Silly mode INCREASED!!!!!!!!!!");
-			}
-			gameState.SillyMeter += 5;
+		if (actionIndex == 1 && m_tutorialStep == TutorialStep::ACT_ACTION) {
+			m_tutorialStep = TutorialStep::MAGIC_MENU;
 		}
 		return m_ActionResponse[actionIndex];
 	}
 
-	void ResetProjectiles() override {
-    	m_EnemyProjectiles.clear();
-                        // init the projectiles
-        for (int i = 0; i < m_projectileCount; i++) {
-		    //m_EnemyProjectiles.push_back(std::make_shared<Projectile>(getTexture("data/boolet.png"), SDL_Rect{0,0,10,10}, Vector2f(0,0), Vector2f(200,200), 1));
-            // using the m_EnemyProjectile as a template, create new projectiles
-            float subx = float(randomInt(0, gameState.screenwidth));
-            float suby = float(randomInt(0, gameState.screenheight));
-            m_EnemyProjectiles.push_back(std::make_shared<FallingProjectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f( subx, suby ), Vector2f(200,200), 1));
-            // randomize vector2f(x,y) position:
-        }
-        float subx = float(randomInt(0, gameState.screenwidth));
-        float suby = float(randomInt(0, gameState.screenheight));
-        m_EnemyProjectiles[0] = std::make_shared<HomingProjectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f(subx, suby), Vector2f(200, 200), 1);
+	bool IsTutorialFight() const { return true; }
+
+	void ResetFightTutorial() {
+		m_tutorialStep = TutorialStep::DODGE;
+		m_tutorialPromptLine = 0;
 	}
 
-	bool m_introDialogueDone = false;
-	bool m_actionDialogueDone = false;
-	bool m_magicDialogueDone = false;
-	bool m_FightActionComplete = false;
-	bool m_tutorialComplete = false;
-	void Update(float deltaT, int screenheight, int screenwidth ) {
-		// custom fight update for the wizard enemy. 
+	bool ShouldStartTutorialDodge() const { return m_tutorialStep == TutorialStep::DODGE; }
+
+	void OnTutorialDodgeComplete() {
+		if (m_tutorialStep == TutorialStep::DODGE) {
+			m_tutorialStep = TutorialStep::ACT_MENU;
+			m_tutorialPromptLine = 0;
+		}
+	}
+
+	/*
+			// custom fight update for the wizard enemy. 
 		// needs a couple of trigger flags, for the intro dialouge, 
 		// and directing the player to use each part of the fight system.
 		// this will be a tutorial fight, so the wizard will not attack the player,
@@ -349,53 +339,164 @@ public:
 		}
 		if (!m_actionDialogueDone) {
 			// tell the player to use the action button. 
-			/*
-			"Lets try acting first. Select Actions with your soul, and pick something to do. Often, theres something special you can do to make something happen."
-			*/
+			
+			//"Lets try acting first. Select Actions with your soul, and pick something to do. Often, theres something special you can do to make something happen."
+			
 			m_actionDialogueDone = true;
 			return;
 		}
 		if (!m_magicDialogueDone) {
 			// tell the player to use the magic button.
-			/*
-			"Next, lets try casting some soul magic. Select Magic with your soul, and pick an ability to cast."
-			"Since you got here, you've already reached into your soul. Try reaching into it again."
-			" You'll learn more abilities as your soul changes. Sometimes the shape of your sould will effect what abilities you have."
-			" Youll have to figure out your own soul. No one can help you with that."
-			"Try casting something."
+			
+			//"Next, lets try casting some soul magic. Select Magic with your soul, and pick an ability to cast."
+			//"Since you got here, you've already reached into your soul. Try reaching into it again."
+			//" You'll learn more abilities as your soul changes. Sometimes the shape of your sould will effect what abilities you have."
+			//" Youll have to figure out your own soul. No one can help you with that."
+			//"Try casting something."
 			// after the player has casted the only spell available, say this:
-			"Ah, that ability is called DoubleOrNothing. It will double your attack damage, but it will also make you extremely fragile."
-			"When an enemy is about to die, the usually reach into their souls, much like you just did to get here..."
-			"when that happens they usually get a burst of extreme power. But as strong as they are, they are also extremely fragile and will die in a single hit. 
-			"If you can see their soul, you can probably kill them."
-			"That being said, you should be careful when casting DoubleOrNothing. You'll also be extremely fragile, but powerful."
-			*/
+			//"Ah, that ability is called DoubleOrNothing. It will double your attack damage, but it will also make you extremely fragile."
+			//"When an enemy is about to die, the usually reach into their souls, much like you just did to get here..."
+			//"when that happens they usually get a burst of extreme power. But as strong as they are, they are also extremely fragile and will die in a single hit. 
+			//"If you can see their soul, you can probably kill them."
+			//"That being said, you should be careful when casting DoubleOrNothing. You'll also be extremely fragile, but powerful."
+			
 			m_magicDialogueDone = true;
 			return;
 		}
 		if (!m_FightActionComplete) {
 			// tell the player to use the fight button.
-			/*
-			"okay good. Lets try fighting."
-			"when its your turn to fight, your soul will show you an aiming meter. try to hit Z at the right time to hit them hard."
-			"The more you hurt an enemy, the more you can see their soul coming out of them. If you can see their soul, you can probably kill them."
-			"Fighting doesnt really require your soul, just punch me or something, idk."
+			
+			//"okay good. Lets try fighting."
+			//"when its your turn to fight, your soul will show you an aiming meter. try to hit Z at the right time to hit them hard."
+			//"The more you hurt an enemy, the more you can see their soul coming out of them. If you can see their soul, you can probably kill them."
+			//"Fighting doesnt really require your soul, just punch me or something, idk."
 			// after the player has used the fight button, say this:
 
 			
-			*/
+			
 			m_FightActionComplete = true;
 			return;
 		}
 		if (!m_tutorialComplete) {
 			// End the Fight, and set the tutorial complete flag.
-			/*
-			"okay good, you can fight now. Try not to die. Remember, if you can see your soul, you are probably near an enemy. "
-			"As long as you know the shape of your own soul, you'll be alright."
-			*/
+			
+			//"okay good, you can fight now. Try not to die. Remember, if you can see your soul, you are probably near an enemy. "
+			//"As long as you know the shape of your own soul, you'll be alright."
+			
 			m_tutorialComplete = true;
 			return;
 		}
+	*/
 
+	std::string GetTutorialInstruction() const {
+		const std::vector<std::string> lines = GetTutorialPromptLines();
+		return m_tutorialPromptLine < lines.size() ? lines[m_tutorialPromptLine] : "";
 	}
+
+	// Returns true only when the current group of tutorial dialogue is finished.
+	bool AdvanceTutorialPrompt() {
+		const std::vector<std::string> lines = GetTutorialPromptLines();
+		if (m_tutorialPromptLine + 1 < lines.size()) {
+			++m_tutorialPromptLine;
+			return false;
+		}
+
+		if (m_tutorialStep == TutorialStep::MAGIC_RESULT) {
+			m_tutorialStep = TutorialStep::FIGHT_MENU;
+			m_tutorialPromptLine = 0;
+			return false;
+		}
+		if (m_tutorialStep == TutorialStep::COMPLETE) {
+			m_tutorialPromptLine = lines.size();
+		}
+		return true;
+	}
+
+	int TutorialRequiredMainMenuSelection() const {
+		switch (m_tutorialStep) {
+		case TutorialStep::ACT_MENU: return 1;   // Actions
+		case TutorialStep::MAGIC_MENU: return 2; // Magic
+		case TutorialStep::FIGHT_MENU: return 0; // Fight
+		default: return -1;
+		}
+	}
+
+	int TutorialRequiredActionSelection() const {
+		return m_tutorialStep == TutorialStep::ACT_ACTION ? 1 : -1; // Talk
+	}
+
+	void OnTutorialMainMenuSelected(int selected) {
+		if (m_tutorialStep == TutorialStep::ACT_MENU && selected == 1) {
+			m_tutorialStep = TutorialStep::ACT_ACTION;
+		}
+		else if (m_tutorialStep == TutorialStep::MAGIC_MENU && selected == 2) {
+			m_tutorialStep = TutorialStep::MAGIC_ACTION;
+		}
+		else if (m_tutorialStep == TutorialStep::FIGHT_MENU && selected == 0) {
+			m_tutorialStep = TutorialStep::FIGHTING;
+		}
+	}
+
+	void OnTutorialMagicSelected(int /*selected*/) {
+		if (m_tutorialStep == TutorialStep::MAGIC_ACTION) {
+			m_tutorialStep = TutorialStep::MAGIC_RESULT;
+			m_tutorialPromptLine = 0;
+		}
+	}
+
+	void OnTutorialFightResolved() {
+		if (m_tutorialStep == TutorialStep::FIGHTING) {
+			m_tutorialStep = TutorialStep::COMPLETE;
+			m_tutorialPromptLine = 0;
+		}
+	}
+
+	bool IsTutorialComplete() const { return m_tutorialStep == TutorialStep::COMPLETE && m_tutorialPromptLine >= GetTutorialPromptLines().size(); }
+
+	std::string GetFightEndText() const {
+		return "";
+	}
+
+	void ResetProjectiles() override {
+    	m_EnemyProjectiles.clear();
+                        // init the projectiles
+		for (int i = 0; i < m_projectileCount; i++) {
+            float subx = float(randomInt(0, gameState.screenwidth));
+            float suby = float(randomInt(0, gameState.screenheight));
+			m_EnemyProjectiles.push_back(std::make_shared<TutorialProjectile>(m_EnemyProjectile->m_SpriteSheet, m_EnemyProjectile->m_SpriteClip, Vector2f(subx, suby), Vector2f(200, 200), 0));
+        }
+	}
+
+	private:
+	enum class TutorialStep { DODGE, ACT_MENU, ACT_ACTION, MAGIC_MENU, MAGIC_ACTION, MAGIC_RESULT, FIGHT_MENU, FIGHTING, COMPLETE };
+	std::vector<std::string> GetTutorialPromptLines() const {
+		switch (m_tutorialStep) {
+		case TutorialStep::ACT_MENU:
+			return { "Okay, Now lets try Acting. Select Actions with your soul, and pick something to do. Often, theres something special you can do to make something happen." };
+		case TutorialStep::MAGIC_MENU:
+			return { "Next, lets try casting some soul magic. Select Magic with your soul, and pick an ability to cast.",
+				"Since you got here, you've already reached into your soul. Try reaching into it again.",
+				"You'll learn more abilities as your soul changes. Sometimes the shape of your soul will effect what abilities you have.",
+				"Youll have to figure out your own soul. No one can help you with that.",
+				"Try casting something." };
+		case TutorialStep::MAGIC_RESULT:
+			return { "Ah, that ability is called DoubleOrNothing. It will double your attack damage, but it will also make you extremely fragile.",
+				"When an enemy is about to die, they will usually reach into their souls, much like you just did to get here...",
+				"when that happens they usually get a burst of extreme power. But as strong as they are, they are also extremely fragile and will die in a single hit.",
+				"If you can see their soul, you can probably kill them.",
+				"That being said, you should be careful when casting DoubleOrNothing. You'll also be extremely fragile, but powerful." };
+		case TutorialStep::FIGHT_MENU:
+			return { "okay good. Lets try fighting.",
+				"when its your turn to fight, your soul will show you an aiming meter. try to hit Z at the right time to hit them hard.",
+				"The more you hurt an enemy, the more you can see their soul coming out of them. If you can see their soul, you can probably kill them.",
+				"Fighting doesnt really require your soul, just punch me or something, idk." };
+		case TutorialStep::COMPLETE:
+			return { "okay good, you can fight now. Try not to die. Remember, if you can see your soul, you are probably near an enemy.",
+				"As long as you know the shape of your own soul, you'll be alright." };
+		default:
+			return {};
+		}
+	}
+	TutorialStep m_tutorialStep = TutorialStep::DODGE;
+	size_t m_tutorialPromptLine = 0;
 };
