@@ -1313,6 +1313,10 @@ void handleDialogue(SDL_Event event) {
             gameState.textIndex = 0;
             gameState.textAvailable = false;
             gameState.textAnimating = false;
+            if (gameState.callbackNPC) {
+                gameState.callbackNPC->handleChoice(0); // default trigger so NPC knows dialogue is done.
+                gameState.callbackNPC = nullptr; // stale pointer cleanup
+            }
         }
     }
 }

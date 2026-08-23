@@ -757,13 +757,13 @@ bool loadMedia()
 		}
 	}
 
-	cloud1Layer.loadFromFile("data/wizardcliffcloud1layer.png");
-	cloud2Layer.loadFromFile("data/wizardcliffcloud2layer.png");
-	cloud3Layer.loadFromFile("data/wizardcliffcloud3layer.png");
-	cloud4Layer.loadFromFile("data/wizardcliffcloud4layer.png");
+	// cloud1Layer.loadFromFile("data/wizardcliffcloud1layer.png");
+	// cloud2Layer.loadFromFile("data/wizardcliffcloud2layer.png");
+	// cloud3Layer.loadFromFile("data/wizardcliffcloud3layer.png");
+	// cloud4Layer.loadFromFile("data/wizardcliffcloud4layer.png");
 
-	floorLayer.loadFromFile("data/wizardcliffFloorlayer.png");
-	moonLayer.loadFromFile("data/wizardcliffMoonlayer.png");
+	// floorLayer.loadFromFile("data/wizardcliffFloorlayer.png");
+	// moonLayer.loadFromFile("data/wizardcliffMoonlayer.png");
 
 
 	// load sound effects:
@@ -1913,6 +1913,22 @@ int main(int argc, char* args[])
 						RenderScrollingLayer(cloud3Layer, cloud3Offset);
 						RenderScrollingLayer(cloud2Layer, cloud2Offset);
 						RenderScrollingLayer(cloud1Layer, cloud1Offset);
+						// render the moon and floor layer too. 
+						SDL_Rect mapQuad = {
+							(int)(0 - camera.x),        // screen space, no extra multiply needed
+							(int)(0 - camera.y),
+							floorLayer.getWidth() * mapScale,
+							floorLayer.getHeight() * mapScale
+						};
+						SDL_RenderCopy(gRenderer, floorLayer.getTexture(), NULL, &mapQuad);  // NO RenderSetScale
+						mapQuad = {
+							(int)(0 - camera.x),        // screen space, no extra multiply needed
+							(int)(0 - camera.y),
+							(int) moonLayer.getWidth(), // * mapScale,,
+							(int) moonLayer.getHeight()// * mapScale
+						};
+						SDL_RenderCopy(gRenderer, moonLayer.getTexture(), NULL, &mapQuad);  // NO RenderSetScale
+						gameState.playerSoulVisible = true; // show the player soul in this map.
 					}
 					else {
 						// Normal map rendering for other maps.

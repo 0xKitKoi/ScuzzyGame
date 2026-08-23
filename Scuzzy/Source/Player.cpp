@@ -739,9 +739,10 @@ void Player::render(int camX, int camY) {
 
 
 void Player::RenderSoul(SDL_Renderer* renderer) {
+	if (!gameState.playerSoulVisible) return;
     bool chasing = gameState.playerSoulVisible && gameState.encounterPhase == EncounterPhase::NONE;
     bool encountering = gameState.encounterPhase != EncounterPhase::NONE;
-    if (!chasing && !encountering) return;
+    //if (!chasing && !encountering) return;
 
     SDL_Texture* tex = m_FightSpriteSheet.getTexture();
     SDL_Rect clip = m_HeartClips[0];

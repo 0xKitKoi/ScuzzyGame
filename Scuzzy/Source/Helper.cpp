@@ -38,6 +38,7 @@ int LevelIDFromName(std::string name) {
 	else if (name == "StartingAlley") { return 7; }
 	else if (name == "NoomSideCafe") { return 8; }
 	else if (name == "NoomSideCafe2") { return 9; }
+	else if (name == "WizardCliff") { return 10;}
 	else {
 		return -1;
 	}
@@ -1547,6 +1548,87 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 
 		}
+		break;
+
+		case 9:	 // this will be the room under the catcafe cupboards. to be decided.
+			if (!Map->loadFromFile("data/magicant.png"))
+			{
+				printf("Failed to load sprite sheet texture!\n");
+			}
+			else {
+				gameState.mapScaling = 1.0f;
+				collisionBoxes.clear();
+				std::vector<SDL_Rect> boundaryBoxes = {};
+			}
+		break;
+		case 10:
+			extern LTexture	cloud1Layer;
+			extern LTexture	cloud2Layer;
+			extern LTexture	cloud3Layer;
+			extern LTexture	cloud4Layer;
+			extern LTexture	floorLayer;
+			extern LTexture	moonLayer;
+			cloud1Layer.loadFromFile("data/wizardcliffcloud1layer.png");
+			cloud2Layer.loadFromFile("data/wizardcliffcloud2layer.png");
+			cloud3Layer.loadFromFile("data/wizardcliffcloud3layer.png");
+			cloud4Layer.loadFromFile("data/wizardcliffcloud4layer.png");
+
+			floorLayer.loadFromFile("data/wizardcliffFloorlayer.png");
+			moonLayer.loadFromFile("data/wizardcliffMoonlayer.png");
+
+			if (floorLayer.getTexture() == nullptr || moonLayer.getTexture() == nullptr || cloud1Layer.getTexture() == nullptr || cloud2Layer.getTexture() == nullptr || cloud3Layer.getTexture() == nullptr || cloud4Layer.getTexture() == nullptr)
+			{
+				printf("Failed to load sprite sheet textures! This is the Wizard Cliff map.\n");
+			}
+			else {
+				Map->loadFromFile("data/wizardcliffFloorlayer.png");
+
+				gameState.mapScaling = 1.0f;
+				collisionBoxes.clear();
+				std::vector<SDL_Rect> boundaryBoxes = {};
+
+				// (520, 400) wizzard position
+			Vector2f WizardPos(520, 400);
+			SDL_Rect WizardRect = { 0, 0, 200, 200 };
+			clips.clear();
+			clips.push_back({ 30, 30, 200, 200 });
+			clips.push_back({ 0,200,200, 200 });
+			SDL_Rect WizardCB = { WizardPos.x, WizardPos.y, 200, 200 };
+			auto WizardEntity = std::make_shared<Entity>(WizardPos, WizardCB, WizardRect, getTexture("data/wizard.png"), 1, clips, 777);
+			Entities.push_back(WizardEntity);
+			std::vector<std::string> WizardDialogue = { "This place was created by the will of your soul. Something traumatic happened to you.", "I can even see your soul faintly. you must feel it too.", "I can tell you dont really know how to use your soul. Seeing as you accidentaly used it to hide inside of it.", "here.", "Let me show you your soul."};
+			//std::shared_ptr<NPC> WizardNPC = std::make_shared<SIGNNPC>(WizardDialogue, WizardSheetEntity);
+			auto WizardNPC = std::make_shared<TheNPC>(
+				WizardEntity,
+				WizardDialogue,
+				std::vector<NPCAction>{
+					[](TheNPC& self) {
+						gameState.playerSoulVisible = true;
+						// Tutorial Fight here.
+						// todo: impliment a tutorial fight. killing the wizard will be impossible. After the player uses an action and casts an ability, 
+						// the fight will end. 
+						// Teach player about dodging, attacking, acting, items, and most importantly the magic system. 
+						// player will unlock the magic system after this fight. and will be able to use it in the next area.
+						// RubberBandBall Soul Direction will influence magic system. TODO: Add text in stats menu about viewing the rubberbandball soul menu.
+					}
+				},
+				false
+			);
+			WizardNPC->m_Entity = WizardEntity;
+			WizardEntity->moving = true;
+			WizardEntity->setNPC(WizardNPC);
+			collisionBoxes.push_back(&WizardEntity->m_Collider);
+
+
+
+
+			//gameState.playerSoulVisible = true;
+
+
+				// (1800, 860) spawn position.
+
+
+			}
 		break;
 	
 	default:

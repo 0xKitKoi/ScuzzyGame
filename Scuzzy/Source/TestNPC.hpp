@@ -164,7 +164,6 @@ public:
 
         }
     }
-
     /*
     // Override handleChoice for Villager-specific behavior
     void handleChoice(int choice) override {
@@ -878,3 +877,76 @@ public:
 
      }
  };
+
+
+// NPC with dialogue that triggers an action. Cutscene, Fight Start, manipulating gameState or other entities, ETC.
+// Dialouge and action should be completely customizable. 
+class TheNPC; // forward declaration
+using NPCAction = std::function<void(TheNPC&)>; // lambda that takes a reference to the NPC. Custom functions.
+/* Example:
+std::vector<NPCAction>{
+        [](TheNPC& self) {
+            self.MemberFunction();
+            // etc
+            });
+        }
+    }
+*/
+
+class TheNPC : public NPC {
+    std::vector<NPCAction> m_Actions;
+    //std::vector<std::string> m_Dialogue;
+    bool m_TriggerOnce;
+    bool m_Fired = false;
+public:
+    // Custom Dialogue and Actions. See Above snippet for lambda example. 
+    TheNPC(std::shared_ptr<Entity> entity,
+               std::vector<std::string> dialogue,
+               std::vector<NPCAction> actions,
+               bool triggerOnce = true)
+        : NPC(entity, std::move(dialogue))
+        , m_Actions(std::move(actions))
+        , m_TriggerOnce(triggerOnce)
+        //, m_Dialogue(std::move(dialogue))
+    {}
+
+    void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override {
+        if (!m_checked) return;
+        
+        if (m_TriggerOnce && m_Fired) {
+            m_checked = false;
+            return;
+        }
+        m_Fired = true;
+
+        if (!m_Dialogue.empty()) {
+            // // Populates gameState.Text, sets callbackNPC = this, starts animation, etc.
+            // NPC::Update(deltaT, CameraRect, PlayerPos);
+            gameState.Text = m_Dialogue;
+            gameState.textIndex = 0;
+            gameState.textAvailable = true;
+            gameState.shouldAnimateText = true;
+            gameState.textAnimating = true;
+            gameState.textTimer = 0.0f;
+            gameState.currentCharIndex = 1;
+            gameState.currentDisplayText = !gameState.Text.empty() ? gameState.Text[0].substr(0, 1) : std::string();
+			m_checked = false;
+
+        } else {
+            // No dialogue: fire immediately on contact. Player checks the NPC, and the action is executed.
+            m_checked = false;
+            m_Fired = true;
+            if (!m_Actions.empty()) m_Actions[0](*this);
+        }
+    }
+
+    // To Be decided. This should probably be reworked to be more flexible.
+    void handleChoice(int choice) override {
+        m_Fired = true;
+        if (choice >= 0 && choice < static_cast<int>(m_Actions.size())) {
+            m_Actions[choice](*this);
+        }
+    }
+
+
+};
