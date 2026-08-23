@@ -330,17 +330,19 @@ void HandleIntroState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event event) {
         Mix_PlayChannel(-1, gSelectSound, 0);
         if (!fightTextAnimating) {
             gameState.Plot++;
-            if (gameState.Plot >= gameState.enemy->m_EnemyDialogue.size()) {
-                if (WizardEnemy* wizard = FS_GetWizardTutorial()) {
+            if (WizardEnemy* wizard = FS_GetWizardTutorial()) {
+                if (gameState.Plot >= gameState.enemy->m_EnemyDialogue.size()) {
                     gameState.fightState = wizard->ShouldStartTutorialDodge()
                         ? FightState::DODGE_MECHANIC
                         : FightState::TUTORIAL_PROMPT;
                 }
-                else {
-                    gameState.fightState = FightState::PLAYER_TURN_MENU;
-                }
-                selection = 0; // Reset selection for menu
             }
+            else {
+                // Normal fights intentionally show only their opening line.
+                // Later dialogue is selected from m_EnemyDialogue during enemy turns.
+                gameState.fightState = FightState::PLAYER_TURN_MENU;
+            }
+            selection = 0; // Reset selection for menu
         }
 
         //// If we've reached the end of intro dialogue, move to player's turn
@@ -1155,7 +1157,7 @@ void HandleEnemyTurnState(SDL_Renderer* renderer, TTF_Font* font, SDL_Event even
     if (action >= 4 && action <= 6) { // a 3 in 8 chance for dialogue
         // Enemy speaks dialogue
         if (gameState.enemy->m_EnemyDialogue.size() > 0) {
-            int dialogueIndex = chance(gameState.enemy->m_EnemyDialogue.size() - 1);
+            int dialogueIndex = chance(static_cast<int>(gameState.enemy->m_EnemyDialogue.size())) - 1;
             FS_QueueFightText(gameState.enemy->m_EnemyDialogue[dialogueIndex]);
         }
         else {
@@ -1217,6 +1219,8 @@ void EndFightAndReturnToFlow() {
     gameState.FightStarted = false;
     gameState.encounterPhase = EncounterPhase::NONE;
     gameState.playerSoulVisible = false;
+    gameState.callbackNPC = nullptr;
+    gameState.textAvailable = false;
     //gameState.dead = false;
     //gameState.fightState = FightState::INTRO;
     gameState.Plot = 0;
@@ -1230,6 +1234,10 @@ void EndFightAndReturnToFlow() {
         gameState.Text.clear();
         std::string out = "You WON!! You got $" + std::to_string(moneys) + " for winning.\n";
         gameState.Text.push_back(out);
+        gameState.textIndex = 0;
+        gameState.currentCharIndex = 0;
+        gameState.currentDisplayText.clear();
+        gameState.textTimer = 0.0f;
         gameState.textAvailable = true;
         gameState.shouldAnimateText = true;
         gameState.FightStarted = false;
@@ -1572,6 +1580,9 @@ void FS_InitFight() {
     gameState.Plot = 0;
     gameState.turnCount = 0;
     gameState.inFight = true;
+    // A fight interrupts any NPC conversation that may have opened it.
+    gameState.callbackNPC = nullptr;
+    gameState.textAvailable = false;
     gameState.wonFight = false;
     gameState.inMenu = false;
     // i want this line on fight start and only on fight start

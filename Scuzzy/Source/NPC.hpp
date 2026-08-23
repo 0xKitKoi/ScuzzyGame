@@ -63,6 +63,10 @@ public:
 
 	// Virtual function for handling the player's choice
 	virtual void handleChoice(int choice) {
+		if (choice < 0 || static_cast<size_t>(choice) >= m_Dialogue.size()) {
+			std::cout << "NPC default handling: ignored invalid dialogue choice " << choice << std::endl;
+			return;
+		}
 		std::cout << "NPC default handling: " << m_Dialogue[choice] << std::endl;
 	}
 
