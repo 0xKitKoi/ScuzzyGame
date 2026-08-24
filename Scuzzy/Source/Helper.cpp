@@ -1604,6 +1604,8 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			entity->setEnemy(wizardEnemy); // bind the new enemy object to the entity
 			wizardEnemy->m_MaxHP = 1000;
 			wizardEnemy->HP = 1000;
+			wizardEnemy->m_layer1 = 221;
+			wizardEnemy->m_layer2 = 254;
 			//entity->m_Enemy->m_EnemyProjectile = std::make_shared<Projectile>(getTexture("data/boolet.png"), {0,0,0,0}, {0,0}, {0,0}, 1);
 
 			Entities.push_back(entity); // vector of all entities to render.
