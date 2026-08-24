@@ -46,8 +46,8 @@ struct GameState {
     // Story flags here! These will be set by various plot events and checked by NPC dialogue and stuff
     // we need to save and load what spells the player has to init the player on boot. 
 	bool hasDoubleOrNothing = true;
-	bool hasHealing = true;
-    bool hasScuzzy = true;
+	bool hasHealing = false;
+    bool hasScuzzy = false;
 
 	// SOUL DIRECTION: this is for the SoulRubberBandBall. color of the soul changes on direction.
 	int SoulDirection = 1; // 1-4 for up, right, down, left.

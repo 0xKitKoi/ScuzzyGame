@@ -1028,16 +1028,21 @@ public:
 
     void Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) override {
         if (!m_checked) return;
-        if (m_TriggerOnce && m_Fired) {
-            m_checked = false;
-            return;
+
+        // Do not advance to the next action until the pending condition is met.
+        if (m_WaitCondition) {
+            if (!m_WaitCondition()) {
+                m_checked = false;
+                return;
+            }
+
+            m_Dialogue = std::move(m_PendingDialogue);
+            m_WaitCondition = nullptr;
         }
 
-        // If we're waiting on something (e.g. fight completion), check it
-        // each time the player re-approaches, and swap dialogue once true.
-        if (m_WaitCondition && m_WaitCondition()) {
-            m_Dialogue = m_PendingDialogue;
-            m_WaitCondition = nullptr;
+        if (m_TriggerOnce && m_Fired && m_Dialogue.empty()) {
+            m_checked = false;
+            return;
         }
 
         if (!m_Dialogue.empty()) {
@@ -1067,8 +1072,7 @@ public:
     void WaitThenSetDialogue(std::function<bool()> condition, std::vector<std::string> nextDialogue) {
         m_WaitCondition = std::move(condition);
         m_PendingDialogue = std::move(nextDialogue);
-        m_Dialogue.clear(); // clear current dialogue so the NPC will wait for the condition next time
-        m_Dialogue = nextDialogue; // set the next dialogue to show once the condition is satisfied
+        m_Dialogue.clear();
     }
 
 private:

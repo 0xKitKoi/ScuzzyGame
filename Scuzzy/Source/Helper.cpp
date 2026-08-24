@@ -1589,7 +1589,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 
 			// create wizard tutorial enemy for FightSystem.
-			Vector2f WizardEnemyPos(5000, 0);
+			Vector2f WizardEnemyPos(520, -300);
 			SDL_Rect WizardEnemyRect = { 0,0,128,128 };
 			clips.push_back({ 0,0,128,128 });
 			clips.push_back({ 128,0,128,128 });
@@ -1600,12 +1600,12 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			auto entity = std::make_shared<Entity>(WizardEnemyPos, entity_cb, WizardEnemyRect, getTexture("data/wizard.png"), 1, clips, 778);
 			// create the enemy and bind it to the entity
 			//std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity); // make an enemy object initialized with the entity object
-			std::shared_ptr<Enemy> wizardEnemy = std::make_shared<WizardEnemy>(entity); // polymorphisim
+			std::shared_ptr<WizardEnemy> wizardEnemy = std::make_shared<WizardEnemy>(entity); // polymorphisim
 			entity->setEnemy(wizardEnemy); // bind the new enemy object to the entity
 			wizardEnemy->m_MaxHP = 1000;
 			wizardEnemy->HP = 1000;
-			wizardEnemy->m_layer1 = 221;
-			wizardEnemy->m_layer2 = 254;
+			wizardEnemy->m_layer1 = 198;
+			wizardEnemy->m_layer2 = 68;
 			//entity->m_Enemy->m_EnemyProjectile = std::make_shared<Projectile>(getTexture("data/boolet.png"), {0,0,0,0}, {0,0}, {0,0}, 1);
 
 			Entities.push_back(entity); // vector of all entities to render.
@@ -1676,14 +1676,14 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 							wizardEnemy->TriggerFight(); // no args, matches your current signature
 
 							self.WaitThenSetDialogue(
-								[]() { return gameState.TutorialFightCompleted; },
+								[wizardEnemy]() { return wizardEnemy->IsTutorialComplete(); },
 								{"ok cool get outta here i got fireballs to cast."}
 							);
 						},
 						// action 1: fires when post-fight dialogue is dismissed
 						[](TheNPC& self) {
-							printf("Loading new room: %s\n", "ForgottenCave");
-							gameState.room = "ForgottenCave";
+							printf("Loading new room: %s\n", "FORGOTTENCAVE");
+							gameState.room = "FORGOTTENCAVE";
 							gameState.LoadingScreen = true;
 							gameState.DoneLoading = false;
 							gameState.fade = true;
