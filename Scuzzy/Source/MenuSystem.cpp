@@ -371,6 +371,9 @@ void renderResponse(SDL_Renderer* renderer, TTF_Font* font) {
 					char c = gameState.Text.at(gameState.textIndex).at(gameState.currentCharIndex);
 					gameState.currentDisplayText += c;
 					gameState.currentCharIndex++;
+                    if (gameState.currentCharIndex >= gameState.Text.at(gameState.textIndex).length()) {
+                        gameState.textAnimating = false;
+                    }
 					static float blipCooldown = 0.0f;
 					blipCooldown += 1.0f / 60.0f;
 
@@ -392,9 +395,6 @@ void renderResponse(SDL_Renderer* renderer, TTF_Font* font) {
 					// Mix_PlayChannel(-1, blips[idx], 0);
 
 
-				}
-				else {
-					gameState.textAnimating = false;
 				}
 			}
 		}

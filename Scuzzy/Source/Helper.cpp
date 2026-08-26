@@ -1146,9 +1146,9 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 			/*cutsceneActions*/ parallelActions.push_back(
 				std::make_unique<MovePlayerAction>(
-					Vector2f(x-200.0f, y - 30.0f),
-					Vector2f(x-200, y+100.0f),
-					200.0f,
+					Vector2f(x/*-200.0f*/, y - 20.0f),
+					Vector2f(x/*-200*/, y+200.0f),
+					300.0f,
 					gameState.player->DownWalking
 				)
 			);
