@@ -39,6 +39,7 @@ int LevelIDFromName(std::string name) {
 	else if (name == "NoomSideCafe") { return 8; }
 	else if (name == "NoomSideCafe2") { return 9; }
 	else if (name == "WizardCliff") { return 10;}
+	else if (name == "LiminalPlaypen") { return 11; }
 	else {
 		return -1;
 	}
@@ -1710,7 +1711,28 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 			}
 		break;
-	
+
+		case 11:
+			extern LTexture	FloorLayer;
+			extern LTexture	TopLayer;
+
+			floorLayer.loadFromFile("data/liminalplaypenlayerfloor.png");
+			TopLayer.loadFromFile("data/liminalplaypenlayertop.png");
+
+			if (floorLayer.getTexture() == nullptr || TopLayer.getTexture() == nullptr)
+			{
+				printf("Failed to load sprite sheet textures! This is the Wizard Cliff map.\n");
+			}
+			else {
+				Map->loadFromFile("data/liminalplaypenlayerfloor.png");
+				gameState.mapScaling = 1.0f;
+				collisionBoxes.clear();
+				std::vector<SDL_Rect> boundaryBoxes = {};
+				gameState.RenderPlayerInbetweenLayers = true;
+
+			}
+		break;
+
 	default:
 		if (!Map->loadFromFile("data/Error.png"))
 		{

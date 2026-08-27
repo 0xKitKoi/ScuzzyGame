@@ -217,8 +217,10 @@ LTexture cloud1Layer;
 LTexture cloud2Layer;
 LTexture cloud3Layer;
 LTexture cloud4Layer;
-LTexture floorLayer;
 LTexture moonLayer;
+
+LTexture floorLayer;
+LTexture TopLayer;
 
 
 bool init()
@@ -1930,6 +1932,29 @@ int main(int argc, char* args[])
 						SDL_RenderCopy(gRenderer, moonLayer.getTexture(), NULL, &mapQuad);  // NO RenderSetScale
 						gameState.playerSoulVisible = true; // show the player soul in this map.
 					}
+										if (gameState.room == "LiminalPlaypen") {
+						// render the top layer for LiminalPlaypen.
+						SDL_Rect mapQuad = {
+							(int)(0 - camera.x),        // screen space, no extra multiply needed
+							(int)(0 - camera.y),
+							floorLayer.getWidth() * mapScale,
+							floorLayer.getHeight() * mapScale
+						};
+						SDL_RenderCopy(gRenderer, floorLayer.getTexture(), NULL, &mapQuad);  // NO RenderSetScale
+						// player render in between here.
+						if (gameState.RenderPlayerInbetweenLayers) {
+							player->render(camera.x, camera.y);
+						}
+						
+
+						SDL_Rect topMapQuad = {
+							(int)(0 - camera.x),        // screen space, no extra multiply needed
+							(int)(0 - camera.y),
+							(int) TopLayer.getWidth(), // * mapScale,,
+							(int) TopLayer.getHeight()// * mapScale
+						};
+						SDL_RenderCopy(gRenderer, TopLayer.getTexture(), NULL, &topMapQuad);  // NO RenderSetScale
+					}
 					else {
 						// Normal map rendering for other maps.
 						SDL_Rect mapQuad = {
@@ -1939,6 +1964,7 @@ int main(int argc, char* args[])
 							Map.getHeight() * mapScale
 						};
 						SDL_RenderCopy(gRenderer, Map.getTexture(), NULL, &mapQuad);  // NO RenderSetScale
+
 					}
 
 					// SDL_Rect mapQuad = {
@@ -1948,6 +1974,7 @@ int main(int argc, char* args[])
 					// 	Map.getHeight() * mapScale
 					// };
 					// SDL_RenderCopy(gRenderer, Map.getTexture(), NULL, &mapQuad);  // NO RenderSetScale
+
 
 
 
@@ -2213,7 +2240,9 @@ int main(int argc, char* args[])
 					} else {
 						player->render(MapoffsetX, MapoffsetY); // Use offsets for smaller maps
 					}*/
-					player->render(camera.x, camera.y); // Use camera for larger maps
+					if (!gameState.RenderPlayerInbetweenLayers) {
+						player->render(camera.x, camera.y); // Use camera for larger maps
+					}
 
 
 					SDL_RenderDrawRect(gRenderer, &renderBox); // render players collision box above player.
