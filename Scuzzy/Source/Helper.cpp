@@ -1059,6 +1059,33 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			// squirle tree, family kicks u out
 
 
+
+			// door at 4221, 2717 homeless tent
+						// door at 784, 1107 cafe door
+			Vector2f TentPuddlePos(4218, 2727);
+			SDL_Rect TentPuddleRect = { 0, 0, 50, 50 };
+			clips.clear();
+			clips.push_back({ 0, 0, 200, 200 });
+			clips.push_back({ 0,200,200, 200 });
+			clips.push_back({ 0,200 * 2,200, 200 });
+			clips.push_back({ 200,0,200, 200 });
+			clips.push_back({ 200,200,200, 200 });
+			clips.push_back({ 200,200 * 2,200, 200 });
+			clips.push_back({ 200 * 2,0,200, 200 });
+			clips.push_back({ 200 * 2,200,200, 200 });
+			clips.push_back({ 200 * 2,200 * 2,200, 200 });
+			SDL_Rect TentPuddleCB = { TentPuddlePos.x, TentPuddlePos.y, 50, 50 };
+			auto TentPuddleEntity = std::make_shared<Entity>(TentPuddlePos, TentPuddleCB, TentPuddleRect, getTexture("data/Puzzle.png"), 7, clips, 63);
+			Entities.push_back(TentPuddleEntity);
+			Vector2f TentPuddleOutPos(2400, 1400);
+			std::shared_ptr<NPC> TentPuddleNPC = std::make_shared<DoorNPC>(TentPuddleEntity, "LiminalPlaypen", TentPuddleOutPos);
+			TentPuddleNPC->m_Entity = TentPuddleEntity;
+			TentPuddleEntity->moving = true;
+			TentPuddleEntity->setNPC(TentPuddleNPC);
+			TentPuddleEntity->m_Visible = false;
+			collisionBoxes.push_back(&TentPuddleEntity->m_Collider);
+
+
 			// door at 784, 1107 cafe door
 			Vector2f CafePuddlePos(784, 1107);
 			SDL_Rect CafePuddleRect = { 0, 0, 200, 200 };
