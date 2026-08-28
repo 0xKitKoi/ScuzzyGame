@@ -1080,6 +1080,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			CafePuddleNPC->m_Entity = CafePuddleEntity;
 			CafePuddleEntity->moving = true;
 			CafePuddleEntity->setNPC(CafePuddleNPC);
+			CafePuddleEntity->m_Visible = false;
 			collisionBoxes.push_back(&CafePuddleEntity->m_Collider);
 
 
@@ -1381,7 +1382,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 
 						// DOOR TEST
-			Vector2f entityPos(678, 324);
+			Vector2f entityPos(678, 350);
 			SDL_Rect entityRect = { 0,0,128,128 };
 			SDL_Rect tmp, entity_cb;
 			clips.clear();
@@ -1397,6 +1398,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			Vector2f outpos(500, 222); // (240, 300);//(1000, 960);
 			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity3, "MAGICANT", outpos);
 			doornpc->m_Entity = Doorentity3;
+			Doorentity3->m_Visible = false;
 			Doorentity3->setNPC(doornpc);
 			collisionBoxes.push_back(&Doorentity3->m_Collider);
 
