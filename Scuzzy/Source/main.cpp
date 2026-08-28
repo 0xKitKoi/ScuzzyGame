@@ -1398,6 +1398,12 @@ int main(int argc, char* args[])
 					{
 						quit = true;
 					}
+
+					// Do not buffer movement input while a room transition is loading.
+					if (gameState.LoadingScreen) {
+						player->clearInputState();
+						continue;
+					}
 					
 					//if ( /*gameState.inMenu || gameState.inFight || gameState.textAvailable || gameState.dead || */ gameState.inCutScene) {
 					//	//player.clearInputState(); // prevent input buffering from menu/fight/text to player control.
@@ -1727,9 +1733,22 @@ int main(int argc, char* args[])
 						gameState.DoneLoading = true;
 					}
 
-					// the new map is loaded, and the player is in the right spot. now stop loading..?
-					gameState.LoadingScreen = false;
-					//initializeCollisionBoxes();
+					// Start the new room with no buffered movement, then skip this
+					// frame's normal overworld update.
+					// player->clearInputState();
+					// player->reset({ float(player->m_PosX), float(player->m_PosY) });
+					// gameState.LoadingScreen = false;
+					// continue;
+					  player->clearInputState();
+						SDL_FlushEvent(SDL_KEYDOWN);
+						SDL_FlushEvent(SDL_KEYUP);
+
+						previousTime = SDL_GetTicks();
+						gameState.deltaTime = 0.0f;
+
+						gameState.LoadingScreen = false;
+						continue;
+
 
 				}
 				freezeOverworldActors = gameState.textAvailable || gameState.OpenedMenu || gameState.inMenu /* || gameState.inCutScene*/ ;

@@ -1588,6 +1588,7 @@ void FS_InitFight() {
     // i want this line on fight start and only on fight start
     gameState.player->m_HeartPos = { float(gameState.screenwidth / 2), float(gameState.screenheight / 2) }; // reset position
 	gameState.player->m_HeartVelocity = { 0,0 }; // stop fucking moving
+    gameState.doubleOrNothingActive = false; // Some abiliy effects carry over. TODO: at end of fight, see active abilities.
 
     // Set initial state
     gameState.TensionMeter = 0;

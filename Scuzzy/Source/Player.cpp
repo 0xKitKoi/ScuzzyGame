@@ -214,6 +214,11 @@ Player::~Player() {
 /// <param name="boxes">Vector of Rects full of map's boundaries and obstructions.</param>
 /// <param name="deltaTime">Scales movement and animations based on time between frames.</param>
 void Player::Update(std::vector<SDL_Rect*>& boxes, float deltaTime) {
+	if (gameState.LoadingScreen) {
+		clearInputState();
+		currentState = State::Idle;
+		return;
+	}
 	if (gameState.inCutScene) {
 		return; // Don't update player during cutscenes
 	}
