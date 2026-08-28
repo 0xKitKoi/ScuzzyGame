@@ -63,6 +63,9 @@ public:
 	
 	void setEnemy(std::shared_ptr<Enemy> newChild);
 	void setNPC(std::shared_ptr<NPC> newchild);
+	void SetCollisionBox(int offsetX, int offsetY, int width, int height);
+	void SetFOVSize(int width, int height);
+	void SyncCollisionAndFOV();
 
 	void EnableBackLayer(SDL_Rect* backClips, int frameCountMax, float frameDuration);
 
@@ -91,8 +94,19 @@ public:
 	int m_PosX, m_PosY;
 	SDL_Rect m_Collider; // Collision Box
 	SDL_Rect m_FOV; // entities field of vision.
+	int m_ColliderOffsetX = 0;
+	int m_ColliderOffsetY = 0;
+	int m_ColliderWidth = 0;
+	int m_ColliderHeight = 0;
+	int m_FOVWidth = 384;
+	int m_FOVHeight = 384;
 
 	int m_EntityID = 0;
+	// HUD entities render in screen coordinates.  Disabling collision keeps them
+	// out of collision and interaction checks.
+	bool m_Visible = true;
+	bool m_ScreenSpace = false;
+	bool m_HasCollision = true;
 
 	std::shared_ptr<Enemy> m_Enemy;
 	std::shared_ptr<NPC> m_NPC;

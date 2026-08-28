@@ -428,36 +428,61 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 		 */
 
 
-			// TEST OF doodoomart box enemy
-			Vector2f entityPos3(450, 500);
-			SDL_Rect entityRect2 = { 0,0,128,128 };
-			clips.clear();
-			clips = {{ 0,0,128,128 }, { 128,0,128,128 }, { 128 * 2,0,128,128 }, { 128*3 ,0,128,128 }, { 128 * 4 ,0,128,128 }, { 128 * 5 ,0,128,128 }};
-			//tmp = { 0,0,128,128 };, 
-			//clips.push_back(tmp);
-			//tmp = { 128,0,128,128 };
-			//clips.push_back(tmp);
-			//tmp = { 128 * 2,0,128,128 };
-			//clips.push_back(tmp);
-			//tmp = { 128*3 ,0,128,128 };
-			//clips.push_back(tmp);
-			//tmp = { 128 * 4 ,0,128,128 };
-			//clips.push_back(tmp);
-			//tmp = { 128 * 5 ,0,128,128 };
-			//clips.push_back(tmp);
-			entity_cb = { int(entityPos3.x + 25), int(entityPos3.y + 25), int(entityRect2.w - 45), int(entityRect2.h - 55) }; // custom per entity but whatever
-			std::vector<std::string> enemydialogue = { "The DOODOOMART Box ran at you!", "The DooDoo Mart Box has a buncha doodoo init", "The doodoomart box gave you a negative coupon. you are now in even more doodoo debt." };
-			auto entity = std::make_shared<Entity>(entityPos3, entity_cb, entityRect2, getTexture("data/DooDooMart_StorageBox-Sheet.png"), 5, clips, 58);
-			//std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity);
-			std::shared_ptr<Enemy> child = std::make_shared<DooDooMartBox>(entity);
-			//child->m_AttackDamage = 3;
+			// // TEST OF doodoomart box enemy
+			// Vector2f entityPos3(450, 500);
+			// SDL_Rect entityRect2 = { 0,0,128,128 };
+			// clips.clear();
+			// clips = {{ 0,0,128,128 }, { 128,0,128,128 }, { 128 * 2,0,128,128 }, { 128*3 ,0,128,128 }, { 128 * 4 ,0,128,128 }, { 128 * 5 ,0,128,128 }};
+			// //tmp = { 0,0,128,128 };, 
+			// //clips.push_back(tmp);
+			// //tmp = { 128,0,128,128 };
+			// //clips.push_back(tmp);
+			// //tmp = { 128 * 2,0,128,128 };
+			// //clips.push_back(tmp);
+			// //tmp = { 128*3 ,0,128,128 };
+			// //clips.push_back(tmp);
+			// //tmp = { 128 * 4 ,0,128,128 };
+			// //clips.push_back(tmp);
+			// //tmp = { 128 * 5 ,0,128,128 };
+			// //clips.push_back(tmp);
+			// entity_cb = { int(entityPos3.x + 25), int(entityPos3.y + 25), int(entityRect2.w - 45), int(entityRect2.h - 55) }; // custom per entity but whatever
+			// std::vector<std::string> enemydialogue = { "The DOODOOMART Box ran at you!", "The DooDoo Mart Box has a buncha doodoo init", "The doodoomart box gave you a negative coupon. you are now in even more doodoo debt." };
+			// auto entity = std::make_shared<Entity>(entityPos3, entity_cb, entityRect2, getTexture("data/DooDooMart_StorageBox-Sheet.png"), 5, clips, 58);
+			// //std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity);
+			// std::shared_ptr<Enemy> child = std::make_shared<DooDooMartBox>(entity);
+			// //child->m_AttackDamage = 3;
+			// entity->setEnemy(child); // bind the new enemy object to the entity
+			// //entity->m_Enemy->m_EnemyDialogue = enemydialogue;
+			// //entity->m_Enemy->m_Actions = { "info", "dissassemble", "turn into shitbox" };
+			// //entity->m_Enemy->m_ActionResponse = { "STATUS: .. its a box..?", "You flattened the box. It took Heavy Damage", "my actual pc" };
+			// //entity->m_Enemy->m_EnemyFightSpriteSheet = getTexture("data/DooDooMart_StorageBox-Sheet.png");
+			// //entity->m_Enemy->FRAME_COUNT = 2;
+			// //entity->m_Enemy->m_EnemySpriteClips = clips;
+			// Entities.push_back(entity); // vector of all entities to render.
+			// collisionBoxes.push_back(&entity->m_Collider);
+
+			// Load first entity , Enemy !
+			entityPos = {420, 500};
+			entityRect = { 0,0,128,128 };
+			tmp = { 0,0,128,128 };
+			clips.push_back(tmp);
+			tmp = { 128,0,128,128 };
+			clips.push_back(tmp);
+			tmp = { 128 * 2,0,128,128 };
+			clips.push_back(tmp);
+			tmp = { 128 * 3,0,128,128 };
+			clips.push_back(tmp);
+			entity_cb = { int(entityPos.x + 25), int(entityPos.y + 25), int(entityRect.w - 45), int(entityRect.h - 55) }; // custom per entity but whatever
+			std::vector<std::string> enemydialogue = { "The Box Full of \"Fuck You\" Appeared!", "The Box of fuck you said ... \"Fuck you\"", "You opened the box. There was \"fuck you\" inside." };
+			auto entity = std::make_shared<Entity>(entityPos, entity_cb, entityRect, getTexture("data/box_fuck_u_ari_1.png"), 2, clips, 44);
+			
+			// create the enemy and bind it to the entity
+			//std::shared_ptr<Enemy> child = std::make_shared<Enemy>(entity); // make an enemy object initialized with the entity object
+			std::shared_ptr<Enemy> child = std::make_shared<BoxOfFuckYou>(entity); // polymorphisim
 			entity->setEnemy(child); // bind the new enemy object to the entity
-			//entity->m_Enemy->m_EnemyDialogue = enemydialogue;
-			//entity->m_Enemy->m_Actions = { "info", "dissassemble", "turn into shitbox" };
-			//entity->m_Enemy->m_ActionResponse = { "STATUS: .. its a box..?", "You flattened the box. It took Heavy Damage", "my actual pc" };
-			//entity->m_Enemy->m_EnemyFightSpriteSheet = getTexture("data/DooDooMart_StorageBox-Sheet.png");
-			//entity->m_Enemy->FRAME_COUNT = 2;
-			//entity->m_Enemy->m_EnemySpriteClips = clips;
+
+			//entity->m_Enemy->m_EnemyProjectile = std::make_shared<Projectile>(getTexture("data/boolet.png"), {0,0,0,0}, {0,0}, {0,0}, 1);
+
 			Entities.push_back(entity); // vector of all entities to render.
 			collisionBoxes.push_back(&entity->m_Collider);
 
@@ -1328,6 +1353,33 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			}
 
 
+
+			// (1090, 1428) // Wizard Cliff Puddle here. Tutorial fight. After, the wizard will send the player
+			// back to the forgotten cave, and the game will continue as normal. 
+			if (!gameState.TutorialFightCompleted) {
+				// block the bridge with a puddle to the wizard.
+				Vector2f entityPos(1090, 1428);
+				SDL_Rect entityRect = { 0,0,128,128 };
+				SDL_Rect tmp, entity_cb;
+				clips.clear();
+				Vector2f doorPos(1090, 1428); // Same position as the entity
+				entityRect = { 0,0,128,128 };
+				tmp = { 0,0,128,128 };
+				clips.push_back(tmp);
+				tmp = { 128,0,128,128 };
+				clips.push_back(tmp);
+				entity_cb = { int(entityPos.x + 25), int(entityPos.y + 25), int(entityRect.w - 45), int(entityRect.h - 55) }; // custom per entity but whatever
+				auto Doorentity2 = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
+				Entities.push_back(Doorentity2); // vector of all entities to render.
+				Vector2f outpos(1745, 856); // (240, 300);//(1000, 960);
+				std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity2, "WizardCliff", outpos);
+				doornpc->m_Entity = Doorentity2;
+				Doorentity2->setNPC(doornpc);
+				collisionBoxes.push_back(&Doorentity2->m_Collider);
+			}
+
+
+
 						// DOOR TEST
 			Vector2f entityPos(678, 324);
 			SDL_Rect entityRect = { 0,0,128,128 };
@@ -1340,13 +1392,13 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			tmp = { 128,0,128,128 };
 			clips.push_back(tmp);
 			entity_cb = { int(entityPos.x + 25), int(entityPos.y + 25), int(entityRect.w - 45), int(entityRect.h - 55) }; // custom per entity but whatever
-			auto Doorentity2 = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
-			Entities.push_back(Doorentity2); // vector of all entities to render.
+			auto Doorentity3 = std::make_shared<Entity>(doorPos, entity_cb, entityRect, getTexture("data/door.png"), 2, clips, 69);
+			Entities.push_back(Doorentity3); // vector of all entities to render.
 			Vector2f outpos(500, 222); // (240, 300);//(1000, 960);
-			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity2, "MAGICANT", outpos);
-			doornpc->m_Entity = Doorentity2;
-			Doorentity2->setNPC(doornpc);
-			collisionBoxes.push_back(&Doorentity2->m_Collider);
+			std::shared_ptr<NPC> doornpc = std::make_shared<DoorNPC>(Doorentity3, "MAGICANT", outpos);
+			doornpc->m_Entity = Doorentity3;
+			Doorentity3->setNPC(doornpc);
+			collisionBoxes.push_back(&Doorentity3->m_Collider);
 
 
 		}
@@ -1393,9 +1445,56 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 
 			// cutscene to trip out and go to forgotten cave then magicant, then the dark alley, then to noomside.
+
+			// Screen-space hint entity. Its texture is created with shared ownership
+			// instead of copying an LTexture (which owns a raw SDL_Texture).
+			auto hintTexture = std::make_shared<LTexture>();
+			hintTexture->loadFromRenderedText(
+				"Z: accept   X: cancel   C: menu   Arrow keys: move",
+				{255, 255, 255, 255}
+			);
+			const Vector2f hintTextPos(50, 100);
+			const SDL_Rect hintTextRect = {
+				0, 0, hintTexture->getWidth(), hintTexture->getHeight()
+			};
+			auto hintTextEntity = std::make_shared<Entity>(
+				hintTextPos,
+				SDL_Rect{0, 0, 0, 0},
+				hintTextRect,
+				hintTexture,
+				1,
+				std::vector<SDL_Rect>{hintTextRect},
+				700
+			);
+			hintTextEntity->m_ScreenSpace = true;
+			hintTextEntity->m_HasCollision = false;
+			hintTextEntity->setNPC(std::make_shared<TextHintNPC>(hintTextEntity));
+			Entities.push_back(hintTextEntity);
+
+
+			// (170, 282) cutscene trigger
+			Vector2f triggerPos(170, 350);
+			SDL_Rect triggerRect = { 0, 0, 300, 300 };
+			SDL_Rect triggerCB = { triggerPos.x, triggerPos.y, 300, 300 };
+			auto triggerEntity = std::make_shared<Entity>(
+				triggerPos, triggerCB, triggerRect,
+				nullptr, //getTexture("data/RealisticExplosion72x100x18.png"), //nullptr,           // or a real texture 
+				1,                 // framecount
+				std::vector<SDL_Rect> {},  // clips
+				4003                // EntityID
+			);
+			Entities.push_back(triggerEntity);
+			std::vector<std::unique_ptr<CutsceneAction>> cutsceneActions;
+			cutsceneActions.push_back(std::make_unique<DialogueAction>(gameState, std::vector<std::string>{"* Hiding behind the dumpster again?", "* You panicked really hard this time. What did you see in there?", "* You caught your breath and looked at the weird puddle down there."}));
+			cutsceneActions.push_back(std::make_unique<SetEntityVisibilityAction>(hintTextEntity, false));
+
+			std::shared_ptr<NPC> triggerNPC = std::make_shared<TriggerNPC>(triggerEntity, triggerCB, std::move(cutsceneActions));
+			triggerEntity->setNPC(triggerNPC);
+
+
 			
 						// Exit Puddle
-			Vector2f PuddlePos(500, 700);
+			Vector2f PuddlePos(200, 800);
 			SDL_Rect puddleRect = { 0, 0, 200, 200 };
 			clips.clear();
 			clips.push_back({ 0, 0, 200, 200 });
@@ -1615,12 +1714,15 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 				// (520, 400) wizzard position
 			Vector2f WizardPos(520, 400);
-			SDL_Rect WizardRect = { 0, 0, 200, 200 };
+			SDL_Rect WizardRect = { 0, 0, 200, 300 };
 			clips.clear();
 			clips.push_back({ 30, 30, 200, 200 });
 			clips.push_back({ 0,200,200, 200 });
+			// The first wizard clip renders at 200x200, so keep its collision box
+			// exactly the same size.  Detection range is configured separately.
 			SDL_Rect WizardCB = { WizardPos.x, WizardPos.y, 200, 200 };
 			auto WizardEntity = std::make_shared<Entity>(WizardPos, WizardCB, WizardRect, getTexture("data/wizard.png"), 1, clips, 777);
+			WizardEntity->SetFOVSize(300, 300);
 			Entities.push_back(WizardEntity);
 			std::vector<std::string> WizardDialogue = { "This place was created by the will of your soul. Something traumatic happened to you.", "I can even see your soul faintly. you must feel it too.", "I can tell you dont really know how to use your soul. Seeing as you accidentaly used it to hide inside of it.", "here.", "Let me show you your soul."};
 			//std::shared_ptr<NPC> WizardNPC = std::make_shared<SIGNNPC>(WizardDialogue, WizardSheetEntity);
@@ -1690,7 +1792,8 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 							gameState.fade = true;
 							gameState.player->SetPosX(200);
 							gameState.player->SetPosY(200);
-							gameState.player->reset({ 200, 200 });
+							gameState.player->reset({ 240, 1630 });
+							gameState.TutorialFightCompleted = true;
 						}
 					},
 					false
@@ -1831,7 +1934,3 @@ void SaveInventory(std::vector<int>& outItemIDs) {
 		outItemIDs.push_back(item->m_ItemID);
 	}
 }	
-
-
-
-

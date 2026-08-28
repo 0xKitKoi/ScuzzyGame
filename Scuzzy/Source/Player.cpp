@@ -655,7 +655,26 @@ void Player::render(int camX, int camY) {
 		int screenX = (gameState.player->m_PosX - gameState.cameraRect.x);	
 	    int screenY = (gameState.player->m_PosY - gameState.cameraRect.y);
         SDL_Rect renderQuad = { screenX, screenY, gameState.player->SpriteWidth, gameState.player->SpriteHeight };
-	    SDL_RenderCopy(gRenderer, gameState.player->SpriteSheet.getTexture(), &m_CutsceneClip, &renderQuad);
+
+		// Keep the direction the player had when the cutscene began.  m_CutsceneClip
+		// defaults to the top-left sheet tile, which is the Up idle sprite.
+		SDL_Rect idleClip = DownWalking[0];
+		switch (currentDirection) {
+		case Direction::Up:
+			idleClip = UpWalking[0];
+			break;
+		case Direction::Down:
+			idleClip = DownWalking[0];
+			break;
+		case Direction::Left:
+			idleClip = LeftWalking[0];
+			break;
+		case Direction::Right:
+			idleClip = RightWalking[0];
+			break;
+		}
+
+	    SDL_RenderCopy(gRenderer, gameState.player->SpriteSheet.getTexture(), &idleClip, &renderQuad);
         //SDL_RenderPresent(gRenderer); // Force update to show player movement immediately
 
         return;

@@ -122,6 +122,7 @@ Mix_Chunk* gAwHellNawSound = NULL;
 
 //Rendered TEXT texture
 LTexture gTextTexture;
+LTexture gHintText;
 
 //std::vector<std::shared_ptr<Entity>> Entities;
 Vector2f playerinitpos = {0,0};
@@ -1932,7 +1933,7 @@ int main(int argc, char* args[])
 						SDL_RenderCopy(gRenderer, moonLayer.getTexture(), NULL, &mapQuad);  // NO RenderSetScale
 						gameState.playerSoulVisible = true; // show the player soul in this map.
 					}
-										if (gameState.room == "LiminalPlaypen") {
+					if (gameState.room == "LiminalPlaypen") {
 						// render the top layer for LiminalPlaypen.
 						SDL_Rect mapQuad = {
 							(int)(0 - camera.x),        // screen space, no extra multiply needed

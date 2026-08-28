@@ -35,12 +35,11 @@ Vector2f Enemy::moveEntity(Vector2f pos, float deltaTime, Vector2f target) {
     // Calculate the distance to the target
     float distance = sqrt(dx * dx + dy * dy);
 
-    // If the entity is close enough to the target, stop moving
-    if (distance < 0.1f) {
-        //printf("Too close");
-        //gameState.inFight = true;
-        //gameState.enemyID = m_EnemyID;
-        return pos;
+    const float step = speed * deltaTime;
+    // Clamp the final step so the enemy reaches its target instead of
+    // repeatedly overshooting it and oscillating around the player.
+    if (distance <= step) {
+        return target;
     }
 
     // Normalize the direction vector (dx, dy)
@@ -48,8 +47,8 @@ Vector2f Enemy::moveEntity(Vector2f pos, float deltaTime, Vector2f target) {
     dy /= distance;
 
     // Move the entity in the direction of the target based on speed and deltaTime
-    pos.x += dx * speed * deltaTime;
-    pos.y += dy * speed * deltaTime;
+    pos.x += dx * step;
+    pos.y += dy * step;
 
     // Optional: Print current position for debugging
     //std::cout << "Entity Position: (" << pos.x << ", " << pos.y << ")\n";
@@ -129,6 +128,13 @@ void Enemy::Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) {
 	if (gameState.FightStarted) { return; }
 
     UpdateEncounterAnimation(deltaT);
+	if (gameState.encounterPhase != EncounterPhase::NONE) {
+		// The main loop clears this flag each frame. Keep the player's heart
+		// visible throughout the pull and launch animation.
+		gameState.playerSoulVisible = true;
+		m_Entity->moving = false;
+		return;
+	}
 
 	// move to the player if player is in POV box. once touch player, set game state to fight mode.
 	if (SDL_HasIntersection(&m_Entity->m_FOV, &PlayerPos)) {
@@ -146,9 +152,21 @@ void Enemy::Update(float deltaT, Camera CameraRect, SDL_Rect PlayerPos) {
 			//m_Entity.m_PosY += lerp(m_Entity.m_PosY, PlayerPos.y, deltaT);
             Vector2f in = { (float)m_Entity->m_PosX, (float)m_Entity->m_PosY };
             
-            Vector2f out = moveEntity(in, deltaT, {(float)PlayerPos.x, (float)PlayerPos.y});
+            // Chase with the enemy's collider centre, not its sprite origin.
+            // The collider can be offset from m_PosX/Y, so aiming the origin
+            // directly at the player leaves the actual body beside them.
+            const float playerCenterX = PlayerPos.x + PlayerPos.w / 2.0f;
+            const float playerCenterY = PlayerPos.y + PlayerPos.h / 2.0f;
+            const float enemyCenterOffsetX = m_Entity->m_ColliderOffsetX + m_Entity->m_ColliderWidth / 2.0f;
+            const float enemyCenterOffsetY = m_Entity->m_ColliderOffsetY + m_Entity->m_ColliderHeight / 2.0f;
+            Vector2f target = {
+                playerCenterX - enemyCenterOffsetX,
+                playerCenterY - enemyCenterOffsetY
+            };
+            Vector2f out = moveEntity(in, deltaT, target);
             m_Entity->m_PosX = out.x;
             m_Entity->m_PosY = out.y;
+			m_Entity->SyncCollisionAndFOV();
 
             // if (SDL_HasIntersection(&m_Entity->m_Collider, &PlayerPos)) {
             //     if (gameState.DebugMode) {

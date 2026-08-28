@@ -202,6 +202,29 @@ public:
 	void Exit() override;
 };
 
+// An instant cutscene step for showing or hiding any entity.
+class SetEntityVisibilityAction : public CutsceneAction {
+public:
+	SetEntityVisibilityAction(std::shared_ptr<Entity> entity, bool visible)
+		: m_Entity(std::move(entity)), m_Visible(visible) {}
+
+	void Enter() override {
+		if (m_Entity) {
+			m_Entity->m_Visible = m_Visible;
+		}
+	}
+
+	bool Update(float deltaTime) override {
+		return true;
+	}
+
+	void Exit() override {}
+
+private:
+	std::shared_ptr<Entity> m_Entity;
+	bool m_Visible;
+};
+
 
 
 class MovePlayerAction : public CutsceneAction {

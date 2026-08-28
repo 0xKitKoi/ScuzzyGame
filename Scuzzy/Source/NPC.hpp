@@ -74,4 +74,17 @@ public:
 	
 };
 
+class TextHintNPC : public NPC {
+public:
+	TextHintNPC(std::shared_ptr<Entity> entity) : NPC(entity, {}) {}
+
+	void Show() {
+		if (m_Entity) m_Entity->m_Visible = true;
+	}
+
+	void Hide() {
+		if (m_Entity) m_Entity->m_Visible = false;
+	}
+};
+
 #endif // NPC_H

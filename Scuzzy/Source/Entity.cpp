@@ -38,6 +38,10 @@ Entity::Entity(Vector2f p_pos, SDL_Rect CollisionBox, SDL_Rect FrameRect, std::s
 
 	m_PosX = p_pos.x;
 	m_PosY = p_pos.y;
+	m_ColliderOffsetX = CollisionBox.x - m_PosX;
+	m_ColliderOffsetY = CollisionBox.y - m_PosY;
+	m_ColliderWidth = CollisionBox.w;
+	m_ColliderHeight = CollisionBox.h;
 
 
 	FRAME_COUNT = framecount;
@@ -46,7 +50,12 @@ Entity::Entity(Vector2f p_pos, SDL_Rect CollisionBox, SDL_Rect FrameRect, std::s
 	// Idea behind this is to make a bigger box around the entity.
 	// This will hopefully let the entity detect the player around it.
 	//m_FOV = { -m_Collider.x * 2, -m_Collider.y * 2, m_Collider.x * 2, m_Collider.y * 2 };
-	m_FOV = { (int)((p_pos.x + CollisionBox.w / 2) - (128*3)/2), (int)(p_pos.y + CollisionBox.h / 2) - (128 * 3) / 2, (128 * 3), (128 * 3)};
+	m_FOV = {
+		m_Collider.x + m_Collider.w / 2 - m_FOVWidth / 2,
+		m_Collider.y + m_Collider.h / 2 - m_FOVHeight / 2,
+		m_FOVWidth,
+		m_FOVHeight
+	};
 	//m_Texture = LTexture(p_tex, FrameRect.w, FrameRect.h);
 }
 
@@ -60,6 +69,50 @@ Entity::~Entity() {
 std::shared_ptr<LTexture> Entity::getTex() //SDL_Texture* Entity::getTex
 {
 	return m_Texture;
+}
+
+void Entity::SetCollisionBox(int offsetX, int offsetY, int width, int height)
+{
+	m_ColliderOffsetX = offsetX;
+	m_ColliderOffsetY = offsetY;
+	m_ColliderWidth = width;
+	m_ColliderHeight = height;
+	m_Collider = { m_PosX + offsetX, m_PosY + offsetY, width, height };
+	m_FOV = {
+		m_Collider.x + m_Collider.w / 2 - m_FOVWidth / 2,
+		m_Collider.y + m_Collider.h / 2 - m_FOVHeight / 2,
+		m_FOVWidth,
+		m_FOVHeight
+	};
+}
+
+void Entity::SetFOVSize(int width, int height)
+{
+	m_FOVWidth = width;
+	m_FOVHeight = height;
+	SyncCollisionAndFOV();
+}
+
+void Entity::SyncCollisionAndFOV()
+{
+	if (!m_HasCollision) {
+		m_Collider = { 0, 0, 0, 0 };
+		m_FOV = { 0, 0, 0, 0 };
+		return;
+	}
+
+	m_FOV = {
+		m_PosX + m_ColliderOffsetX + m_ColliderWidth / 2 - m_FOVWidth / 2,
+		m_PosY + m_ColliderOffsetY + m_ColliderHeight / 2 - m_FOVHeight / 2,
+		m_FOVWidth,
+		m_FOVHeight
+	};
+	m_Collider = {
+		m_PosX + m_ColliderOffsetX,
+		m_PosY + m_ColliderOffsetY,
+		m_ColliderWidth,
+		m_ColliderHeight
+	};
 }
 
 
@@ -189,12 +242,7 @@ void Entity::Update(float deltaTime, Camera CameraRect, SDL_Rect PlayerPos)
 
 
 		if (m_Enemy) {
-			SDL_Rect bruh = PlayerPos; // need to target center of player
-			bruh.x = bruh.x + bruh.w / 2;
-			bruh.y = bruh.y + bruh.h / 2;
-			bruh.w = bruh.w / 2;
-			bruh.w = bruh.h / 2;
-			m_Enemy->Update(deltaTime, CameraRect, bruh);
+			m_Enemy->Update(deltaTime, CameraRect, PlayerPos);
 		}
 		if (m_NPC) {
 			m_NPC->Update(deltaTime, CameraRect, PlayerPos);
@@ -242,12 +290,14 @@ void Entity::Update(float deltaTime, Camera CameraRect, SDL_Rect PlayerPos)
     if (!m_Animations.empty() && !m_CurrentAnimation.empty()) {
         Animation& anim = m_Animations[m_CurrentAnimation];
         srcRect = anim.frames[m_AnimFrameIndex];
-    } else {
+    } else if (!m_Clips.empty()) {
         srcRect = m_Clips[currentFrameCount]; // your original line
+    } else {
+        // Invisible trigger entities may intentionally have no sprite clips.
+        srcRect = currentFrame;
     }
 
-	m_Collider = { m_PosX, m_PosY, 128, 128 }; 
-	m_FOV = { (m_PosX + (m_Collider.w / 2)) - ((128*3)/2) , (m_PosY + (m_Collider.h / 2)) - ((128 * 3) / 2), (int)(currentFrame.w * 3), (int)(currentFrame.h * 3)};
+	SyncCollisionAndFOV();
 
 	//SDL_RenderDrawRect(gRenderer, &m_Collider);
 	// SpriteSheet.render(m_PosX - camX, m_PosY - camY, &srcRect);
@@ -258,22 +308,22 @@ void Entity::Update(float deltaTime, Camera CameraRect, SDL_Rect PlayerPos)
 //    m_PosX, m_PosY, enemyScreen.x, enemyScreen.y, scale);
     //SDL_RenderCopy(renderer, enemyTexture, NULL, &enemyScreen);
 /////	m_Texture->render(enemyScreen.x, enemyScreen.y, &srcRect);
-	int screenX = (m_PosX - CameraRect.x);
-	int screenY = (m_PosY - CameraRect.y);
+	int screenX = m_ScreenSpace ? m_PosX : (m_PosX - CameraRect.x);
+	int screenY = m_ScreenSpace ? m_PosY : (m_PosY - CameraRect.y);
 
 	//RenderTrail(screenX, screenY);      // draws behind, no-op for normal entities
 	//m_Texture->render(screenX, screenY, &srcRect);
 
-	if (m_HasBackLayer) {
+	if (m_Visible && m_Texture && m_HasBackLayer) {
 		SDL_Rect backSrcRect = m_BackClips[m_BackFrameCount];
 		SDL_SetTextureAlphaMod(m_Texture->getTexture(), 130); // tune to taste
 		m_Texture->render(screenX, screenY, &backSrcRect);
 		SDL_SetTextureAlphaMod(m_Texture->getTexture(), 255); // restore before front layer
 	}
 
-	SDL_Rect renderQuad = { screenX, screenY, m_Collider.w, m_Collider.h };
-	//SDL_RenderCopy(gRenderer, m_Texture->getTexture(), &srcRect, &renderQuad);
-	m_Texture->render(screenX, screenY, &srcRect);
+	if (m_Visible && m_Texture) {
+		m_Texture->render(screenX, screenY, &srcRect);
+	}
 	if (m_Enemy) {
 		m_Enemy->RenderSoul(gRenderer);
 	}
@@ -349,4 +399,3 @@ void Entity::SetAnimationSpeed(float ms) {
     auto it = m_Animations.find(m_CurrentAnimation);
     if (it != m_Animations.end()) it->second.frameDuration = ms;
 }
-
