@@ -687,7 +687,7 @@ public:
             default:
                 printf("\n [!] ERROR: SpecialMerchantNPC::handleChoice() bad stage %d", (int)m_stage);
         }
-    }
+    }   
 
 private:
     std::vector<std::string> m_TalkQuestions;
@@ -1007,10 +1007,12 @@ std::vector<NPCAction>{
 // };
 
 class TheNPC : public NPC {
+public:
     std::vector<NPCAction> m_Actions;
     bool m_TriggerOnce;
     bool m_Fired = false;
     int m_ActionCounter = 0;
+    int m_ReturnedValue = 0; // im going to use this to capture returned value from MenuSystem, for question prompts.
 
     // Generic "wait for a condition before advancing" mechanism.
     std::function<bool()> m_WaitCondition = nullptr;
@@ -1030,7 +1032,8 @@ public:
         if (!m_checked) return;
 
         // Do not advance to the next action until the pending condition is met.
-        if (m_WaitCondition) {
+        if (m_WaitCondition) { // this can be used with TriggerBoxes, for cutscene actions or changing sprites.
+            // see function `WaitThenSetDialogue` for usage.
             if (!m_WaitCondition()) {
                 m_checked = false;
                 return;
@@ -1041,11 +1044,12 @@ public:
         }
 
         if (m_TriggerOnce && m_Fired && m_Dialogue.empty()) {
+            // sometimes NPCs are very simple and only need to exist once.
             m_checked = false;
             return;
         }
 
-        if (!m_Dialogue.empty()) {
+        if (!m_Dialogue.empty()) { // Dialogue should be first. if not, actions can play and then have dialouge. 
             gameState.callbackNPC = this;
             gameState.Text = m_Dialogue;
             gameState.textIndex = 0;
@@ -1060,11 +1064,17 @@ public:
             m_checked = false;
             m_Fired = true;
             fireAction();
+            // Actions can be completely custom, and can manipulate the NPC's dialogue, state, 
+            // or even the game state. The NPC can be used to trigger cutscenes, start fights,
+            // or any other custom behavior.
         }
     }
 
     void handleChoice(int choice) override {
+        printf("TheNPC handleChoice() called with %d", choice);
+        gameState.inMenu = false;
         m_Fired = true;
+        m_ReturnedValue = choice; // capture the returned value from MenuSystem, for question prompts.
         fireAction();
     }
 

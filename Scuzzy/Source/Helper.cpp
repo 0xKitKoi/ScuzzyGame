@@ -1040,6 +1040,9 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 				{ -1, 821, 13, 242 },
 			};
 
+			boundaryBoxes.push_back( // this is the invisible wall. 
+				{ 1126, 1453, 11, 1029 });
+
 									collisionBoxes.clear();
 			collisionBoxes.reserve(boundaryBoxes.size()); // Optimizes memory allocation
 
@@ -1058,6 +1061,22 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 			// squirle tree, family kicks u out
 
+			// 66, 955 NPC says "There's something really wrong with the roof of that cafe. I wonder what other roof you can do that to?"
+						// first NPC! // I think I'll leave the Signs like this so I can easily edit what they say.
+			Vector2f slungoidPOS(66, 955);
+			SDL_Rect signRect = { 0,0,128,128 };
+			auto signTexture = getTexture("data/AverageTweaker.png");
+			clips.clear();
+			clips.push_back({ 0,0,128,128 });
+			SDL_Rect slungoidCB = { int(slungoidPOS.x + 25), int(slungoidPOS.y + 25), int(signRect.w - 45), int(signRect.h - 55) };
+			auto slungoidentity = std::make_shared<Entity>(slungoidPOS, slungoidCB, signRect, getTexture("data/AverageTweaker.png"), 1, clips, 2);
+			Entities.push_back(slungoidentity);
+			std::vector<std::string> dialogue = { "There's something really wrong with the roof of that cafe.", "I wonder what other roof you can do that to?"};
+			std::shared_ptr<NPC> slungoidnpc = std::make_shared<SIGNNPC>(dialogue, slungoidentity);
+			slungoidentity->setNPC(slungoidnpc);
+
+			collisionBoxes.push_back(&slungoidentity->m_Collider);
+
 
 
 			// door at 4221, 2717 homeless tent
@@ -1075,7 +1094,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			clips.push_back({ 200 * 2,200,200, 200 });
 			clips.push_back({ 200 * 2,200 * 2,200, 200 });
 			SDL_Rect TentPuddleCB = { TentPuddlePos.x, TentPuddlePos.y, 100, 100 };
-			auto TentPuddleEntity = std::make_shared<Entity>(TentPuddlePos, TentPuddleCB, TentPuddleRect, getTexture("data/Puzzle.png"), 7, clips, 63);
+			auto TentPuddleEntity = std::make_shared<Entity>(TentPuddlePos, TentPuddleCB, TentPuddleRect, getTexture("data/Puddle.png"), 7, clips, 63);
 			Entities.push_back(TentPuddleEntity);
 			Vector2f TentPuddleOutPos(2400, 1400);
 			std::shared_ptr<NPC> TentPuddleNPC = std::make_shared<DoorNPC>(TentPuddleEntity, "LiminalPlaypen", TentPuddleOutPos);
@@ -1136,6 +1155,148 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			PuddleEntity->moving = true;
 			PuddleEntity->setNPC(PuddleNPC);
 			collisionBoxes.push_back(&PuddleEntity->m_Collider);
+
+
+
+			// invisible wall npc (1055, 1539)
+			// goofy interaction to get past invisible wall. 
+			// yes no interaction first, no means yes in noomside. then its a 
+			// "theres something blocking us. wanna come to the cooler side? YES NO" no means yes. triggers animation.
+
+			std::vector<std::unique_ptr<CutsceneAction>> cutsceneActionsRandy;
+			auto cutsceneActionsRandyShared =
+    			std::make_shared<std::vector<std::unique_ptr<CutsceneAction>>>(std::move(cutsceneActionsRandy));
+			cutsceneActionsRandy.push_back(std::make_unique<DialogueAction>(gameState, std::vector<std::string>{"Hey, there's something blocking us.", "Wanna get over to my side of the wall?"}));
+			// play animation of randy grabbing the player and breaking the glass wall with the player by throwing them.
+			// this is already done in Randy's sprite sheet. The grab animation must play only once, then return randy to the default animation.
+			// we will hide the player as the animation plays, and then tp the player to the final position. 
+			// the animated cutscene will throw a sprite of the player, not the actual player. 
+			// after the player is thrown, animate the player falling to the floor. (just gonna lerp the player laying down sprite down a little bit.)
+			// I also need an action to set a gamestate flag that this cutscene has happened already, and then delete the SDL_Rect inside of the map's boundary boxes that corresponds to the large invisible wall. 
+			// then, change the sprite to the player standing up, and the set the player->m_Visible = true; again, return control to the player. 
+
+
+
+			Vector2f RandyPos(800, 1550);
+			SDL_Rect RandyRect = { 0, 0, 500, 500 };
+			clips.clear();
+			for (int i = 0; i <= 27; i++) {
+				clips.push_back({ 0, 500 * i, 500, 500 });
+			}
+			// clips.push_back({ 0, 0, 200, 200 });
+			// clips.push_back({ 200,0,200, 200 });
+			SDL_Rect RandyCB = { RandyPos.x, RandyPos.y, 500, 500 };
+			auto RandyEntity = std::make_shared<Entity>(RandyPos, RandyCB, RandyRect, getTexture("data/randy-Sheet.png"), 5, clips, 706);
+			RandyEntity->SetFOVSize(300, 300);
+			Entities.push_back(RandyEntity);
+			std::vector<std::string> RandyDialogue;
+			//RandyEntity->m_CurrentAnimation = 0; // set to default animation
+			RandyEntity->AddAnimation( "Talking",
+				std::vector<SDL_Rect>{
+					// talking animation
+					{0,0,500,500},
+					{500*1, 0, 500, 500},
+					{500*2, 0, 500, 500},
+					{500*3, 0, 500, 500},
+					{500*4, 0, 500, 500},
+				},
+				100, // durration
+				true // loop
+			);
+			RandyEntity->AddAnimation( "GrabPlayer",
+				std::vector<SDL_Rect>{
+					{500*17, 0,500,500},
+					{500*18, 0,500,500},
+					{500*19, 0, 500, 500},
+					{500*20, 0, 500, 500},
+					{500*21, 0, 500, 500},
+					{500*22, 0, 500, 500},
+					{500*23, 0, 500, 500},
+					{500*24, 0, 500, 500},
+					{500*25, 0, 500, 500},
+					{500*26, 0, 500, 500},
+					{500*27, 0, 500, 500},
+				},
+				300, // durration
+				false // loop
+			);
+			RandyEntity->m_CurrentAnimation = "Talking"; // set to default animation
+
+			// i need a yes / no prompt here. I have a MenuSystem.cpp that can handle this, but i need to see the result and give it to the TheNPC (randy)
+
+			auto RandyNPC = std::make_shared<TheNPC>(
+								RandyEntity,
+			RandyDialogue, 
+			std::vector<NPCAction>{
+				// [](TheNPC& self) {
+				// 	gameState.callbackNPC = &self; // errors here. 
+				// 	gameState.currentNPC = &self;
+				// 	gameState.inMenu = true;
+				// 	currentMenu = QUESTION_MENU;
+				// 	// self.m_prompt = "Wanna get over to my side of the wall?";
+				// 	// self.m_Choices = { "Yes", "No" };
+				// 	MS_selectedIndex = 0;
+				// 	// this will init the Menu System and prompt the player with a question. the result is passed back into the NPC, when the line gameState.callbackNPC->handleChoice(MS_selectedIndex);  is ran
+				// },
+				// [cutsceneActionsRandyShared](TheNPC& self){ // captures the cutsceneActionsRandy vector by value, so we can use it in the lambda
+				// 	// Handle the case where the player selects "No"
+				// 	if (MS_selectedIndex == 1) {
+				// 		// Player selected "No"
+				// 		// In Noomside, "No" means "Yes", so we trigger the cutscene
+				// 		// TriggerNPC does this to init a cutscene, so we can do the same thing here.
+				// 		gameState.cutsceneManager.m_Actions = std::move(*cutsceneActionsRandyShared);
+				// 		gameState.cutsceneManager.m_CurrentActionIndex = 0;
+				// 		gameState.inCutScene = true;
+				// 		gameState.cutsceneManager.StartCutscene();
+				// 		    // Block further Update() progress until the menu is answered.
+    			// 			self.WaitThenSetDialogue([]() { return !gameState.inMenu; }, {});
+				// 	}
+				// }
+				// // i need an action to trigger the cutscene if the player selects the correct response. 
+			},
+			false
+			);
+							// self.m_prompt = "Wanna get over to my side of the wall?";
+					// self.m_Choices = { "Yes", "No" };
+			std::vector<NPCAction> temp ={
+				[RandyNPC](TheNPC& self) {
+					printf("RandyNPC action 0 triggered\n");
+					gameState.callbackNPC = RandyNPC.get(); // errors here. 
+					gameState.currentNPC = RandyNPC.get();
+					gameState.inMenu = true;
+					currentMenu = QUESTION_MENU;
+					RandyNPC->m_checked = false;
+					// self.m_prompt = "Wanna get over to my side of the wall?";
+					// self.m_Choices = { "Yes", "No" };
+					MS_selectedIndex = 0;
+					// this will init the Menu System and prompt the player with a question. the result is passed back into the NPC, when the line gameState.callbackNPC->handleChoice(MS_selectedIndex);  is ran
+				},
+				[cutsceneActionsRandyShared, RandyNPC](TheNPC& self){ // captures the cutsceneActionsRandy vector by value, so we can use it in the lambda
+					printf("RandyNPC action 1 triggered\n");
+					// Handle the case where the player selects "No"
+					//if (MS_selectedIndex == 1) {
+					if (RandyNPC->m_ReturnedValue == 1) {
+						// Player selected "No"
+						// In Noomside, "No" means "Yes", so we trigger the cutscene
+						// TriggerNPC does this to init a cutscene, so we can do the same thing here.
+						gameState.cutsceneManager.m_Actions = std::move(*cutsceneActionsRandyShared);
+						gameState.cutsceneManager.m_CurrentActionIndex = 0;
+						gameState.inCutScene = true;
+						gameState.cutsceneManager.StartCutscene();
+						    // Block further Update() progress until the menu is answered.
+    						self.WaitThenSetDialogue([]() { return !gameState.inMenu; }, {});
+					}
+				}
+				// i need an action to trigger the cutscene if the player selects the correct response. 
+			};
+			RandyNPC->m_Actions = std::move(temp);
+			RandyNPC->m_prompt = "Wanna get over to my side of the wall?";
+			RandyNPC->m_Choices = { "Yes", "No" };
+			RandyNPC->m_Entity = RandyEntity;
+			RandyEntity->moving = true;
+			RandyEntity->setNPC(RandyNPC);
+			collisionBoxes.push_back(&RandyEntity->m_Collider);
+						
 
 
 

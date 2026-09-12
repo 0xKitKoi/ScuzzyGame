@@ -1278,6 +1278,7 @@ void handleStatsMenu(SDL_Event event) {
 //}
 
 void handleDialogue(SDL_Event event) {
+    printf("\n[!] DEBUG: handleDialogue() called. textIndex: %d, Text size: %zu", gameState.textIndex, gameState.Text.size());
 
     // ok this could be the sign NPC or the Merchant.
     if (gameState.callbackNPC != nullptr) {
@@ -1430,6 +1431,10 @@ void renderDialogue(SDL_Renderer* renderer, TTF_Font* font) {
 //     //MS_renderText(renderer, font, gameState.Text[gameState.textIndex], xOffset, yOffset, {255, 255, 255});
 // }
 void renderQuestion(SDL_Renderer* renderer, TTF_Font* font) {
+    if (!gameState.callbackNPC) {
+        printf("\n[!] ERROR: renderQuestion() called but gameState.callbackNPC is null!");
+        return;
+    }
     // Get screen dimensions
     int screenWidth, screenHeight;
     SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
@@ -1463,6 +1468,10 @@ void renderQuestion(SDL_Renderer* renderer, TTF_Font* font) {
 }
 
 void handleQuestionInput(SDL_Event event) {
+    if (!gameState.callbackNPC) {
+        printf("\n[!] ERROR: handleQuestionInput() called but gameState.callbackNPC is null!");
+        return;
+    }
     // this is invoked by an NPC signaling that it wants to prompt the player with a question.
 	// gameState.callbackNPC has a callback function called handleChoice(int choice)
     if (event.type == SDL_KEYDOWN) {
@@ -1631,7 +1640,7 @@ void handleMenuInputSideBySide(SDL_Event event) {
 			gameState.inMenu = false;
 			if (gameState.callbackNPC) {
 				gameState.callbackNPC->handleChoice(gameState.selectionIndex); // tell the NPC who triggered a choice the selection.
-				gameState.callbackNPC = nullptr;
+				gameState.callbackNPC = nullptr; // this fucker unhooks, but i dont know a better way to clear this pointer.
 				// If the NPC wants to be called back again, that's its fucking problem. 
 			}
 			
