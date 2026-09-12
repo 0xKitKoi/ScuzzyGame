@@ -1086,10 +1086,16 @@ public:
     }
 
 private:
+    // void fireAction() {
+    //     if (m_Actions.empty()) return;
+    //     int idx = std::min(m_ActionCounter, static_cast<int>(m_Actions.size()) - 1);
+    //     m_Actions[idx](*this);
+    //     m_ActionCounter = std::min(m_ActionCounter + 1, static_cast<int>(m_Actions.size()) - 1);
+    // }
     void fireAction() {
-        if (m_Actions.empty()) return;
-        int idx = std::min(m_ActionCounter, static_cast<int>(m_Actions.size()) - 1);
+        if (m_ActionCounter >= static_cast<int>(m_Actions.size())) return;
+        int idx = m_ActionCounter;
+        m_ActionCounter++;
         m_Actions[idx](*this);
-        m_ActionCounter = std::min(m_ActionCounter + 1, static_cast<int>(m_Actions.size()) - 1);
     }
 };

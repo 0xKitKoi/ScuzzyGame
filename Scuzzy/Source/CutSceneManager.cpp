@@ -20,7 +20,10 @@ extern Mix_Chunk* gExplosionSound;
     }
 
     void CutsceneManager::StartCutscene() {
-        if (m_Actions.empty()) return;
+        if (m_Actions.empty()) {
+            printf("--- No actions to play. ---\n");
+            return;
+        } 
         m_IsActive = true;
         m_CurrentActionIndex = 0;
         printf("--- Player controls disabled. Cutscene Started. ---\n");
@@ -294,6 +297,7 @@ void HidePlayerAction::Enter() {
 
 void HidePlayerAction::Exit() {
 	gameState.player->m_Invisible = false;
+    printf("HidePlayerAction completed.\n");
 };
 
 

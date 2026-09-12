@@ -297,7 +297,7 @@ void Entity::Update(float deltaTime, Camera CameraRect, SDL_Rect PlayerPos)
         srcRect = currentFrame;
     }
 
-	SyncCollisionAndFOV();
+	SyncCollisionAndFOV(); // move the collision box and FOV to match the entity's position
 
 	//SDL_RenderDrawRect(gRenderer, &m_Collider);
 	// SpriteSheet.render(m_PosX - camX, m_PosY - camY, &srcRect);

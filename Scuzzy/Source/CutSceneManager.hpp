@@ -12,6 +12,7 @@
 #elif defined(__linux__)
 	#include "SDL2/SDL_mixer.h"
 #endif 
+#include <functional>
 
 
 
@@ -44,6 +45,57 @@ public:
 };
 
 
+
+
+/* EXAMPLE USAGE OF LAMBDA CUTSCENE ACTIONS:
+        // Hide the player — instant, no waiting needed
+        cutsceneActionsRandy.push_back(std::make_unique<LambdaCutsceneAction>(
+            [&]() { gameState.player->m_Visible = false; }, // Enter()
+            [](float) { return true; }, // completes immediately // Update()
+            []() {} // Exit()
+        ));
+*/
+class LambdaCutsceneAction : public CutsceneAction {
+public:
+    using EnterFn  = std::function<void()>;
+    using UpdateFn = std::function<bool(float)>;   // return true when done
+    using RenderFn = std::function<void()>;
+    using ExitFn   = std::function<void()>;
+
+    LambdaCutsceneAction(EnterFn onEnter,
+                          UpdateFn onUpdate,
+                          ExitFn onExit,
+                          RenderFn onRender = nullptr)
+        : m_OnEnter(std::move(onEnter))
+        , m_OnUpdate(std::move(onUpdate))
+        , m_OnExit(std::move(onExit))
+        , m_OnRender(std::move(onRender))
+    {}
+
+    void Enter() override {
+        if (m_OnEnter) m_OnEnter();
+    }
+
+    bool Update(float deltaTime) override {
+        bool done = m_OnUpdate ? m_OnUpdate(deltaTime) : true;
+        if (done) m_Finished = true;
+        return done;
+    }
+
+    void Render() override {
+        if (m_OnRender) m_OnRender();
+    }
+
+    void Exit() override {
+        if (m_OnExit) m_OnExit();
+    }
+
+private:
+    EnterFn  m_OnEnter;
+    UpdateFn m_OnUpdate;
+    ExitFn   m_OnExit;
+    RenderFn m_OnRender;
+};
 
 
 // Concrete Action: Controlling the camera
@@ -309,6 +361,39 @@ public:
         for (auto& action : m_Actions)
             action->Exit();
     }
+};
+
+
+
+class AnimationAction : public CutsceneAction {
+public:
+    AnimationAction(std::shared_ptr<Entity> entity, std::string animationName, bool loop = false)
+        : m_Entity(std::move(entity))
+        , m_AnimationName(std::move(animationName))
+        , m_Loop(loop)
+    {}
+
+    void Enter() override {
+        if (m_Entity) {
+            m_Entity->PlayAnimation(m_AnimationName, true); // restart=true always starts fresh
+        }
+    }
+
+    bool Update(float deltaTime) override {
+        if (m_Loop) {
+            return true;  // looping animations never block — cutscene moves on immediately
+        }
+        bool done = m_Entity && m_Entity->m_AnimationFinished;
+        if (done) m_Finished = true;
+        return done;
+    }
+
+    void Exit() override {}
+
+private:
+    std::shared_ptr<Entity> m_Entity;
+    std::string m_AnimationName;
+    bool m_Loop;
 };
 
 #endif // CUTSCENEMANAGER_H

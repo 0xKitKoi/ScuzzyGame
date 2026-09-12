@@ -14,6 +14,7 @@
 #include "Source/ItemRegistry.hpp"
 
 #include <random>
+#include <algorithm>
 
 extern std::vector<std::shared_ptr<Entity>> Entities;
 extern std::vector<SDL_Rect*> collisionBoxes;
@@ -1158,22 +1159,6 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 
 
-			// invisible wall npc (1055, 1539)
-			// goofy interaction to get past invisible wall. 
-			// yes no interaction first, no means yes in noomside. then its a 
-			// "theres something blocking us. wanna come to the cooler side? YES NO" no means yes. triggers animation.
-
-			std::vector<std::unique_ptr<CutsceneAction>> cutsceneActionsRandy;
-			auto cutsceneActionsRandyShared =
-    			std::make_shared<std::vector<std::unique_ptr<CutsceneAction>>>(std::move(cutsceneActionsRandy));
-			cutsceneActionsRandy.push_back(std::make_unique<DialogueAction>(gameState, std::vector<std::string>{"Hey, there's something blocking us.", "Wanna get over to my side of the wall?"}));
-			// play animation of randy grabbing the player and breaking the glass wall with the player by throwing them.
-			// this is already done in Randy's sprite sheet. The grab animation must play only once, then return randy to the default animation.
-			// we will hide the player as the animation plays, and then tp the player to the final position. 
-			// the animated cutscene will throw a sprite of the player, not the actual player. 
-			// after the player is thrown, animate the player falling to the floor. (just gonna lerp the player laying down sprite down a little bit.)
-			// I also need an action to set a gamestate flag that this cutscene has happened already, and then delete the SDL_Rect inside of the map's boundary boxes that corresponds to the large invisible wall. 
-			// then, change the sprite to the player standing up, and the set the player->m_Visible = true; again, return control to the player. 
 
 
 
@@ -1223,6 +1208,55 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			RandyEntity->m_CurrentAnimation = "Talking"; // set to default animation
 
 			// i need a yes / no prompt here. I have a MenuSystem.cpp that can handle this, but i need to see the result and give it to the TheNPC (randy)
+
+
+			// invisible wall npc (1055, 1539)
+			// goofy interaction to get past invisible wall. 
+			// yes no interaction first, no means yes in noomside. then its a 
+			// "theres something blocking us. wanna come to the cooler side? YES NO" no means yes. triggers animation.
+
+			std::vector<std::unique_ptr<CutsceneAction>> cutsceneActionsRandy;
+			
+			//cutsceneActionsRandy.push_back(std::make_unique<DialogueAction>(gameState, std::vector<std::string>{"Hey, there's something blocking us.", "Wanna get over to my side of the wall?"}));
+
+			// animate RandyNPC grabbing the player.
+			//cutsceneActionsRandy.push_back(std::make_unique<AnimationAction>(RandyEntity, "GrabPlayer", false));
+			cutsceneActionsRandy.push_back(std::make_unique<HidePlayerAction>(2));
+			cutsceneActionsRandy.push_back(std::make_unique<AnimationAction>(RandyEntity, "GrabPlayer", false));
+			// Thus cutscene needs to delete an SDL_Rect from the boundaryBoxes vector
+			cutsceneActionsRandy.push_back(
+				std::make_unique<LambdaCutsceneAction>(
+						/*Enter*/  [&]() {  },
+						/*Update*/ [](float) {
+							auto it = std::find_if(collisionBoxes.begin(), collisionBoxes.end(),
+								[](SDL_Rect* r) {
+									return r->x == 1126 && r->y == 1453 && r->w == 11 && r->h == 1029;
+								});
+							if (it != collisionBoxes.end()) {
+								delete *it;                  // free the heap allocation — see below
+								collisionBoxes.erase(it);
+							}
+							return true;
+						},
+						/*Exit*/   []() {}
+					)
+				); // remove the invisible wall from the collision boxes vector.
+
+			// MUST POPULATE FIRST then wrap the vector in a shared_ptr, so we can capture it in the lambda below.
+			// i hate u so much omg
+			auto cutsceneActionsRandyShared =
+    			std::make_shared<std::vector<std::unique_ptr<CutsceneAction>>>(std::move(cutsceneActionsRandy));
+			// play animation of randy grabbing the player and breaking the glass wall with the player by throwing them.
+			// this is already done in Randy's sprite sheet. The grab animation must play only once, then return randy to the default animation.
+			// we will hide the player as the animation plays, and then tp the player to the final position. 
+			// the animated cutscene will throw a sprite of the player, not the actual player. 
+			// after the player is thrown, animate the player falling to the floor. (just gonna lerp the player laying down sprite down a little bit.)
+			// I also need an action to set a gamestate flag that this cutscene has happened already, and then delete the SDL_Rect inside of the map's boundary boxes that corresponds to the large invisible wall. 
+			// then, change the sprite to the player standing up, and the set the player->m_Visible = true; again, return control to the player. 
+
+
+
+
 
 			auto RandyNPC = std::make_shared<TheNPC>(
 								RandyEntity,
@@ -1276,6 +1310,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 					// Handle the case where the player selects "No"
 					//if (MS_selectedIndex == 1) {
 					if (RandyNPC->m_ReturnedValue == 1) {
+						printf("RandyNPC action 1: Player selected No, triggering cutscene.\n");
 						// Player selected "No"
 						// In Noomside, "No" means "Yes", so we trigger the cutscene
 						// TriggerNPC does this to init a cutscene, so we can do the same thing here.
@@ -1283,8 +1318,13 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 						gameState.cutsceneManager.m_CurrentActionIndex = 0;
 						gameState.inCutScene = true;
 						gameState.cutsceneManager.StartCutscene();
+						gameState.cutsceneManager.m_IsActive = true;
+
 						    // Block further Update() progress until the menu is answered.
-    						self.WaitThenSetDialogue([]() { return !gameState.inMenu; }, {});
+    						//self.WaitThenSetDialogue([]() { return !gameState.inMenu; }, {});
+					}
+					else {
+						printf("RandyNPC action 1: Player selected Yes, no cutscene triggered.\n");	
 					}
 				}
 				// i need an action to trigger the cutscene if the player selects the correct response. 
