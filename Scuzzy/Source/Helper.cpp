@@ -1221,13 +1221,35 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 			// animate RandyNPC grabbing the player.
 			//cutsceneActionsRandy.push_back(std::make_unique<AnimationAction>(RandyEntity, "GrabPlayer", false));
-			cutsceneActionsRandy.push_back(std::make_unique<HidePlayerAction>(2));
+			//cutsceneActionsRandy.push_back(std::make_unique<HidePlayerAction>(2));
 			//cutsceneActionsRandy.push_back(std::make_unique<AnimationAction>(RandyEntity, "GrabPlayer", false));
+			
+			// need dound effects. parallel actions. 
+			//cutsceneActionsRandy.push_back(std::make_unique<SoundEffectAction>("data/soundeffects/GlassBreak.wav", 0.5f));
+			// cutsceneActionsRandy.push_back(
+			// 	std::make_unique<ParallelAction>(
+			// 		std::vector<std::unique_ptr<CutsceneAction>>{
+			// 			std::make_unique<AnimationAction>(RandyEntity, "GrabPlayer", false),
+			// 			std::make_unique<SoundEffectAction>("data/mus/deltarune-grab.wav", true, 2)
+			// 		}
+			// 	)
+
+			// );
+
+			std::vector<std::unique_ptr<CutsceneAction>> parallelActions2;
+			parallelActions2.push_back(std::make_unique<AnimationAction>(RandyEntity, "GrabPlayer", false));
+			parallelActions2.push_back(std::make_unique<SoundEffectAction>("data/mus/deltarune-grab.wav", true, 1, 0.7f));
+
 			cutsceneActionsRandy.push_back(
-				std::unique_ptr<CutsceneAction>(
-					std::make_unique<AnimationAction>(RandyEntity, "GrabPlayer", false).release()
-				)
+				std::make_unique<ParallelAction>(std::move(parallelActions2))
 			);
+
+
+			// cutsceneActionsRandy.push_back(
+			// 	std::unique_ptr<CutsceneAction>(
+			// 		std::make_unique<AnimationAction>(RandyEntity, "GrabPlayer", false).release()
+			// 	)
+			// );
 			// Thus cutscene needs to delete an SDL_Rect from the boundaryBoxes vector
 			// cutsceneActionsRandy.push_back(
 			// 	std::make_unique<LambdaCutsceneAction>(

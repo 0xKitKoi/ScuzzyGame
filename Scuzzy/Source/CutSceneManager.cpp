@@ -291,31 +291,79 @@ bool SpriteShowAction::Update(float deltaTime) {
 }
 
 
-SoundEffectAction::SoundEffectAction(Mix_Chunk* soundEffect, bool repeat, int repeatCount)
-    : m_SoundEffect(soundEffect), m_repeat(repeat), m_repeatCount(repeatCount) {}
+// SoundEffectAction::SoundEffectAction(Mix_Chunk* soundEffect, bool repeat, int repeatCount)
+//     : m_SoundEffect(soundEffect), m_repeat(repeat), m_repeatCount(repeatCount) {}
 
+// SoundEffectAction::SoundEffectAction(const std::string& filepath, bool repeat, int repeatCount)
+//     : m_repeat(repeat), m_repeatCount(repeatCount), m_OwnsSound(true)
+// {
+//     m_SoundEffect = Mix_LoadWAV(filepath.c_str());
+//     if (!m_SoundEffect) {
+//         printf("[SoundEffectAction] ERROR: Failed to load sound from '%s': %s\n", 
+//                filepath.c_str(), Mix_GetError());
+//         m_OwnsSound = false;  // don't try to free a failed load
+//     }
+// }
+
+// void SoundEffectAction::Enter() {
+//     m_Played = false;
+//     if (m_SoundEffect) {
+//         // SDL_mixer performs repeats asynchronously. The loops argument is
+//         // the number of additional plays, matching m_repeatCount's contract.
+//         const int loops = m_repeat ? m_repeatCount : 0;
+//         Mix_PlayChannel(-1, m_SoundEffect, loops);
+//     }
+//     m_Played = true;
+// }
+// bool SoundEffectAction::Update(float deltaTime) {
+//     // The sound keeps playing on SDL_mixer after this action completes.
+//     // Do not keep the cutscene stuck here or start overlapping copies.
+//     return m_Played;
+// }
+// // void SoundEffectAction::Render() {
+// //     // Sound effects do not render anything.
+// // }
+// void SoundEffectAction::Exit() {
+//     printf("SoundEffectAction completed.\n");
+//     //gameState.inCutScene = false; // signal cutscene manager to advance to next action or end cutscene
+// }
+
+SoundEffectAction::SoundEffectAction(Mix_Chunk* soundEffect, bool repeat, int repeatCount, float delay)
+    : m_SoundEffect(soundEffect), m_repeat(repeat), m_repeatCount(repeatCount), m_Delay(delay), m_OwnsSound(false) {}
+
+SoundEffectAction::SoundEffectAction(const std::string& filepath, bool repeat, int repeatCount, float delay)
+    : m_repeat(repeat), m_repeatCount(repeatCount), m_Delay(delay), m_OwnsSound(true)
+{
+    m_SoundEffect = Mix_LoadWAV(filepath.c_str());
+    if (!m_SoundEffect) {
+        printf("[SoundEffectAction] ERROR: Failed to load sound from '%s': %s\n", 
+               filepath.c_str(), Mix_GetError());
+        m_OwnsSound = false;
+    }
+}
 
 void SoundEffectAction::Enter() {
     m_Played = false;
-    if (m_SoundEffect) {
-        // SDL_mixer performs repeats asynchronously. The loops argument is
-        // the number of additional plays, matching m_repeatCount's contract.
+    m_DelayTimer = m_Delay;  // start the countdown
+}
+
+bool SoundEffectAction::Update(float deltaTime) {
+    if (m_DelayTimer > 0.0f) {
+        m_DelayTimer -= deltaTime;
+        return false;  // still waiting, block cutscene advancement
+    }
+    
+    if (!m_Played && m_SoundEffect) {
         const int loops = m_repeat ? m_repeatCount : 0;
         Mix_PlayChannel(-1, m_SoundEffect, loops);
+        m_Played = true;
     }
-    m_Played = true;
+    
+    return true;  // sound has played, action complete
 }
-bool SoundEffectAction::Update(float deltaTime) {
-    // The sound keeps playing on SDL_mixer after this action completes.
-    // Do not keep the cutscene stuck here or start overlapping copies.
-    return m_Played;
-}
-// void SoundEffectAction::Render() {
-//     // Sound effects do not render anything.
-// }
+
 void SoundEffectAction::Exit() {
     printf("SoundEffectAction completed.\n");
-    //gameState.inCutScene = false; // signal cutscene manager to advance to next action or end cutscene
 }
 
 

@@ -226,13 +226,32 @@ public:
     void Exit() override;
 };
 
+// class SoundEffectAction : public CutsceneAction {
+// public:
+//     Mix_Chunk* m_SoundEffect = NULL;
+//     bool m_repeat = false;
+//     int m_repeatCount = 0; // how many times to repeat the sound effect. 0 = no repeat, 1 = play twice, etc.
+//     bool m_Played = false;
+//     bool m_OwnsSound = false;
+//     SoundEffectAction(Mix_Chunk* soundEffect, bool repeat, int repeatCount);
+//     SoundEffectAction(const std::string& filepath, bool repeat, int repeatCount);
+//     void Enter() override;
+//     bool Update(float deltaTime) override;
+//     void Exit() override;
+// };
 class SoundEffectAction : public CutsceneAction {
 public:
     Mix_Chunk* m_SoundEffect = NULL;
     bool m_repeat = false;
-    int m_repeatCount = 0; // how many times to repeat the sound effect. 0 = no repeat, 1 = play twice, etc.
+    int m_repeatCount = 0;
     bool m_Played = false;
-    SoundEffectAction(Mix_Chunk* soundEffect, bool repeat, int repeatCount);
+    bool m_OwnsSound = false;
+    float m_Delay = 0.0f;           // delay in seconds before playing
+    float m_DelayTimer = 0.0f;      // countdown timer
+    
+    SoundEffectAction(Mix_Chunk* soundEffect, bool repeat, int repeatCount, float delay = 0.0f);
+    SoundEffectAction(const std::string& filepath, bool repeat, int repeatCount, float delay = 0.0f);
+    
     void Enter() override;
     bool Update(float deltaTime) override;
     void Exit() override;
