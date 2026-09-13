@@ -30,26 +30,54 @@ extern Mix_Chunk* gExplosionSound;
         m_Actions[m_CurrentActionIndex]->Enter();
     }
 
-    void CutsceneManager::Update(float deltaTime) {
-        if (!m_IsActive) return;
-        if (m_CurrentActionIndex >= m_Actions.size()) {
-            m_IsActive = false;
-            return;
-        }
+    // void CutsceneManager::Update(float deltaTime) {
+    //     if (!m_IsActive) return;
+    //     if (m_CurrentActionIndex >= m_Actions.size()) {
+    //         m_IsActive = false;
+    //         return;
+    //     }
 
-        if (m_Actions[m_CurrentActionIndex]->Update(deltaTime)) {
-            m_Actions[m_CurrentActionIndex]->Exit();
-            m_CurrentActionIndex++;
+    //     if (m_Actions[m_CurrentActionIndex]->Update(deltaTime)) {
+    //         m_Actions[m_CurrentActionIndex]->Exit();
+    //         m_CurrentActionIndex++;
             
-            if (m_CurrentActionIndex < m_Actions.size()) {
-                m_Actions[m_CurrentActionIndex]->Enter();
-            } else {
-                m_IsActive = false;
-                printf("--- Cutscene Finished. Player controls restored. ---\n");
-                gameState.inCutScene = false; // Signal that cutscene is done
-            }
+    //         if (m_CurrentActionIndex < m_Actions.size()) {
+    //             m_Actions[m_CurrentActionIndex]->Enter();
+    //         } else {
+    //             m_IsActive = false;
+    //             printf("--- Cutscene Finished. Player controls restored. ---\n");
+    //             gameState.inCutScene = false; // Signal that cutscene is done
+    //         }
+    //     }
+    // }
+    void CutsceneManager::Update(float deltaTime) {
+    if (!m_IsActive || m_Actions.empty() || m_CurrentActionIndex >= m_Actions.size()) {
+        return;
+    }
+
+    CutsceneAction& currentAction = *m_Actions[m_CurrentActionIndex];
+    
+    // printf("[Cutscene] Tick — ActionIndex=%zu, IsFinished=%s\n", 
+    //        m_CurrentActionIndex, currentAction.m_Finished ? "true" : "false");
+    
+    bool actionDone = currentAction.Update(deltaTime);
+    //printf("[Cutscene] Action::Update() returned %s\n", actionDone ? "true" : "false");
+    
+    if (actionDone) {
+        printf("[Cutscene] Action %zu complete, calling Exit()\n", m_CurrentActionIndex);
+        currentAction.Exit();
+        m_CurrentActionIndex++;
+        printf("[Cutscene] Advanced to ActionIndex=%zu\n", m_CurrentActionIndex);
+        
+        if (m_CurrentActionIndex < m_Actions.size()) {
+            printf("[Cutscene] Entering action %zu\n", m_CurrentActionIndex);
+            m_Actions[m_CurrentActionIndex]->Enter();
+        } else {
+            printf("[Cutscene] All actions complete. Cutscene finished.\n");
+            m_IsActive = false;
         }
     }
+}
 
     
     void CutsceneManager::Render() {
@@ -417,3 +445,6 @@ void MovePlayerAction::Exit() {
 	//gameState.player->m_Invisible = false; // ensure player is visible after cutscene..?
     printf("MovePlayerAction completed.\n");
 }
+
+
+

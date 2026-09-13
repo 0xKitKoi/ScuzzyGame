@@ -365,6 +365,50 @@ public:
 
 
 
+// class AnimationAction : public CutsceneAction {
+// public:
+//     AnimationAction(std::shared_ptr<Entity> entity, std::string animationName, bool loop = false)
+//         : m_Entity(std::move(entity))
+//         , m_AnimationName(std::move(animationName))
+//         , m_Loop(loop)
+//     {}
+
+//     void Enter() override {
+//         if (m_Entity) {
+//             m_Entity->PlayAnimation(m_AnimationName, true); // restart=true always starts fresh
+//         }
+//     }
+
+//     // bool Update(float deltaTime) override {
+//     //     if (m_Loop) {
+//     //         return true;  // looping animations never block — cutscene moves on immediately
+//     //     }
+//     //     bool done = m_Entity && m_Entity->m_AnimationFinished;
+//     //     if (done) m_Finished = true;
+//     //     return done;
+//     // }
+//     bool Update(float deltaTime) override {
+//         if (m_Loop) {
+//             return true;
+//         }
+//         bool entityValid = m_Entity != nullptr;
+//         bool isFinished = entityValid && m_Entity->IsAnimationFinished();
+//         printf("[AnimAction] m_Entity=%s, IsFinished=%s, CurrentAnim='%s', AnimPlaying=%s\n",
+//             entityValid ? "valid" : "null",
+//             isFinished ? "true" : "false",
+//             entityValid ? m_Entity->m_CurrentAnimation.c_str() : "N/A",
+//             entityValid ? (m_Entity->m_AnimPlaying ? "true" : "false") : "N/A");
+//         if (isFinished) m_Finished = true;
+//         return isFinished;
+//     }
+
+//     void Exit() override;
+// private:
+//     std::shared_ptr<Entity> m_Entity;
+//     std::string m_AnimationName;
+//     bool m_Loop;
+// };
+
 class AnimationAction : public CutsceneAction {
 public:
     AnimationAction(std::shared_ptr<Entity> entity, std::string animationName, bool loop = false)
@@ -375,25 +419,50 @@ public:
 
     void Enter() override {
         if (m_Entity) {
-            m_Entity->PlayAnimation(m_AnimationName, true); // restart=true always starts fresh
+            m_PreviousAnimation = m_Entity->m_CurrentAnimation; // save what was playing
+            m_Entity->PlayAnimation(m_AnimationName, true);
         }
     }
 
-    bool Update(float deltaTime) override {
+ bool Update(float deltaTime) override {
         if (m_Loop) {
-            return true;  // looping animations never block — cutscene moves on immediately
+            return true;
         }
-        bool done = m_Entity && m_Entity->m_AnimationFinished;
-        if (done) m_Finished = true;
-        return done;
+        bool entityValid = m_Entity != nullptr;
+        bool isFinished = entityValid && m_Entity->IsAnimationFinished();
+        // printf("[AnimAction] m_Entity=%s, IsFinished=%s, CurrentAnim='%s', AnimPlaying=%s\n",
+        //     entityValid ? "valid" : "null",
+        //     isFinished ? "true" : "false",
+        //     entityValid ? m_Entity->m_CurrentAnimation.c_str() : "N/A",
+        //     entityValid ? (m_Entity->m_AnimPlaying ? "true" : "false") : "N/A");
+        if (isFinished) m_Finished = true;
+        return isFinished;
     }
 
-    void Exit() override {}
+    void Exit() override {
+        if (m_Entity && !m_PreviousAnimation.empty()) {
+            printf("[AnimAction] Exit: restoring animation from '%s' to '%s'\n", 
+                m_Entity->m_CurrentAnimation.c_str(), m_PreviousAnimation.c_str());
+            
+            // Verify the animation actually exists before restoring
+            if (m_Entity->m_Animations.find(m_PreviousAnimation) != m_Entity->m_Animations.end()) {
+                m_Entity->m_CurrentAnimation = m_PreviousAnimation;
+                m_Entity->m_AnimFrameIndex = 0;  // reset frame to avoid out-of-bounds
+                m_Entity->m_AnimFinishedFlag = false;
+            } else {
+                printf("[AnimAction] ERROR: Previous animation '%s' doesn't exist!\n", m_PreviousAnimation.c_str());
+            }
+        }
+    }
 
 private:
     std::shared_ptr<Entity> m_Entity;
     std::string m_AnimationName;
+    std::string m_PreviousAnimation;  // what was playing before this action
     bool m_Loop;
 };
 
+
 #endif // CUTSCENEMANAGER_H
+
+

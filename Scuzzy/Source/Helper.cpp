@@ -1162,7 +1162,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 
 
-			Vector2f RandyPos(800, 1550);
+			Vector2f RandyPos(800, 1250);
 			SDL_Rect RandyRect = { 0, 0, 500, 500 };
 			clips.clear();
 			for (int i = 0; i <= 27; i++) {
@@ -1170,7 +1170,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			}
 			// clips.push_back({ 0, 0, 200, 200 });
 			// clips.push_back({ 200,0,200, 200 });
-			SDL_Rect RandyCB = { RandyPos.x, RandyPos.y, 500, 500 };
+			SDL_Rect RandyCB = { RandyPos.x+200, RandyPos.y+300, 300, 100 };
 			auto RandyEntity = std::make_shared<Entity>(RandyPos, RandyCB, RandyRect, getTexture("data/randy-Sheet.png"), 5, clips, 706);
 			RandyEntity->SetFOVSize(300, 300);
 			Entities.push_back(RandyEntity);
@@ -1222,25 +1222,66 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			// animate RandyNPC grabbing the player.
 			//cutsceneActionsRandy.push_back(std::make_unique<AnimationAction>(RandyEntity, "GrabPlayer", false));
 			cutsceneActionsRandy.push_back(std::make_unique<HidePlayerAction>(2));
-			cutsceneActionsRandy.push_back(std::make_unique<AnimationAction>(RandyEntity, "GrabPlayer", false));
-			// Thus cutscene needs to delete an SDL_Rect from the boundaryBoxes vector
+			//cutsceneActionsRandy.push_back(std::make_unique<AnimationAction>(RandyEntity, "GrabPlayer", false));
 			cutsceneActionsRandy.push_back(
-				std::make_unique<LambdaCutsceneAction>(
-						/*Enter*/  [&]() {  },
-						/*Update*/ [](float) {
-							auto it = std::find_if(collisionBoxes.begin(), collisionBoxes.end(),
-								[](SDL_Rect* r) {
-									return r->x == 1126 && r->y == 1453 && r->w == 11 && r->h == 1029;
-								});
-							if (it != collisionBoxes.end()) {
-								delete *it;                  // free the heap allocation — see below
-								collisionBoxes.erase(it);
-							}
-							return true;
-						},
-						/*Exit*/   []() {}
-					)
-				); // remove the invisible wall from the collision boxes vector.
+				std::unique_ptr<CutsceneAction>(
+					std::make_unique<AnimationAction>(RandyEntity, "GrabPlayer", false).release()
+				)
+			);
+			// Thus cutscene needs to delete an SDL_Rect from the boundaryBoxes vector
+			// cutsceneActionsRandy.push_back(
+			// 	std::make_unique<LambdaCutsceneAction>(
+			// 			/*Enter*/  [&]() {  },
+			// 			/*Update*/ [](float) {
+			// 				auto it = std::find_if(collision	Boxes.begin(), collisionBoxes.end(),
+			// 					[](SDL_Rect* r) {
+			// 						return r->x == 1126 && r->y == 1453 && r->w == 11 && r->h == 1029;
+			// 					});
+			// 				if (it != collisionBoxes.end()) {
+			// 					delete *it;                  // free the heap allocation — see below
+			// 					collisionBoxes.erase(it);
+			// 				}
+			// 				return true;
+			// 			},
+			// 			/*Exit*/   []() {}
+			// 		)
+			// 	); // remove the invisible wall from the collision boxes vector.
+
+			cutsceneActionsRandy.push_back(std::make_unique<LambdaCutsceneAction>(
+				/*Enter*/  [&]() { 
+					printf("[Action2] Enter — hiding player, erasing wall\n");
+					if (gameState.player) {
+						gameState.player->m_Invisible = true;
+						printf("[Action2] Player hidden\n");
+					} else {
+						printf("[Action2] ERROR: gameState.player is null!\n");
+					}
+				},
+				/*Update*/ [](float) {
+					    printf("[Action2] Update called\n");  // add this FIRST
+    					printf("[Action2] collisionBoxes.size()=%zu\n", collisionBoxes.size());
+					
+					auto it = std::find_if(collisionBoxes.begin(), collisionBoxes.end(),
+						[](SDL_Rect* r) {
+							return r && r->x == 1126 && r->y == 1453 && r->w == 11 && r->h == 1029;
+						});
+					
+					if (it != collisionBoxes.end()) {
+						printf("[Action2] Found wall, erasing\n");
+						delete *it;
+						collisionBoxes.erase(it);
+					} else {
+						printf("[Action2] Wall not found in collisionBoxes\n");
+					}
+					return true;
+				},
+				    /*Exit*/   [&]() {
+						if (gameState.player) {
+							gameState.player->m_Invisible = false;
+							printf("[Action2] Player restored\n");
+						}
+					}
+			));
 
 			// MUST POPULATE FIRST then wrap the vector in a shared_ptr, so we can capture it in the lambda below.
 			// i hate u so much omg
@@ -1321,10 +1362,12 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 						gameState.cutsceneManager.m_IsActive = true;
 
 						    // Block further Update() progress until the menu is answered.
-    						//self.WaitThenSetDialogue([]() { return !gameState.inMenu; }, {});
+    						self.WaitThenSetDialogue([]() { return !gameState.inMenu; }, {});
 					}
 					else {
-						printf("RandyNPC action 1: Player selected Yes, no cutscene triggered.\n");	
+						printf("RandyNPC action 1: Player selected Yes, no cutscene triggered.\n");
+						RandyNPC->m_checked = false; // reset the checked flag for future interactions
+						RandyNPC->m_ActionCounter = 0;
 					}
 				}
 				// i need an action to trigger the cutscene if the player selects the correct response. 
