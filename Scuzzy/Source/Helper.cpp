@@ -1238,7 +1238,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 			//cutsceneActionsRandy.push_back(std::make_unique<HidePlayerAction>());
 			std::vector<std::unique_ptr<CutsceneAction>> parallelActions2;
-			parallelActions2.push_back(std::make_unique<HidePlayerAction>());
+			parallelActions2.push_back(std::make_unique<HidePlayerAction>()); // Here, HidePlayerAction will exit only when the other actions are done.
 			parallelActions2.push_back(std::make_unique<AnimationAction>(RandyEntity, "GrabPlayer", false));
 			parallelActions2.push_back(std::make_unique<SoundEffectAction>("data/mus/deltarune-grab.wav", true, 1, 0.7f));
 
@@ -1271,17 +1271,14 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			// 		)
 			// 	); // remove the invisible wall from the collision boxes vector.
 
+			// this will find the SDL_Rect in the collisionBoxes vector that corresponds to the invisible wall, and delete it.
 			cutsceneActionsRandy.push_back(std::make_unique<LambdaCutsceneAction>(
-				/*Enter*/  [&]() { 
-					printf("[Action2] Enter — hiding player, erasing wall\n");
-					if (gameState.player) {
-						gameState.player->m_Invisible = true;
-						printf("[Action2] Player hidden\n");
-					} else {
-						printf("\n[!] [Action2] ERROR: gameState.player is null!\n");
-					}
+				/*Enter*/  
+				[&]() { 
+					printf("[Action2] Enter. Finding and Erasing wall\n");
 				},
-				/*Update*/ [](float) {
+				/*Update*/ 
+				[](float) {
 					    //printf("[Action2] Update called\n");  // add this FIRST
     					//printf("[Action2] collisionBoxes.size()=%zu\n", collisionBoxes.size());
 					
@@ -1299,12 +1296,9 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 					}
 					return true;
 				},
-				    /*Exit*/   [&]() {
-						if (gameState.player) {
-							gameState.player->m_Invisible = false;
-							printf("[Action2] Player restored\n");
-						}
-					}
+				/*Exit*/   
+				[&]() {}
+
 			));
 
 			// MUST POPULATE FIRST then wrap the vector in a shared_ptr, so we can capture it in the lambda below.
@@ -1477,8 +1471,10 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 			/*cutsceneActions*/ parallelActions.push_back(
 				std::make_unique<MovePlayerAction>(
-					Vector2f(x/*-200.0f*/, y - 20.0f),
-					Vector2f(x/*-200*/, y+200.0f),
+					// Vector2f(x/*-200.0f*/, y - 20.0f),
+					// Vector2f(x/*-200*/, y+200.0f),
+					Vector2f(0.0f, -130.0f),
+    				Vector2f(0.0f, 0.0f),
 					300.0f,
 					gameState.player->DownWalking
 				)

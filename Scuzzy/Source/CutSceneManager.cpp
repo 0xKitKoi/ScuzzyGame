@@ -389,12 +389,24 @@ void MovePlayerAction::Enter() {
     //m_StartPosition = Vector2f {float(gameState.player->GetPosX()), float(gameState.player->GetPosY())};
     //printf("MovePlayerAction: Start Position: (%f, %f)\n", m_StartPosition.x, m_StartPosition.y);
     //printf("MovePlayerAction: Target Position: (%f, %f)\n", m_TargetPosition.x, m_TargetPosition.y);
-    m_ReturnPosition = Vector2f {float(gameState.player->GetPosX()), float(gameState.player->GetPosY())};
-    gameState.player->m_PosX =
-        static_cast<int>(m_StartPosition.x);
 
-    gameState.player->m_PosY =
-        static_cast<int>(m_StartPosition.y);
+    // m_ReturnPosition = Vector2f {float(gameState.player->GetPosX()), float(gameState.player->GetPosY())};
+    // gameState.player->m_PosX =
+    //     static_cast<int>(m_StartPosition.x);
+
+    // gameState.player->m_PosY =
+    //     static_cast<int>(m_StartPosition.y);
+    Vector2f playerPos{ float(gameState.player->GetPosX()), float(gameState.player->GetPosY()) };
+    m_ReturnPosition = playerPos;
+
+    
+    m_StartPosition  = playerPos + m_StartPosition;   // offsets become absolute here
+    m_TargetPosition = playerPos + m_TargetPosition;
+    
+    gameState.player->m_PosX = static_cast<int>(m_StartPosition.x);
+    gameState.player->m_PosY = static_cast<int>(m_StartPosition.y);
+
+
     m_AnimationFinished = false;
     lastFrameTime = 0;
     currentFrame = 0;
