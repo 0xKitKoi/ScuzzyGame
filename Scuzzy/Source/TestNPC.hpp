@@ -1072,7 +1072,7 @@ public:
     }
 
     void handleChoice(int choice) override {
-        printf("TheNPC handleChoice() called with %d", choice);
+        printf("\nTheNPC handleChoice() called with %d \n", choice);
         // gameState.inMenu = false;
         // m_Fired = true;
         // m_ReturnedValue = choice; // capture the returned value from MenuSystem, for question prompts.

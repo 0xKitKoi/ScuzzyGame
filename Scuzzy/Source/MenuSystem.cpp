@@ -1278,7 +1278,9 @@ void handleStatsMenu(SDL_Event event) {
 //}
 
 void handleDialogue(SDL_Event event) {
-    printf("\n[!] DEBUG: handleDialogue() called. textIndex: %d, Text size: %zu", gameState.textIndex, gameState.Text.size());
+    if (gameState.DebugMode) {
+        printf("\n[!] DEBUG: handleDialogue() called. textIndex: %d, Text size: %zu \n", gameState.textIndex, gameState.Text.size());
+    }
 
     // ok this could be the sign NPC or the Merchant.
     if (gameState.callbackNPC != nullptr) {

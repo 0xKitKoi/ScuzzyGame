@@ -83,6 +83,12 @@ extern Mix_Chunk* gExplosionSound;
     void CutsceneManager::Render() {
         if (!m_IsActive) return;
         if (m_CurrentActionIndex < m_Actions.size()) {
+
+            // so i kinda need to clear the renderer and rerender the map.
+            // a cutscene action might need the player to be invisible  (like an NPC grabbing the player, 
+            //the player sprite is in the NPC sprite sheet, so the player needs to be invisible while the NPC is animating the grab.)
+            // and to do this, i need to know how the game doesnt call SDL_RenderClear() and SDL_RenderPresent() in the middle of a cutscene action.
+
             m_Actions[m_CurrentActionIndex]->Render();
         }
     }
@@ -375,6 +381,7 @@ void HidePlayerAction::Exit() {
 	gameState.player->m_Invisible = false;
     printf("HidePlayerAction completed.\n");
 };
+
 
 
 

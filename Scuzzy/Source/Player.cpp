@@ -641,6 +641,10 @@ void Player::clearInputState() {
 void Player::render(int camX, int camY) {
 	if (gameState.inCutScene)
     {
+
+		if (m_Invisible) {
+			return;
+		}
         // int screenX = m_PosX - gameState.cameraRect.x;
         // int screenY = m_PosY - gameState.cameraRect.y;
 

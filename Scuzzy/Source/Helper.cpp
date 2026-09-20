@@ -1236,7 +1236,9 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 
 			// );
 
+			//cutsceneActionsRandy.push_back(std::make_unique<HidePlayerAction>());
 			std::vector<std::unique_ptr<CutsceneAction>> parallelActions2;
+			parallelActions2.push_back(std::make_unique<HidePlayerAction>());
 			parallelActions2.push_back(std::make_unique<AnimationAction>(RandyEntity, "GrabPlayer", false));
 			parallelActions2.push_back(std::make_unique<SoundEffectAction>("data/mus/deltarune-grab.wav", true, 1, 0.7f));
 
@@ -1276,12 +1278,12 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 						gameState.player->m_Invisible = true;
 						printf("[Action2] Player hidden\n");
 					} else {
-						printf("[Action2] ERROR: gameState.player is null!\n");
+						printf("\n[!] [Action2] ERROR: gameState.player is null!\n");
 					}
 				},
 				/*Update*/ [](float) {
-					    printf("[Action2] Update called\n");  // add this FIRST
-    					printf("[Action2] collisionBoxes.size()=%zu\n", collisionBoxes.size());
+					    //printf("[Action2] Update called\n");  // add this FIRST
+    					//printf("[Action2] collisionBoxes.size()=%zu\n", collisionBoxes.size());
 					
 					auto it = std::find_if(collisionBoxes.begin(), collisionBoxes.end(),
 						[](SDL_Rect* r) {
@@ -1289,11 +1291,11 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 						});
 					
 					if (it != collisionBoxes.end()) {
-						printf("[Action2] Found wall, erasing\n");
+						printf("\n[+] [Action2] Found wall, erasing\n");
 						delete *it;
 						collisionBoxes.erase(it);
 					} else {
-						printf("[Action2] Wall not found in collisionBoxes\n");
+						printf("\n[!] [Action2] Wall not found in collisionBoxes\n");
 					}
 					return true;
 				},

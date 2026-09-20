@@ -27,6 +27,18 @@ public:
     virtual bool Update(float deltaTime) = 0; // Returns true when completed
     virtual void Render() {};
     virtual void Exit() = 0;
+    virtual bool IsBackground() const { return false; }
+    // IsBackground() can be overridden by derived classes to indicate if the action is a background action that doesn't block the cutscene flow.
+    // this is useful for Parallel Actions, where you might want to have a background action (like HidePlayerAction)
+    // so that when all of the other actions are done, the cutscene can continue without waiting for the background action to finish.
+
+    // this is for tracking whether the action has been entered and exited, to prevent multiple calls to Enter() or Exit().
+    void DoEnter() { if (!m_Entered) { m_Entered = true; Enter(); } }
+    bool m_Entered = false;
+    bool m_Exited = false;
+    void DoExit()  { if (m_Entered && !m_Exited) { m_Exited = true; Exit(); } }
+
+
     bool m_Finished = false; // Track if the action has finished
 };
 
@@ -259,18 +271,14 @@ public:
 
 
 class HidePlayerAction : public CutsceneAction {
-    float m_Duration;
 public:
-    HidePlayerAction(float duration) : m_Duration(duration) {}
-    //void Enter() override {
-    //    gameState.player->m_Invisible = true;
-    //};
-	void Enter() override;
-    bool Update(float deltaTime) override {
-        m_Duration -= deltaTime;
-        return m_Duration <= 0;
-    };
-	void Exit() override;
+    void Enter() override; // { gameState.player->m_Invisible = true; }
+    bool Update(float) override { return false; }        // never finishes by itself
+    void Render() override {}
+    void Exit() override; // { gameState.player->m_Invisible = false; }
+    bool IsBackground() const override { return true; }
+    // in a ParallelAction group, this action doesn't block the cutscene flow,
+    // and ends when the other actions are done, allowing the cutscene to continue.
 };
 
 // An instant cutscene step for showing or hiding any entity.
@@ -332,7 +340,8 @@ public:
     void Enter() override
     {
         for (auto& action : m_Actions)
-            action->Enter();
+            //action->Enter();
+            action->DoEnter(); // use DoEnter() to ensure Enter() is only called once
     }
 
     // bool Update(float deltaTime) override
@@ -347,25 +356,42 @@ public:
 
     //     return allFinished;
     // }
-    bool Update(float deltaTime) override
-    {
+    
+    // bool Update(float deltaTime) override
+    // {
+    //     bool allFinished = true;
+
+    //     for (auto& child : m_Actions)
+    //     {
+    //         if (!child->m_Finished)
+    //         {
+    //             child->m_Finished = child->Update(deltaTime);
+
+    //             if (child->m_Finished)
+    //                 child->Exit();
+    //         }
+
+    //         if (!child->m_Finished)
+    //             allFinished = false;
+    //     }
+
+    //     return allFinished;
+    // }
+    bool Update(float dt) override {
         bool allFinished = true;
-
-        for (auto& child : m_Actions)
-        {
-            if (!child->m_Finished)
-            {
-                child->m_Finished = child->Update(deltaTime);
-
-                if (child->m_Finished)
-                    child->Exit();
+        for (auto& child : m_Actions) {
+            if (!child->m_Finished) {
+                child->m_Finished = child->Update(dt);
+                if (child->m_Finished) child->DoExit();
             }
-
-            if (!child->m_Finished)
+            if (!child->IsBackground() && !child->m_Finished)
                 allFinished = false;
         }
-
         return allFinished;
+    }
+
+    void Exit() override {
+        for (auto& a : m_Actions) a->DoExit();   // background children get cleaned up here
     }
 
 
@@ -375,11 +401,11 @@ public:
             action->Render();
     }
 
-    void Exit() override
-    {
-        for (auto& action : m_Actions)
-            action->Exit();
-    }
+    // void Exit() override
+    // {
+    //     for (auto& action : m_Actions)
+    //         action->Exit();
+    // }
 };
 
 
