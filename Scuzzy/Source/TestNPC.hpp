@@ -1011,6 +1011,7 @@ public:
     std::vector<NPCAction> m_Actions;
     bool m_TriggerOnce;
     bool m_Fired = false;
+    bool m_AwaitingChoice = false; // if the NPC is waiting for a choice to be made, it should not advance to the next action until the choice is made.
     int m_ActionCounter = 0;
     int m_ReturnedValue = 0; // im going to use this to capture returned value from MenuSystem, for question prompts.
 
@@ -1072,10 +1073,17 @@ public:
 
     void handleChoice(int choice) override {
         printf("TheNPC handleChoice() called with %d", choice);
+        // gameState.inMenu = false;
+        // m_Fired = true;
+        // m_ReturnedValue = choice; // capture the returned value from MenuSystem, for question prompts.
+        // m_checked = false;
+
+        if (!m_AwaitingChoice) return;      // ignore stray dialogue-finished calls
+        m_AwaitingChoice = false;
         gameState.inMenu = false;
-        m_Fired = true;
-        m_ReturnedValue = choice; // capture the returned value from MenuSystem, for question prompts.
-        fireAction();
+        m_ReturnedValue = choice;
+        m_checked = true;                   // Update() will fire the next action
+        //fireAction(); // this is causing a recursive loop. MenuSystem calls handleChoice, which calls fireAction and the first action is a question prompt.
     }
 
     // Actions call this to register a wait + the dialogue to show once it's satisfied.

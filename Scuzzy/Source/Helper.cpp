@@ -1358,11 +1358,12 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			std::vector<NPCAction> temp ={
 				[RandyNPC](TheNPC& self) {
 					printf("RandyNPC action 0 triggered\n");
-					gameState.callbackNPC = RandyNPC.get(); // errors here. 
-					gameState.currentNPC = RandyNPC.get();
+					gameState.callbackNPC = &self; // errors here. 
+					gameState.currentNPC = &self;
 					gameState.inMenu = true;
 					currentMenu = QUESTION_MENU;
 					RandyNPC->m_checked = false;
+					self.m_AwaitingChoice = true;
 					// self.m_prompt = "Wanna get over to my side of the wall?";
 					// self.m_Choices = { "Yes", "No" };
 					MS_selectedIndex = 0;
@@ -1379,6 +1380,7 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 						// TriggerNPC does this to init a cutscene, so we can do the same thing here.
 						gameState.cutsceneManager.m_Actions = std::move(*cutsceneActionsRandyShared);
 						gameState.cutsceneManager.m_CurrentActionIndex = 0;
+						
 						gameState.inCutScene = true;
 						gameState.cutsceneManager.StartCutscene();
 						gameState.cutsceneManager.m_IsActive = true;
@@ -1388,8 +1390,15 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 					}
 					else {
 						printf("RandyNPC action 1: Player selected Yes, no cutscene triggered.\n");
-						RandyNPC->m_checked = false; // reset the checked flag for future interactions
+						//RandyNPC->m_checked = false; // reset the checked flag for future interactions
 						RandyNPC->m_ActionCounter = 0;
+
+						gameState.inMenu = false; // Ensure the menu is closed
+						//currentMenu = MenuState::DIALOGUE; // Reset the current menu state
+						//RandyNPC->m_Dialogue = {"its opposite day here, you purple fuck"};
+						//RandyNPC->
+						gameState.Text = {"its OPPosite day here, you purple fuck"};
+						gameState.textAvailable = true;
 					}
 				}
 				// i need an action to trigger the cutscene if the player selects the correct response. 
