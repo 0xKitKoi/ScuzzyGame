@@ -508,6 +508,73 @@ private:
 };
 
 
+
+class DelayedAction : public CutsceneAction {
+
+private:
+    float m_DelayDuration;
+    float m_TimeAccumulator = 0.0f;
+
+    std::unique_ptr<CutsceneAction> m_Action;
+    bool m_ActionStarted = false;
+
+public:
+
+    DelayedAction(float seconds, std::unique_ptr<CutsceneAction> action)
+        : m_DelayDuration(seconds),
+          m_Action(std::move(action))
+    {
+    }
+
+    void Enter() override
+    {
+        m_TimeAccumulator = 0.0f;
+        m_ActionStarted = false;
+
+        printf("[DelayedAction] Waiting for %f seconds...\n", m_DelayDuration);
+    }
+
+    bool Update(float deltaTime) override
+    {
+        // Still waiting for the delay
+        if (!m_ActionStarted)
+        {
+            m_TimeAccumulator += deltaTime;
+
+            if (m_TimeAccumulator < m_DelayDuration)
+                return false;
+
+            // Delay is finished
+            m_ActionStarted = true;
+
+            printf("[DelayedAction] Delay finished. Starting action.\n");
+
+            m_Action->DoEnter();
+        }
+
+        // Run the actual action
+        if (!m_Action->Update(deltaTime))
+            return false;
+
+        // Action finished
+        m_Action->DoExit();
+
+        return true;
+    }
+
+    void Render() override
+    {
+        if (m_ActionStarted)
+            m_Action->Render();
+    }
+
+    void Exit() override
+    {
+        printf("[DelayedAction] Finished.\n");
+    }
+};
+
+
 #endif // CUTSCENEMANAGER_H
 
 

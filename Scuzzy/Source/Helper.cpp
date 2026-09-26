@@ -1165,13 +1165,16 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			Vector2f RandyPos(800, 1250);
 			SDL_Rect RandyRect = { 0, 0, 500, 500 };
 			clips.clear();
-			for (int i = 0; i <= 27; i++) {
-				clips.push_back({ 0, 500 * i, 500, 500 });
+			for (int i = 0; i < 36; i++) {
+				int x = (i % 10) * 500;
+				int y = (i / 10) * 500;
+
+				clips.push_back({ x, y, 500, 500 });
 			}
 			// clips.push_back({ 0, 0, 200, 200 });
 			// clips.push_back({ 200,0,200, 200 });
 			SDL_Rect RandyCB = { RandyPos.x+200, RandyPos.y+300, 300, 100 };
-			auto RandyEntity = std::make_shared<Entity>(RandyPos, RandyCB, RandyRect, getTexture("data/randy-Sheet.png"), 5, clips, 706);
+			auto RandyEntity = std::make_shared<Entity>(RandyPos, RandyCB, RandyRect, getTexture("data/randy-Sheet.png"), 3, clips, 706);
 			RandyEntity->SetFOVSize(300, 300);
 			Entities.push_back(RandyEntity);
 			std::vector<std::string> RandyDialogue;
@@ -1179,30 +1182,29 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			RandyEntity->AddAnimation( "Talking",
 				std::vector<SDL_Rect>{
 					// talking animation
-					{0,0,500,500},
-					{500*1, 0, 500, 500},
+					// {0,0,500,500},
+					// {500*1, 0, 500, 500},
 					{500*2, 0, 500, 500},
 					{500*3, 0, 500, 500},
-					{500*4, 0, 500, 500},
+					{500*4, 0, 500, 500}
 				},
 				100, // durration
 				true // loop
 			);
+
+			std::vector<SDL_Rect> RandyGrabClips;
+
+				for (int i = 17; i <= 36; i++) {
+					int x = (i % 10) * 500;
+					int y = (i / 10) * 500;
+
+					RandyGrabClips.push_back({ x, y, 500, 500 });
+				}
+
+
 			RandyEntity->AddAnimation( "GrabPlayer",
-				std::vector<SDL_Rect>{
-					{500*17, 0,500,500},
-					{500*18, 0,500,500},
-					{500*19, 0, 500, 500},
-					{500*20, 0, 500, 500},
-					{500*21, 0, 500, 500},
-					{500*22, 0, 500, 500},
-					{500*23, 0, 500, 500},
-					{500*24, 0, 500, 500},
-					{500*25, 0, 500, 500},
-					{500*26, 0, 500, 500},
-					{500*27, 0, 500, 500},
-				},
-				300, // durration
+				RandyGrabClips,
+				200, // durration
 				false // loop
 			);
 			RandyEntity->m_CurrentAnimation = "Talking"; // set to default animation
@@ -1237,10 +1239,20 @@ Vector2f LoadLevel(std::string Room, LTexture* Map) {
 			// );
 
 			//cutsceneActionsRandy.push_back(std::make_unique<HidePlayerAction>());
+			std::vector<SDL_Rect> explClips2;
+				for (int i = 0; i < 15; i++) {
+					explClips2.push_back(SDL_Rect{ 72 * i, 0, 72, 100 });
+			}
 			std::vector<std::unique_ptr<CutsceneAction>> parallelActions2;
 			parallelActions2.push_back(std::make_unique<HidePlayerAction>()); // Here, HidePlayerAction will exit only when the other actions are done.
 			parallelActions2.push_back(std::make_unique<AnimationAction>(RandyEntity, "GrabPlayer", false));
-			parallelActions2.push_back(std::make_unique<SoundEffectAction>("data/mus/deltarune-grab.wav", true, 1, 0.7f));
+			parallelActions2.push_back(std::make_unique<SoundEffectAction>("data/mus/deltarune-grab.wav", true, 2, 0.7f));
+			parallelActions2.push_back(std::make_unique<SoundEffectAction>("data/mus/legobreaking.wav", false, 1, 3.5f));
+			
+			// this needs to be delayed until a specific frame in the GrabPlayer Animation.
+			//parallelActions2.push_back(std::make_unique<ExplosionAction>(gExplosionSound, getTexture("data/RealisticExplosion72x100x18.png"), 15, explClips2, Vector2f{gameState.cameraRect.x + 500, gameState.cameraRect.y+500}));
+			parallelActions2.push_back(std::make_unique<DelayedAction>(3.0f, std::make_unique<ExplosionAction>(gExplosionSound, getTexture("data/RealisticExplosion72x100x18.png"), 15, explClips2, Vector2f{500,500})));
+
 
 			cutsceneActionsRandy.push_back(
 				std::make_unique<ParallelAction>(std::move(parallelActions2))
